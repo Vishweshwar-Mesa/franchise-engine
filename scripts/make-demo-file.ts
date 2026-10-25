@@ -65,7 +65,38 @@ XLSX.utils.book_append_sheet(wb, titled("SYNTHETIC demo territories.", territory
 for (const name of ["Existing stores", "Allowed values", "Field guide", "Glossary"]) {
   if (tpl.Sheets[name]) XLSX.utils.book_append_sheet(wb, tpl.Sheets[name], name);
 }
+// A smaller, clean showcase file for the pre-filled demo workspace (src/lib/demo-workspace.ts).
+// prettier-ignore
+const showcaseApps: (string | number)[][] = [
+  ["APP-101", "Priya Sharma", "Mysuru", "Karnataka", 570002, 31, 6, "Runs a leggings and innerwear shop", "Owned", 720, "Mall unit", 3, "Hindi", ""],
+  ["APP-102", "Rahul Menon", "Bengaluru", "Karnataka", 560095, 55, 12, "Franchisee of a footwear brand", "Owned", 1200, "Ground", 2, "English", ""],
+  ["APP-103", "Farhan Ali", "Bengaluru", "Karnataka", 560025, 35, 5, "Runs a ladies' garment boutique", "Rented", 800, "Mall unit", 4, "Hindi", "Mall unit in a busy mall"],
+  ["APP-104", "Basavaraj Angadi", "Belagavi", "Karnataka", 590006, 27, 5, "Runs a menswear store", "Rented", 550, "Ground", 3, "Kannada", ""],
+  ["APP-105", "Shabana Mulla", "Belagavi", "Karnataka", 590006, 33, 6, "Runs a ladies' tailoring and boutique", "Owned", 700, "Ground", 4, "Hindi", ""],
+  ["APP-106", "Meena Rao", "Bengaluru", "Karnataka", 560011, 22, 3, "Runs a mobile accessories shop", "Owned", 350, "Upper", 3, "Kannada", ""],
+  ["APP-107", "Anitha D'Souza", "Mangaluru", "Karnataka", 575003, 19, 2, "Runs a beauty parlour", "Rented", 480, "Upper", 5, "English", ""],
+  ["APP-108", "Prakash Bhat", "Mangaluru", "Karnataka", 575002, 29, 4, "Runs a sports goods shop", "Rented", 650, "Mall unit", 3, "English", ""],
+  ["APP-109", "Mahesh Patil", "Davanagere", "Karnataka", 577004, 28, 7, "Runs a textile wholesale shop", "Not yet identified", "", "Not known", 6, "Kannada", "Looking for a space near the bus stand"],
+  ["APP-110", "Arjun Shetty", "Bengaluru", "Karnataka", 560034, 40, 8, "Manages a kidswear store", "Rented", 750, "Ground", 2, "English", ""],
+];
+// prettier-ignore
+const showcaseTerritories: (string | number)[][] = [
+  ["TER-01", "Mysuru", "Karnataka", "570001, 570002, 570008, 570009", "Tier 2", 2, "High"],
+  ["TER-02", "Bengaluru", "Karnataka", "560011, 560025, 560034", "Tier 1", 1, "High"],
+  ["TER-03", "Bengaluru", "Karnataka", "560095, 560102", "Tier 1", 1, "Medium"],
+  ["TER-04", "Mangaluru", "Karnataka", "575002, 575003", "Tier 2", 1, "Medium"],
+  ["TER-06", "Belagavi", "Karnataka", "590001, 590006", "Tier 2", 1, "Medium"],
+  ["TER-08", "Davanagere", "Karnataka", "577001, 577004", "Tier 3", 2, "Low"],
+];
+const showcase = XLSX.utils.book_new();
+XLSX.utils.book_append_sheet(showcase, titled("SYNTHETIC demo applicants for the pre-filled demo workspace. Not real people.", appHeader, showcaseApps), "Applications");
+XLSX.utils.book_append_sheet(showcase, titled("SYNTHETIC demo territories.", territoryHeader, showcaseTerritories), "Territories");
+for (const name of ["Existing stores", "Allowed values", "Field guide", "Glossary"]) {
+  if (tpl.Sheets[name]) XLSX.utils.book_append_sheet(showcase, tpl.Sheets[name], name);
+}
+
 fs.mkdirSync("public/samples", { recursive: true });
+XLSX.writeFile(showcase, "public/samples/demo-showcase.xlsx");
 XLSX.writeFile(wb, "public/samples/demo-messy.xlsx");
 fs.copyFileSync("data/template.xlsx", "public/samples/template.xlsx");
 console.log(`Wrote public/samples/demo-messy.xlsx (${apps.length} rows incl. 1 blank, 1 duplicate) and copied the template.`);

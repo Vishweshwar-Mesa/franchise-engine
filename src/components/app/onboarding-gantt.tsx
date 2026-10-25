@@ -8,7 +8,7 @@ import { useWorkspace } from "@/store/workspace";
 import { SourceTag } from "./source-tag";
 import { cn } from "@/lib/utils";
 
-const BAR: Record<TimelineTask["kind"], string> = { payment: "bg-[var(--tone-wait-bg)]0", phase: "bg-[var(--light-green)]", checkin: "bg-primary" };
+const BAR: Record<TimelineTask["kind"], string> = { payment: "bg-[var(--tone-wait)]", phase: "bg-[var(--light-green)]", checkin: "bg-primary" };
 
 /** Gantt + checklist from Day 0. Durations are blank fields the brand fills in. */
 export function OnboardingGantt({ id, o, readOnly = false }: { id: string; o: Onboarding; readOnly?: boolean }) {

@@ -9,6 +9,7 @@ import type {
 } from "@/lib/types";
 import type { Onboarding } from "@/lib/onboarding";
 import { newOnboarding } from "@/lib/onboarding";
+import type { DemoWorkspace } from "@/lib/demo-workspace";
 
 export interface Explanation {
   summary: string;
@@ -30,11 +31,14 @@ export interface WorkspaceData {
   waitlist: Record<string, WaitlistConfirmation>;
   onboarding: Record<string, Onboarding>;
   log: ActionLogEntry[];
+  /** True while the pre-filled demo workspace is shown (cleared by any real upload). */
+  demo: boolean;
   updatedAt: string;
 }
 
 interface WorkspaceActions {
   loadDataset: (d: Dataset) => void;
+  loadDemo: (d: DemoWorkspace) => void;
   setReviewer: (id: string, patch: Partial<ReviewerInput>, logDetail?: string) => void;
   setManualStatus: (id: string, status: Status | null, reason: string) => void;
   setAi: (results: Record<string, AiAssessment>) => void;
@@ -56,7 +60,7 @@ const newSessionId = () =>
 
 const blank = (sessionId: string): WorkspaceData => ({
   sessionId, dataset: null, settings: DEFAULT_SETTINGS, reviewer: {}, ai: {}, explanations: {}, contests: {},
-  waitlist: {}, onboarding: {}, log: [], updatedAt: now(),
+  waitlist: {}, onboarding: {}, log: [], demo: false, updatedAt: now(),
 });
 
 export const useWorkspace = create<WorkspaceData & WorkspaceActions>()(
@@ -73,6 +77,7 @@ export const useWorkspace = create<WorkspaceData & WorkspaceActions>()(
             ...blank(get().sessionId), settings: get().settings, dataset: d,
             log: log("upload", `Loaded ${d.report.fileName}: ${d.applications.length} applicants, ${d.territories.length} territories.`),
           }),
+        loadDemo: (d) => set({ ...blank(get().sessionId), ...d, demo: true, updatedAt: now() }),
         setReviewer: (id, patch, logDetail) =>
           set({
             reviewer: { ...get().reviewer, [id]: { ...get().reviewer[id], ...patch } },

@@ -27,7 +27,9 @@
 
 ```
 data/template.xlsx                 Judges' input format (Case1_Franchise_Test_Data_Format.xlsx)
-public/samples/                    template.xlsx copy + demo-messy.xlsx (synthetic, 30 applicants with traps)
+public/samples/                    template.xlsx copy + demo-messy.xlsx (synthetic, 30 applicants with traps) + demo-showcase.xlsx (synthetic, 10 applicants for the demo workspace)
+src/lib/demo-workspace.ts          Pre-filled demo workspace on demo-showcase.xlsx (reviewer inputs, contest notes, 2 onboarding records)
+src/lib/load-demo.ts               Loads it; Providers auto-loads it on a first visit with no saved data
 scripts/make-demo-file.ts          Regenerates the demo file (npm run samples)
 scripts/check-context.sh           Warns when code changes without CLAUDE.md (pre-commit hook + CI)
 db/migrations/                     Versioned SQL schema for Neon; apply with `npm run db:migrate` (never edit only in the dashboard)
@@ -104,6 +106,8 @@ Flow: Excel -> `parseWorkbook` (browser) -> store -> `runEngine` -> **ledger** -
 | Chat: local what-if parser first (no AI needed), then AI, then ledger template answers | Our choice | Always works |
 | xlsx from SheetJS CDN 0.20.3 (not npm 0.18.5) | Our choice | npm version has known advisories |
 | `cacheComponents` turned off in next.config | Our choice | All screens are per-browser client pages |
+| First visit with no saved data auto-loads a synthetic DEMO workspace (10 applicants, every status, 2 in onboarding), with a "Demo workspace" banner; any upload replaces it | Our choice | User found the empty app too blank to review; judges still upload their own file |
+| Demo entries: financial profiles, relevance ratings, liabilities note, contest notes, phase durations are demo inputs; fees, royalty, deposit and payment amounts stay blank even in the demo | Our choice | No invented money terms |
 | Confirm Good to go -> stage "Awaiting paperwork" (a stage, not a status) | Prompt | Confirming never starts onboarding |
 | Paperwork gate: agreement, GST, other registrations (free-text list); each ticked + dated, optional upload; "confirm with the brand's legal/CA team"; only link: https://www.gst.gov.in/ (verified 2026-10-25: official "Goods & Services Tax (GST) Home", has "Register") | Prompt | No legal/tax advice, no numbers |
 | Day 0 = latest gate date; Start onboarding disabled until all three ticked and dated | Prompt | |
@@ -162,6 +166,8 @@ Score: Space 40 / Money 20 / Experience 20 / Financial profile 20 (rescaled to 5
 ## 9. Change Log (newest first)
 
 `YYYY-MM-DD | who/which tool | what changed | why | files touched | follow-ups`
+
+- 2026-10-25 | Claude Code (Opus 5.5) | Demo workspace: 10 synthetic applicants (demo-showcase.xlsx) with reviewer inputs and 2 onboarding records, auto-loaded on first visit + "Load demo workspace" button + banner; 3 tests; fixed Gantt payment bar colour broken by the earlier colour sweep; vitest config uses import.meta.dirname | User wanted something to review | scripts/make-demo-file.ts, public/samples/demo-showcase.xlsx, src/lib/{demo-workspace,load-demo}.ts, demo-workspace.test.ts, store, providers, layout, demo-banner.tsx, upload-panel.tsx, onboarding-gantt.tsx, vitest.config.mts | none
 
 - 2026-10-25 | Claude Code (Opus 5.5) | Created Neon DB via Vercel integration and applied migration 001; fixed sync losing changes on quick reload/close (push on start, 1 s debounce, flush on pagehide/visibilitychange with keepalive); git-ignored Neon agent-skill files | Neon go-live | src/lib/sync.ts, .gitignore, CLAUDE.md | none
 

@@ -4,6 +4,7 @@ import { useWorkspace } from "@/store/workspace";
 import { fetchServices } from "@/hooks/use-services";
 import { pullFromServer, startSync } from "@/lib/sync";
 import { AiAssessRunner } from "./ai-assess-runner";
+import { loadDemoWorkspace } from "@/lib/load-demo";
 
 /** Waits for the browser copy to load, then mirrors to the database (Neon) if it is configured. */
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -14,9 +15,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
     const unsub = useWorkspace.persist.onFinishHydration(finish);
     let stopSync: (() => void) | undefined;
     fetchServices().then(async (s) => {
-      if (!s.database) return;
-      await pullFromServer();
-      stopSync = startSync();
+      if (s.database) await pullFromServer();
+      // First visit with nothing saved: show the pre-filled demo workspace instead of a blank app.
+      if (!useWorkspace.getState().dataset) await loadDemoWorkspace();
+      if (s.database) stopSync = startSync();
     });
     return () => {
       unsub();

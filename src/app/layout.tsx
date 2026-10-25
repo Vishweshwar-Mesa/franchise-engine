@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "@/components/app/providers";
 import { Nav } from "@/components/app/nav";
 import { ChatPanel } from "@/components/app/chat-panel";
+import { DemoBanner } from "@/components/app/demo-banner";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-fraunces", axes: ["opsz"] });
@@ -28,7 +29,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <div className="flex flex-col gap-4 p-4 md:flex-row">
             <Nav />
             <main className="min-w-0 flex-1 px-1 py-2 md:px-4">
-              <div className="mx-auto max-w-6xl">{children}</div>
+              <div className="mx-auto max-w-6xl">
+                <DemoBanner />
+                {children}
+              </div>
             </main>
           </div>
           <ChatPanel />
