@@ -9,7 +9,6 @@ import type {
 } from "@/lib/types";
 import type { Onboarding } from "@/lib/onboarding";
 import { newOnboarding } from "@/lib/onboarding";
-import type { DemoWorkspace } from "@/lib/demo-workspace";
 
 export interface Explanation {
   summary: string;
@@ -38,7 +37,7 @@ export interface WorkspaceData {
 
 interface WorkspaceActions {
   loadDataset: (d: Dataset) => void;
-  loadDemo: (d: DemoWorkspace) => void;
+  loadDemo: (d: Dataset) => void;
   setReviewer: (id: string, patch: Partial<ReviewerInput>, logDetail?: string) => void;
   setManualStatus: (id: string, status: Status | null, reason: string) => void;
   setAi: (results: Record<string, AiAssessment>) => void;
@@ -77,7 +76,11 @@ export const useWorkspace = create<WorkspaceData & WorkspaceActions>()(
             ...blank(get().sessionId), settings: get().settings, dataset: d,
             log: log("upload", `Loaded ${d.report.fileName}: ${d.applications.length} applicants, ${d.territories.length} territories.`),
           }),
-        loadDemo: (d) => set({ ...blank(get().sessionId), ...d, demo: true, updatedAt: now() }),
+        loadDemo: (d) =>
+          set({
+            ...blank(get().sessionId), settings: get().settings, dataset: d, demo: true,
+            log: log("upload", `Loaded ${d.report.fileName}: ${d.applications.length} applicants, ${d.territories.length} territories.`),
+          }),
         setReviewer: (id, patch, logDetail) =>
           set({
             reviewer: { ...get().reviewer, [id]: { ...get().reviewer[id], ...patch } },

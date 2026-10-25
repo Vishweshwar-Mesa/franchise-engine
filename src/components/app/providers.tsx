@@ -17,7 +17,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
     fetchServices().then(async (s) => {
       if (s.database) await pullFromServer();
       // First visit with nothing saved: show the pre-filled demo workspace instead of a blank app.
-      if (!useWorkspace.getState().dataset) await loadDemoWorkspace();
+      // The retired 10-applicant demo (demo-showcase.xlsx) is swapped for the current demo data.
+      const name = useWorkspace.getState().dataset?.report.fileName ?? "";
+      if (!useWorkspace.getState().dataset || name.startsWith("demo-showcase")) await loadDemoWorkspace();
       if (s.database) stopSync = startSync();
     });
     return () => {

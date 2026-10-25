@@ -50,27 +50,25 @@ export function UploadPanel({ onReport }: { onReport: (r: ValidationReport) => v
         />
       </label>
       <div className="flex flex-wrap gap-2">
+        <Button className="h-10 rounded-full px-5" disabled={busy} onClick={() => loadSample("/samples/template.xlsx", "template.xlsx (case sample)")}>Load sample data</Button>
         <Button
+          variant="outline"
           className="h-10 rounded-full px-5"
           disabled={busy}
           onClick={async () => {
-            if (hasData && !window.confirm("Replace the current data with the demo workspace?")) return;
+            if (hasData && !window.confirm("Replace the current data with the demo data?")) return;
             setBusy(true);
             await loadDemoWorkspace();
             setBusy(false);
           }}
         >
-          Load demo workspace (10 applicants, 2 in onboarding)
-        </Button>
-        <Button variant="outline" className="h-10 rounded-full px-5" disabled={busy} onClick={() => loadSample("/samples/template.xlsx", "template.xlsx (case sample)")}>Load sample data</Button>
-        <Button variant="outline" className="h-10 rounded-full px-5" disabled={busy} onClick={() => loadSample("/samples/demo-messy.xlsx", "demo-messy.xlsx (synthetic, 30 applicants)")}>
           Load demo data (30 synthetic applicants with traps)
         </Button>
       </div>
       <p className="text-xs text-muted-foreground">
         Required columns in the Applications sheet: Application ID, Applicant name, City, State, Pin code, Investment capacity (₹ lakh),
         Retail experience (years), Space available. Columns are found by name, so order does not matter. Applicants link to territories by pin code.
-        The sample is the case&apos;s template (one example row). The demo workspace and the 30-applicant demo file are made-up test data.
+        The sample is the case&apos;s template (one example row). The demo data is made up: 30 applicants with deliberate problems to show every check.
       </p>
     </div>
   );
