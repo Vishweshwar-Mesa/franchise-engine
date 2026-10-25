@@ -46,7 +46,7 @@ src/lib/server/supabase.ts         Service-role client or null when not configur
 src/lib/sync.ts                    Browser <-> Supabase mirror via /api/state (silent on failure)
 src/store/workspace.ts             Zustand store, persisted to localStorage, one per browser session id
 src/hooks/use-results.ts           Runs the engine over the store (memoised)
-src/app/api/*                      status, state, ai/assess, ai/explain, ai/chat, ai/email, upload, franchisee-account, email/send
+src/app/api/*                      status, state, ai/assess, ai/explain, ai/chat, ai/email, ai/research, upload, franchisee-account, email/send, area
 src/app/*/page.tsx                 Screens: / (upload), /results, /applicant/[id], /territories, /contested, /onboarding, /onboarding/[id], /franchisee/[id] (no-login preview), /settings, /activity
 src/components/app/*               Small presentational components (designer can restyle)
 src/components/ui/*                shadcn/ui (Base UI flavour)
@@ -102,6 +102,10 @@ Flow: Excel -> `parseWorkbook` (browser) -> store -> `runEngine` -> **ledger** -
 | Franchisee account = Supabase Auth admin createUser, no email sent; "Preview as franchisee" needs no login | Our choice | Judges never hit a wall |
 | Email: AI draft in applicant's language (English template fallback); real send only via Resend to REVIEWER_EMAIL, never to the applicant | Prompt | |
 | Paperwork files: private Supabase Storage bucket `paperwork`; without Supabase only the file name is kept | Our choice | |
+| Area snapshot: geocode pin (postal_code + country IN), accept only if an address component matches the city (old/new names, e.g. Bangalore/Bengaluru), then Places (New) searchNearby, radius 1500 m, categories schools/colleges/stores/clothing_store (competitors)/restaurants; max 20 per search shown as "20+"; restaurant ratings banded under 4.0 / 4.0-4.4 / 4.5+ | Our choice | Counts only; reference only, never scored |
+| Places cache per pin+city (Supabase `area_cache`, key `pin|city`; memory fallback); hard daily cap PLACES_DAILY_CAP (default 300 Google calls/day; each lookup = 6 calls); counter in Supabase `places_usage`, else per-server-instance memory | Our choice | Bounded cost, fails soft |
+| Area type is NOT pre-filled from the snapshot | Our choice | Any count-to-area-type rule would be invented |
+| People research: needs a consent tick, AI web search (OpenRouter web plugin), links labelled "possible match, unverified", kept only in the page (not stored, not in the ledger) | Prompt | Never feeds a decision |
 
 Go Colors facts allowed (from official filings/investor material): 802 EBOs at 31 Mar 2026; ~195 cities, 23 states/UTs; average EBO ~540 sq ft, newer 700+ sq ft; management: stores under ~400 sq ft can't display the full range, overlapping catchments/cannibalisation, shift from "availability of space" to "quality of location and lease"; stores above 700 sq ft grew faster in Q1 FY27. Franchise-enquiry form asks name, address, state, district, 6-digit pin, email, mobile, store location yes/no, optional carpet area, image. No published fee, royalty, deposit or onboarding steps.
 
@@ -123,6 +127,7 @@ Score: Space 40 / Money 20 / Experience 20 / Financial profile 20 (rescaled to 5
 | RESEND_API_KEY | Optional: send a test copy of the confirmation email |
 | REVIEWER_EMAIL | Optional: the only address emails are ever sent to |
 | EMAIL_FROM | Optional: sender (defaults to Resend's test sender) |
+| PLACES_DAILY_CAP | Optional: max Google calls per day (default 300) |
 
 ## 7. Run, test, build, deploy, roll back
 
@@ -137,6 +142,9 @@ Score: Space 40 / Money 20 / Experience 20 / Financial profile 20 (rescaled to 5
 
 - Supabase is not connected yet: sync, AI cache, uploads and franchisee accounts are untested against a real project; the app uses browser storage.
 - AI (OpenRouter) has not been tested with a real key/model; only the no-key fallback path is verified.
+- Google Places / Geocoding untested with a real key (only the no-key path verified); the Places type names and field masks follow Google's Places API (New) docs but have not been exercised.
+- People research untested with a real model; depends on the OpenRouter web plugin being available for the chosen model.
+- Without Supabase the Places daily cap is per server instance (weak on Vercel); connect Supabase for a true daily cap.
 - Email sending (Resend) untested: no key configured; preview-only path verified.
 - Vercel Git integration not connected (see section 7).
 - Without AI, business relevance is "not rated" (0 of 6 points) until the reviewer rates it, and explanations/training plans are English templates.
@@ -144,6 +152,8 @@ Score: Space 40 / Money 20 / Experience 20 / Financial profile 20 (rescaled to 5
 ## 9. Change Log (newest first)
 
 `YYYY-MM-DD | who/which tool | what changed | why | files touched | follow-ups`
+
+- 2026-10-25 | Claude Code (Opus 5.5) | Group 3: area snapshot (Google Geocoding + Places New, city check, cache, daily cap) and reviewer-only people research with consent; both on the applicant page, labelled reference only | Prompt section 7 | src/app/api/{area,ai/research}, src/components/app/{area-snapshot,people-research}.tsx, applicant page, .env.example | Set GOOGLE_MAPS_API_KEY and test with a real key
 
 - 2026-10-25 | Claude Code (Opus 5.5) | Group 2 onboarding: confirm -> Awaiting paperwork, paperwork gate with uploads, deal terms + payment schedule, franchisee account + no-login preview, email draft (AI/template, reviewer-only send), Gantt + checklist with Why lines; 7 onboarding tests; aria-labels on checkboxes | Prompt section 6 | src/lib/onboarding*.ts, src/components/app/{confirm-button,paperwork-gate,deal-terms-form,franchisee-account,email-draft,onboarding-gantt}.tsx, src/app/{onboarding,franchisee}, src/app/api/{upload,franchisee-account,ai/email,email/send}, .env.example | Configure Resend if real test sends are wanted
 

@@ -11,6 +11,8 @@ import { StatusBadge } from "@/components/app/status-badge";
 import { WhyButton } from "@/components/app/why-button";
 import { NoData } from "@/components/app/empty-state";
 import { ConfirmButton } from "@/components/app/confirm-button";
+import { AreaSnapshot } from "@/components/app/area-snapshot";
+import { PeopleResearch } from "@/components/app/people-research";
 import { columnLabel } from "@/lib/parse";
 
 export default function ApplicantPage() {
@@ -61,6 +63,8 @@ export default function ApplicantPage() {
           <FinancialProfileForm key={JSON.stringify([input.netWorth, input.portfolio, input.liabilities])} id={id} input={input} />
           <RelevanceCard entry={e} input={input} aiFlag={ai?.contradiction ?? null} />
           <div className="rounded-xl border p-4"><AreaTypeSelect id={id} value={input.areaType} /></div>
+          <AreaSnapshot pin={app.pin} city={app.city} />
+          <PeopleResearch name={app.name} city={app.city} business={app.business} />
           <div className="rounded-xl border p-4 text-sm">
             <h3 className="mb-2 font-semibold">Application (row {app.rowNumber})</h3>
             <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs">
