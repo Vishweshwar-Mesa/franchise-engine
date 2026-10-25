@@ -150,7 +150,8 @@ Score: Space 40 / Money 20 / Experience 20 / Financial profile 20 (rescaled to 5
 
 ## 8. Known gaps and unverified items
 
-- Neon: sync, AI cache, Places cache/cap and franchisee account records are untested against the real database until DATABASE_URL is set and migrations are applied.
+- Neon: created 2026-10-25 (`franchise-engine-db`), migration 001 applied; session sync verified end to end (30 applicants, ledger and action log saved and read back). AI cache, Places cache/cap and franchisee account records are untested against it.
+- The Vercel Neon integration also drops Neon "agent skills" into `.agents/`, `.claude/skills/` and `skills-lock.json`; they are git-ignored (third-party docs, not part of the app).
 - AI (OpenRouter) has not been tested with a real key/model; only the no-key fallback path is verified.
 - Google Places / Geocoding untested with a real key (only the no-key path verified); the Places type names and field masks follow Google's Places API (New) docs but have not been exercised.
 - People research untested with a real model; depends on the OpenRouter web plugin being available for the chosen model.
@@ -161,6 +162,8 @@ Score: Space 40 / Money 20 / Experience 20 / Financial profile 20 (rescaled to 5
 ## 9. Change Log (newest first)
 
 `YYYY-MM-DD | who/which tool | what changed | why | files touched | follow-ups`
+
+- 2026-10-25 | Claude Code (Opus 5.5) | Created Neon DB via Vercel integration and applied migration 001; fixed sync losing changes on quick reload/close (push on start, 1 s debounce, flush on pagehide/visibilitychange with keepalive); git-ignored Neon agent-skill files | Neon go-live | src/lib/sync.ts, .gitignore, CLAUDE.md | none
 
 - 2026-10-25 | Claude Code (Opus 5.5) | Replaced Supabase with Neon Postgres (`@neondatabase/serverless`, db/migrations + `npm run db:migrate`) and Vercel Blob for paperwork; franchisee account is now a Neon record; /api/status reports `database` and `files`; env vars DATABASE_URL + BLOB_READ_WRITE_TOKEN replace the three Supabase vars; Vercel Git integration now connected | User chose Neon | src/lib/server/db.ts (new), src/lib/server/supabase.ts (removed), supabase/ (removed), db/migrations/001_init.sql, scripts/migrate.ts, src/app/api/{state,upload,franchisee-account,area,status}, openrouter.ts, use-services, providers, sync, franchisee-account.tsx, .env.example, package.json | Create the Neon resource (accept Neon terms on Vercel), run migrations, optionally add a Blob store
 

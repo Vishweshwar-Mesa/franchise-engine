@@ -41,3 +41,8 @@ yarn-error.log*
 next-env.d.ts
 
 !.env.example
+
+# Neon agent skills installed by the Vercel integration (third-party docs, not part of the app)
+.agents/
+.claude/skills/
+skills-lock.json

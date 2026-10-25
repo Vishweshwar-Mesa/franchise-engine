@@ -21,22 +21,47 @@ export async function pullFromServer(): Promise<boolean> {
 }
 
 let timer: ReturnType<typeof setTimeout> | null = null;
+
+/**
+ * Pushes once now (so a reload never leaves the database behind), then 1 s after each change,
+ * and flushes when the page is hidden or closed.
+ */
 export function startSync(): () => void {
-  return useWorkspace.subscribe(() => {
+  if (useWorkspace.getState().dataset) push();
+  const unsub = useWorkspace.subscribe(() => {
     if (timer) clearTimeout(timer);
-    timer = setTimeout(push, 2500);
+    timer = setTimeout(() => {
+      timer = null;
+      push();
+    }, 1000);
   });
+  const flush = () => {
+    if (!timer) return;
+    clearTimeout(timer);
+    timer = null;
+    push(true);
+  };
+  const onHide = () => document.visibilityState === "hidden" && flush();
+  document.addEventListener("visibilitychange", onHide);
+  window.addEventListener("pagehide", flush);
+  return () => {
+    unsub();
+    document.removeEventListener("visibilitychange", onHide);
+    window.removeEventListener("pagehide", flush);
+  };
 }
 
-async function push() {
+async function push(keepalive = false) {
   const data = snapshot();
   let ledger: { app_id: string; status: string; entry: unknown }[] = [];
   if (data.dataset) {
     const r = runEngine({ dataset: data.dataset, settings: data.settings, reviewer: data.reviewer, ai: data.ai, contests: data.contests });
     ledger = Object.values(r.ledger).map((e) => ({ app_id: e.id, status: e.status, entry: e }));
   }
+  const body = JSON.stringify({ data, ledger });
   try {
-    await fetch("/api/state", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ data, ledger }) });
+    // keepalive requests are capped at 64 KB by browsers; larger flushes go as normal requests.
+    await fetch("/api/state", { method: "POST", headers: { "Content-Type": "application/json" }, body, keepalive: keepalive && body.length < 60000 });
   } catch {
     /* ignore */
   }
