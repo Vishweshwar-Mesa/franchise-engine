@@ -8,9 +8,9 @@
 - **Team:** Namratha Reddy, Vishweshwar.
 - **Deadline:** not set in this file yet (add it).
 - **Demo brand:** Go Colors (Go Fashion (India) Ltd), presented as *a scenario of Go Colors scaling through franchise partners*, never as published Go Colors franchise terms.
-- **Live URL:** see section 7 (filled in after the first deploy).
+- **Live URL:** https://franchise-engine-psi.vercel.app (public production alias; the `*-vishu-mesa.vercel.app` URLs are behind Vercel auth).
 - **GitHub:** https://github.com/Vishweshwar-Mesa/franchise-engine
-- **Vercel project:** `franchise-engine` (account `vishweshwar-mesa`).
+- **Vercel project:** `franchise-engine` (team `vishu-mesa`).
 - **Supabase project ref:** not connected yet. The app runs fully on browser storage until it is (see section 8).
 
 ## 2. Ground rules
@@ -118,16 +118,20 @@ Score: Space 40 / Money 20 / Experience 20 / Financial profile 20 (rescaled to 5
 - Deploy: push to `main` -> Vercel production. Other branches/PRs -> preview URLs. Never push code that fails `npm test` or `npm run build`.
 - Roll back: Vercel dashboard "Promote" an earlier deployment, or `git revert` and push. Release tags: `group-1`, `group-2`, `group-3`.
 - Database: apply `supabase/migrations/*.sql` in order (Supabase SQL editor or `supabase db push`).
-- Live URL: (set after first deploy)
+- Live URL: https://franchise-engine-psi.vercel.app
+- Vercel <-> GitHub auto-deploy: `vercel git connect` failed (the Vercel GitHub App is probably not installed on the GitHub account). Until it is, deploy with `vercel deploy --prod` after pushing.
 
 ## 8. Known gaps and unverified items
 
 - Supabase is not connected yet: sync, AI cache, uploads and franchisee accounts are untested against a real project; the app uses browser storage.
 - AI (OpenRouter) has not been tested with a real key/model; only the no-key fallback path is verified.
+- Vercel Git integration not connected (see section 7).
 - Without AI, business relevance is "not rated" (0 of 6 points) until the reviewer rates it, and explanations/training plans are English templates.
 
 ## 9. Change Log (newest first)
 
 `YYYY-MM-DD | who/which tool | what changed | why | files touched | follow-ups`
+
+- 2026-10-25 | Claude Code (Opus 5.5) | First production deploy (CLI); recorded live URL; noted Git auto-deploy not connected | Delivery chain | CLAUDE.md | Install Vercel GitHub App, then `vercel git connect`
 
 - 2026-10-25 | Claude Code (Opus 5.5) | Group 1 first build: Next.js 16 + Tailwind + shadcn/ui scaffold; Excel parser; deterministic engine with reason ledger; 28 unit tests; synthetic demo file; screens (upload, results, applicant detail, territories, contested pins, settings, activity, chat with what-if); AI routes with fallbacks; Supabase migration + sync (not yet connected); context file, pre-commit hook and CI check | Hackathon build, prompt sections 0-5, 8, 10 | all files | Connect Supabase via MCP; set OPENROUTER_* in Vercel; Group 2
