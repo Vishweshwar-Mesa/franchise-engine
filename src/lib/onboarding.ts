@@ -1,0 +1,160 @@
+// Group 2: onboarding model. Confirming a Good to go applicant only moves them to the
+// "Awaiting paperwork" stage. The timeline starts (Day 0) when the last gate item is done.
+// No durations, fees or legal facts are prefilled: the brand enters them.
+
+export interface GateItem {
+  done: boolean;
+  date: string | null;
+  file: { name: string; path: string | null; stored: boolean } | null;
+}
+
+export const DEAL_FIELDS = [
+  ["franchiseFee", "Franchise fee"],
+  ["securityDeposit", "Security deposit"],
+  ["royalty", "Royalty % and its basis"],
+  ["term", "Term and renewal"],
+  ["storePin", "Pin code of this store"],
+  ["inventoryValue", "Inventory value supplied by the company"],
+  ["franchiseeInvestment", "Franchisee investment"],
+  ["companyInvestment", "Company investment"],
+  ["marketingFund", "Marketing fund"],
+  ["trainingProvided", "Training provided"],
+  ["exitTerms", "Exit / transfer terms"],
+] as const;
+export type DealKey = (typeof DEAL_FIELDS)[number][0];
+
+export const PHASES = [
+  { key: "stock", label: "Stock arrival", why: "The store needs the inventory the company supplies before it can open." },
+  { key: "pos", label: "Inventory / POS software set-up", why: "Billing and stock tracking must work before the first sale." },
+  { key: "training", label: "Training", why: "The franchisee and staff learn the brand's range, display and systems before opening." },
+  { key: "softLaunch", label: "Soft launch", why: "A quiet first opening to fix problems before full operation." },
+] as const;
+export type PhaseKey = (typeof PHASES)[number]["key"];
+export const CHECKINS = [30, 60, 90, 180] as const;
+
+export interface PaymentRow {
+  label: string;
+  amount: string;
+  /** Days after Day 0, as typed by the reviewer. Blank = not set. */
+  dueDay: string;
+  done: boolean;
+}
+
+export interface Onboarding {
+  stage: "Awaiting paperwork" | "Onboarding";
+  confirmedAt: string;
+  gate: { agreement: GateItem; gst: GateItem; other: GateItem & { list: string } };
+  deal: Record<DealKey, string>;
+  payments: PaymentRow[];
+  phases: Record<PhaseKey, { duration: string; done: boolean }>;
+  softLaunchDate: string;
+  checkins: Record<string, boolean>;
+  account: { email: string; status: "created" | "not-created" | "error"; message: string } | null;
+  email: { draft: string; subject: string; language: string; by: "AI" | "Template"; sentTo?: string; sentAt?: string } | null;
+  startedAt: string | null;
+}
+
+const gateItem = (): GateItem => ({ done: false, date: null, file: null });
+
+export function newOnboarding(confirmedAt: string): Onboarding {
+  return {
+    stage: "Awaiting paperwork",
+    confirmedAt,
+    gate: { agreement: gateItem(), gst: gateItem(), other: { ...gateItem(), list: "" } },
+    deal: Object.fromEntries(DEAL_FIELDS.map(([k]) => [k, ""])) as Record<DealKey, string>,
+    payments: [],
+    phases: Object.fromEntries(PHASES.map((p) => [p.key, { duration: "", done: false }])) as Onboarding["phases"],
+    softLaunchDate: "",
+    checkins: {},
+    account: null,
+    email: null,
+    startedAt: null,
+  };
+}
+
+export function gateComplete(o: Onboarding): boolean {
+  const g = o.gate;
+  return [g.agreement, g.gst, g.other].every((i) => i.done && !!i.date);
+}
+
+/** Day 0 = the date the last gate item was completed. */
+export function dayZero(o: Onboarding): string | null {
+  if (!gateComplete(o)) return null;
+  const g = o.gate;
+  return [g.agreement.date!, g.gst.date!, g.other.date!].sort().at(-1)!;
+}
+
+export function addDays(isoDate: string, days: number): string {
+  const d = new Date(isoDate + "T00:00:00Z");
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+export function daysBetween(a: string, b: string): number {
+  return Math.round((new Date(b + "T00:00:00Z").getTime() - new Date(a + "T00:00:00Z").getTime()) / 86400000);
+}
+
+export interface TimelineTask {
+  id: string;
+  label: string;
+  why: string;
+  kind: "payment" | "phase" | "checkin";
+  /** Days from Day 0; null when it cannot be placed yet. */
+  start: number | null;
+  length: number | null;
+  missing: string | null;
+  done: boolean;
+}
+
+const posInt = (s: string) => (/^\d+$/.test(s.trim()) ? Number(s.trim()) : null);
+
+/** Builds the Gantt rows. Phases run in order; a blank duration stops placement of later phases. */
+export function buildTimeline(o: Onboarding, checkinBase: "softLaunch" | "day0"): { day0: string | null; tasks: TimelineTask[] } {
+  const day0 = dayZero(o);
+  const tasks: TimelineTask[] = [];
+  if (!day0) return { day0, tasks };
+
+  o.payments.forEach((p, i) => {
+    const due = posInt(p.dueDay);
+    tasks.push({
+      id: `pay-${i}`, kind: "payment", label: `Payment: ${p.label || "unnamed"}${p.amount ? ` (${p.amount})` : ""}`,
+      why: "Listed in the payment schedule entered in the deal terms.", start: due, length: due === null ? null : 1,
+      missing: due === null ? "set due day" : null, done: p.done,
+    });
+  });
+
+  let cursor: number | null = 0;
+  for (const ph of PHASES) {
+    const dur = posInt(o.phases[ph.key].duration);
+    const start = cursor;
+    tasks.push({
+      id: ph.key, kind: "phase", label: ph.label, why: ph.why, start, length: dur,
+      missing: dur === null ? "set duration" : null, done: o.phases[ph.key].done,
+    });
+    cursor = cursor !== null && dur !== null ? cursor + dur : null;
+  }
+
+  const base = checkinBase === "day0" ? 0 : o.softLaunchDate ? daysBetween(day0, o.softLaunchDate) : null;
+  for (const c of CHECKINS) {
+    tasks.push({
+      id: `checkin-${c}`, kind: "checkin", label: `Day ${c} check-in`,
+      why: "Check-ins review how the open store is doing, so they count from opening, not from paperwork.",
+      start: base === null ? null : base + c, length: base === null ? null : 1,
+      missing: base === null ? "set soft-launch date" : null, done: !!o.checkins[String(c)],
+    });
+  }
+  return { day0, tasks };
+}
+
+/** The soft-launch date implied by the phase durations, if every phase before it is set. */
+export function computedSoftLaunch(o: Onboarding): string | null {
+  const day0 = dayZero(o);
+  if (!day0) return null;
+  let days = 0;
+  for (const ph of PHASES) {
+    if (ph.key === "softLaunch") return addDays(day0, days);
+    const d = posInt(o.phases[ph.key].duration);
+    if (d === null) return null;
+    days += d;
+  }
+  return null;
+}

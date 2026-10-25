@@ -1,0 +1,26 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  test-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Context file check (warns when CLAUDE.md was not updated)
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            sh scripts/check-context.sh origin/${{ github.base_ref }}...HEAD
+          else
+            sh scripts/check-context.sh ${{ github.event.before }}..${{ github.sha }} || true
+          fi
