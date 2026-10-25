@@ -1,6 +1,6 @@
 "use client";
 // One workspace per browser (session id in localStorage), so judges don't overwrite each
-// other. Saved locally always; mirrored to Supabase when it is configured (see lib/sync.ts).
+// other. Saved locally always; mirrored to the database (Neon) when it is configured (see lib/sync.ts).
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { DEFAULT_SETTINGS, type Settings } from "@/lib/settings";

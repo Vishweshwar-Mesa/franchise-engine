@@ -1,10 +1,10 @@
 import type { NextRequest } from "next/server";
-import { supabaseAdmin } from "@/lib/server/supabase";
+import { db } from "@/lib/server/db";
 
 // Area snapshot for a pin code: counts of nearby places from Google Places (New).
 // Reference only, never used in decisions. Only counts the API returns are shown.
 // Geocode first and check it lands in the applicant's city, else "not available".
-// Cached per pin (Supabase, else memory); hard daily cap on Google calls; fails soft.
+// Cached per pin (Neon, else memory); hard daily cap on Google calls; fails soft.
 
 const RADIUS_M = 1500;
 const DAILY_CAP = Number(process.env.PLACES_DAILY_CAP) > 0 ? Number(process.env.PLACES_DAILY_CAP) : 300;
@@ -32,10 +32,15 @@ const memUsage = { day: "", calls: 0 };
 
 async function takeQuota(n: number): Promise<boolean> {
   const day = new Date().toISOString().slice(0, 10);
-  const db = supabaseAdmin();
-  if (db) {
-    const { data, error } = await db.rpc("bump_places_usage", { p_day: day, p_by: n });
-    if (!error && typeof data === "number") return data <= DAILY_CAP;
+  const sql = db();
+  if (sql) {
+    try {
+      const rows = await sql`insert into places_usage (day, calls) values (${day}, ${n})
+        on conflict (day) do update set calls = places_usage.calls + excluded.calls returning calls`;
+      return Number(rows[0].calls) <= DAILY_CAP;
+    } catch {
+      /* fall back to the in-memory counter */
+    }
   }
   if (memUsage.day !== day) Object.assign(memUsage, { day, calls: 0 });
   memUsage.calls += n;
@@ -52,12 +57,12 @@ export async function GET(req: NextRequest) {
   if (!/^\d{6}$/.test(pin)) return na("not available (pin is not 6 digits)");
 
   const cacheKey = `${pin}|${city.toLowerCase()}`;
-  const db = supabaseAdmin();
+  const sql = db();
   try {
     if (memCache.has(cacheKey)) return Response.json(memCache.get(cacheKey));
-    if (db) {
-      const { data } = await db.from("area_cache").select("data").eq("pin", cacheKey).maybeSingle();
-      if (data) return Response.json(data.data);
+    if (sql) {
+      const rows = await sql`select data from area_cache where key = ${cacheKey}`;
+      if (rows[0]) return Response.json(rows[0].data);
     }
     if (!(await takeQuota(CALLS_PER_LOOKUP))) return na("not available (daily lookup limit reached; try tomorrow)");
 
@@ -106,7 +111,7 @@ export async function GET(req: NextRequest) {
       note: "Counts of places returned by Google Places within the radius; each search returns at most 20, shown as 20+. Reference only, not used in decisions.",
     };
     memCache.set(cacheKey, out);
-    if (db) await db.from("area_cache").upsert({ pin: cacheKey, data: out });
+    if (sql) await sql`insert into area_cache (key, data) values (${cacheKey}, ${JSON.stringify(out)}::jsonb) on conflict (key) do update set data = excluded.data, fetched_at = now()`;
     return Response.json(out);
   } catch {
     return na("not available (lookup failed)");

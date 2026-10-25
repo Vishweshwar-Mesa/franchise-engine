@@ -1,5 +1,5 @@
 "use client";
-// Mirrors the browser workspace to Supabase (via /api/state) when Supabase is configured.
+// Mirrors the browser workspace to the database (Neon) (via /api/state) when the database (Neon) is configured.
 // Failures are silent: the browser copy always works on its own.
 import { runEngine } from "./engine";
 import { snapshot, useWorkspace, type WorkspaceData } from "@/store/workspace";

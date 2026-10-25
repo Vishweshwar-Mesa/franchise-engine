@@ -3,13 +3,14 @@ import { useEffect, useState } from "react";
 
 export interface Services {
   ai: boolean;
-  supabase: boolean;
+  database: boolean;
+  files: boolean;
   places: boolean;
   email: boolean;
 }
 
 let cached: Promise<Services> | null = null;
-const OFF: Services = { ai: false, supabase: false, places: false, email: false };
+const OFF: Services = { ai: false, database: false, files: false, places: false, email: false };
 
 export function fetchServices(): Promise<Services> {
   cached ??= fetch("/api/status")

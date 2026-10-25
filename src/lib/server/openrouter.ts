@@ -1,7 +1,7 @@
 import "server-only";
 import type { z } from "zod";
 import { createHash } from "crypto";
-import { supabaseAdmin } from "./supabase";
+import { db } from "./db";
 
 // OpenRouter (OpenAI-compatible). The model comes only from OPENROUTER_MODEL: no model is
 // hardcoded. Every failure returns null so callers fall back to ledger templates.
@@ -22,12 +22,12 @@ export async function aiJson<S extends z.ZodType>(
   opts: { maxTokens: number; timeoutMs?: number; webSearch?: boolean } = { maxTokens: 800 },
 ): Promise<z.infer<S> | null> {
   if (!aiConfigured()) return null;
-  const db = supabaseAdmin();
+  const sql = db();
   const cacheKey = createHash("sha256").update(JSON.stringify([process.env.OPENROUTER_MODEL, messages, opts.webSearch ?? false])).digest("hex");
   try {
-    if (db && !opts.webSearch) {
-      const { data } = await db.from("ai_cache").select("response").eq("key", cacheKey).maybeSingle();
-      const hit = data ? schema.safeParse(data.response) : null;
+    if (sql && !opts.webSearch) {
+      const rows = await sql`select response from ai_cache where key = ${cacheKey}`;
+      const hit = rows[0] ? schema.safeParse(rows[0].response) : null;
       if (hit?.success) return hit.data;
     }
     const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -54,7 +54,9 @@ export async function aiJson<S extends z.ZodType>(
     const jsonText = content.slice(content.indexOf("{"), content.lastIndexOf("}") + 1);
     const parsed = schema.safeParse(JSON.parse(jsonText));
     if (!parsed.success) return null;
-    if (db && !opts.webSearch) await db.from("ai_cache").upsert({ key: cacheKey, response: parsed.data });
+    if (sql && !opts.webSearch) {
+      await sql`insert into ai_cache (key, response) values (${cacheKey}, ${JSON.stringify(parsed.data)}::jsonb) on conflict (key) do update set response = excluded.response`;
+    }
     return parsed.data;
   } catch {
     return null;

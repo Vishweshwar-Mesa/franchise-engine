@@ -11,14 +11,14 @@
 - **Live URL:** https://franchise-engine-psi.vercel.app (public production alias; the `*-vishu-mesa.vercel.app` URLs are behind Vercel auth).
 - **GitHub:** https://github.com/Vishweshwar-Mesa/franchise-engine
 - **Vercel project:** `franchise-engine` (team `vishu-mesa`).
-- **Supabase project ref:** not connected yet. The app runs fully on browser storage until it is (see section 8).
+- **Database:** Neon Postgres (created via the Vercel Marketplace integration, resource `franchise-engine-db`; sets `DATABASE_URL`). Files: Vercel Blob (private). Supabase was dropped on 2026-10-25. The app runs fully on browser storage when `DATABASE_URL` is missing (see section 8).
 
 ## 2. Ground rules
 
 1. No invented facts, numbers, laws, fees or durations. Gaps stay blank and editable ("not set") or say "not available".
 2. General reference material only from official sources (government portals, the brand's own pages). Otherwise: "confirm with the brand's legal/CA team", no number.
 3. Only the Go Colors facts in section 4 may be used.
-4. The deployed link works with no login, no paywall, no rate limit. Every external dependency (AI, Supabase, Google, email) has a fallback; the page never shows an error.
+4. The deployed link works with no login, no paywall, no rate limit. Every external dependency (AI, Neon, Vercel Blob, Google, email) has a fallback; the page never shows an error.
 5. **AI never changes a check, a score or a status.** The engine always wins. AI output is Zod-validated and only rewrites ledger content, rates business relevance (reviewer can override), or flags possible contradictions (applied only if the reviewer confirms).
 6. Secrets are never committed. `.env.example` lists names only.
 7. Keep it simple; UI is plain shadcn/ui, logic stays out of components (a designer will restyle).
@@ -30,7 +30,8 @@ data/template.xlsx                 Judges' input format (Case1_Franchise_Test_Da
 public/samples/                    template.xlsx copy + demo-messy.xlsx (synthetic, 30 applicants with traps)
 scripts/make-demo-file.ts          Regenerates the demo file (npm run samples)
 scripts/check-context.sh           Warns when code changes without CLAUDE.md (pre-commit hook + CI)
-supabase/migrations/               Versioned SQL schema (never edit only in the dashboard)
+db/migrations/                     Versioned SQL schema for Neon; apply with `npm run db:migrate` (never edit only in the dashboard)
+scripts/migrate.ts                 Applies db/migrations/*.sql once each (table schema_migrations)
 src/lib/types.ts                   Data types (Application, Territory, Store, ReviewerInput, ...)
 src/lib/parse.ts                   Excel parser: headers by name, tolerant, never throws; validation report
 src/lib/settings.ts                Scoring defaults, rubric profiles, zone mapping, profile picker
@@ -41,9 +42,9 @@ src/lib/whatif.ts                  What-if: re-run engine on a copy, before/afte
 src/lib/export.ts                  CSV/XLSX export
 src/lib/onboarding.ts              Group 2 model: paperwork gate, deal terms, timeline (Gantt) builder
 src/lib/ai-schemas.ts              Zod schemas for every AI response
-src/lib/server/openrouter.ts       OpenRouter call; returns null on any failure; caches in Supabase ai_cache
-src/lib/server/supabase.ts         Service-role client or null when not configured
-src/lib/sync.ts                    Browser <-> Supabase mirror via /api/state (silent on failure)
+src/lib/server/openrouter.ts       OpenRouter call; returns null on any failure; caches in Neon ai_cache
+src/lib/server/db.ts               Neon HTTP client (`@neondatabase/serverless`) or null when DATABASE_URL is missing
+src/lib/sync.ts                    Browser <-> Neon mirror via /api/state (silent on failure)
 src/store/workspace.ts             Zustand store, persisted to localStorage, one per browser session id
 src/hooks/use-results.ts           Runs the engine over the store (memoised)
 src/app/api/*                      status, state, ai/assess, ai/explain, ai/chat, ai/email, ai/research, upload, franchisee-account, email/send, area
@@ -52,7 +53,7 @@ src/components/app/*               Small presentational components (designer can
 src/components/ui/*                shadcn/ui (Base UI flavour)
 ```
 
-Flow: Excel -> `parseWorkbook` (browser) -> store -> `runEngine` -> **ledger** -> every screen, the explanations, the export and the chat read only the ledger. AI routes receive ledger data only. Supabase mirrors the store when configured.
+Flow: Excel -> `parseWorkbook` (browser) -> store -> `runEngine` -> **ledger** -> every screen, the explanations, the export and the chat read only the ledger. AI routes receive ledger data only. Neon mirrors the store when configured.
 
 `AGENTS.md` starts with a pointer to this file; below it Next.js keeps its own managed block (re-added by `next dev`).
 
@@ -97,7 +98,7 @@ Flow: Excel -> `parseWorkbook` (browser) -> store -> `runEngine` -> **ledger** -
 | Manual status change: reason required, logged; takes the applicant out of the automatic pool; a manual Good to go takes a slot first | Our choice | Reviewer can change any status |
 | Zones = MHA Zonal Councils | Our choice | Official grouping; only used to match profiles |
 | Profile specificity: country 1, zone 2, state 4, city 8, area type 16; ties -> earlier profile | Our choice | "Most specific wins" |
-| Per-browser session id, data in localStorage, mirrored to Supabase when configured | Our choice | No login; judges don't overwrite each other |
+| Per-browser session id, data in localStorage, mirrored to Neon when configured | Our choice | No login; judges don't overwrite each other |
 | AI assessment runs once per loaded file in the background, max 100 applicants, 25 per call | Our choice | Bounded cost, never blocks the table |
 | Explanations: template shown at once; AI rewrite (applicant's language) cached per ledger-entry hash | Our choice | Works without AI; AI only rewrites |
 | Chat: local what-if parser first (no AI needed), then AI, then ledger template answers | Our choice | Always works |
@@ -109,11 +110,11 @@ Flow: Excel -> `parseWorkbook` (browser) -> store -> `runEngine` -> **ledger** -
 | Deal terms, payment schedule, phase durations all blank; blank duration shows "set duration" and stops placement of later phases | Our choice | No official durations exist |
 | Phases in order: stock arrival, POS set-up, training, soft launch; payments placed by "due days after Day 0" | Our choice | Prompt lists them; order is ours |
 | Check-ins count from soft-launch date by default (Settings can switch to Day 0) | Our choice | "Check-ins review how the open store is doing, so they count from opening, not from paperwork." |
-| Franchisee account = Supabase Auth admin createUser, no email sent; "Preview as franchisee" needs no login | Our choice | Judges never hit a wall |
+| Franchisee account = a record in Neon `franchisee_accounts` (no login system, no email sent); "Preview as franchisee" needs no login | Our choice | Judges never hit a wall; Neon has no built-in auth (Neon Auth is an option later) |
 | Email: AI draft in applicant's language (English template fallback); real send only via Resend to REVIEWER_EMAIL, never to the applicant | Prompt | |
-| Paperwork files: private Supabase Storage bucket `paperwork`; without Supabase only the file name is kept | Our choice | |
+| Paperwork files: private Vercel Blob under `paperwork/<session>/<app>/`; without BLOB_READ_WRITE_TOKEN only the file name is kept | Our choice | Neon is database-only |
 | Area snapshot: geocode pin (postal_code + country IN), accept only if an address component matches the city (old/new names, e.g. Bangalore/Bengaluru), then Places (New) searchNearby, radius 1500 m, categories schools/colleges/stores/clothing_store (competitors)/restaurants; max 20 per search shown as "20+"; restaurant ratings banded under 4.0 / 4.0-4.4 / 4.5+ | Our choice | Counts only; reference only, never scored |
-| Places cache per pin+city (Supabase `area_cache`, key `pin|city`; memory fallback); hard daily cap PLACES_DAILY_CAP (default 300 Google calls/day; each lookup = 6 calls); counter in Supabase `places_usage`, else per-server-instance memory | Our choice | Bounded cost, fails soft |
+| Places cache per pin+city (Neon `area_cache`, key `pin|city`; memory fallback); hard daily cap PLACES_DAILY_CAP (default 300 Google calls/day; each lookup = 6 calls); counter in Neon `places_usage` (atomic upsert), else per-server-instance memory | Our choice | Bounded cost, fails soft |
 | Area type is NOT pre-filled from the snapshot | Our choice | Any count-to-area-type rule would be invented |
 | People research: needs a consent tick, AI web search (OpenRouter web plugin), links labelled "possible match, unverified", kept only in the page (not stored, not in the ledger) | Prompt | Never feeds a decision |
 
@@ -128,9 +129,8 @@ Score: Space 40 / Money 20 / Experience 20 / Financial profile 20 (rescaled to 5
 
 | Name | Purpose |
 |---|---|
-| NEXT_PUBLIC_SUPABASE_URL | Supabase project URL |
-| NEXT_PUBLIC_SUPABASE_ANON_KEY | Supabase anon key (reserved; tables are service-role only) |
-| SUPABASE_SERVICE_ROLE_KEY | Server-side DB/Storage/Auth admin |
+| DATABASE_URL | Neon Postgres connection string (set by the Vercel Neon integration) |
+| BLOB_READ_WRITE_TOKEN | Vercel Blob store for paperwork uploads (optional) |
 | OPENROUTER_API_KEY | AI calls |
 | OPENROUTER_MODEL | AI model id (no default in code; AI is off without it) |
 | GOOGLE_MAPS_API_KEY | Group 3 area snapshot |
@@ -144,24 +144,25 @@ Score: Space 40 / Money 20 / Experience 20 / Financial profile 20 (rescaled to 5
 - `npm install` (also sets the git hook path `.githooks`), `npm run dev`, `npm test`, `npm run build`, `npm run samples` (regenerate demo file).
 - Deploy: push to `main` -> Vercel production. Other branches/PRs -> preview URLs. Never push code that fails `npm test` or `npm run build`.
 - Roll back: Vercel dashboard "Promote" an earlier deployment, or `git revert` and push. Release tags: `group-1`, `group-2`, `group-3`.
-- Database: apply `supabase/migrations/*.sql` in order (Supabase SQL editor or `supabase db push`).
+- Database: `vercel env pull .env.local` then `npm run db:migrate` (applies db/migrations/*.sql in order, once each).
 - Live URL: https://franchise-engine-psi.vercel.app
-- Vercel <-> GitHub auto-deploy: `vercel git connect` failed (the Vercel GitHub App is probably not installed on the GitHub account). Until it is, deploy with `vercel deploy --prod` after pushing.
+- Vercel <-> GitHub auto-deploy: connected (2026-10-25). Every push to `main` deploys to production; other branches get preview URLs.
 
 ## 8. Known gaps and unverified items
 
-- Supabase is not connected yet: sync, AI cache, uploads and franchisee accounts are untested against a real project; the app uses browser storage.
+- Neon: sync, AI cache, Places cache/cap and franchisee account records are untested against the real database until DATABASE_URL is set and migrations are applied.
 - AI (OpenRouter) has not been tested with a real key/model; only the no-key fallback path is verified.
 - Google Places / Geocoding untested with a real key (only the no-key path verified); the Places type names and field masks follow Google's Places API (New) docs but have not been exercised.
 - People research untested with a real model; depends on the OpenRouter web plugin being available for the chosen model.
-- Without Supabase the Places daily cap is per server instance (weak on Vercel); connect Supabase for a true daily cap.
+- Without DATABASE_URL the Places daily cap is per server instance (weak on Vercel).
 - Email sending (Resend) untested: no key configured; preview-only path verified.
-- Vercel Git integration not connected (see section 7).
 - Without AI, business relevance is "not rated" (0 of 6 points) until the reviewer rates it, and explanations/training plans are English templates.
 
 ## 9. Change Log (newest first)
 
 `YYYY-MM-DD | who/which tool | what changed | why | files touched | follow-ups`
+
+- 2026-10-25 | Claude Code (Opus 5.5) | Replaced Supabase with Neon Postgres (`@neondatabase/serverless`, db/migrations + `npm run db:migrate`) and Vercel Blob for paperwork; franchisee account is now a Neon record; /api/status reports `database` and `files`; env vars DATABASE_URL + BLOB_READ_WRITE_TOKEN replace the three Supabase vars; Vercel Git integration now connected | User chose Neon | src/lib/server/db.ts (new), src/lib/server/supabase.ts (removed), supabase/ (removed), db/migrations/001_init.sql, scripts/migrate.ts, src/app/api/{state,upload,franchisee-account,area,status}, openrouter.ts, use-services, providers, sync, franchisee-account.tsx, .env.example, package.json | Create the Neon resource (accept Neon terms on Vercel), run migrations, optionally add a Blob store
 
 - 2026-10-25 | Claude Code (Opus 5.5) | Redesign to V2 Warm Editorial: dark default + light toggle, Go Colors magenta, Fraunces/Inter/JetBrains Mono, floating sidebar, tinted status tiles, applicant cards with inline reason (table view kept), factor bars on applicant page, GSAP count-up and stagger, colour tokens replace hardcoded Tailwind colours | User found the UI bland; picked V2 of 4 directions | src/app/globals.css, src/app/layout.tsx, src/app/**/page.tsx, src/components/app/* (new: theme-toggle, motion, page-header, applicant-list), package.json (gsap) | none
 

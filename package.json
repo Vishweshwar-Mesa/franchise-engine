@@ -9,11 +9,13 @@
     "lint": "eslint",
     "prepare": "git config core.hooksPath .githooks || true",
     "test": "vitest run",
-    "samples": "tsx scripts/make-demo-file.ts"
+    "samples": "tsx scripts/make-demo-file.ts",
+    "db:migrate": "tsx scripts/migrate.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
-    "@supabase/supabase-js": "^2.118.0",
+    "@neondatabase/serverless": "^1.2.0",
+    "@vercel/blob": "^2.8.2",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.5.0",
     "gsap": "^3.15.0",

@@ -9,11 +9,12 @@ import { useWorkspace } from "@/store/workspace";
 export function FranchiseeAccount({ id, name, o }: { id: string; name: string; o: Onboarding }) {
   const [email, setEmail] = useState(o.account?.email ?? "");
   const [busy, setBusy] = useState(false);
+  const session = useWorkspace((s) => s.sessionId);
   async function create() {
     setBusy(true);
     let res = { status: "error" as "created" | "not-created" | "error", message: "Not created: the server did not respond." };
     try {
-      res = await (await fetch("/api/franchisee-account", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, appId: id, name }) })).json();
+      res = await (await fetch("/api/franchisee-account", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, appId: id, name, session }) })).json();
     } catch {
       /* keep default */
     }
@@ -29,7 +30,7 @@ export function FranchiseeAccount({ id, name, o }: { id: string; name: string; o
         <a href={`/franchisee/${encodeURIComponent(id)}`} target="_blank" rel="noreferrer"><Button size="sm">Preview as franchisee</Button></a>
       </div>
       {o.account && <p className="text-xs">{o.account.message}</p>}
-      <p className="text-xs text-muted-foreground">Accounts are created in Supabase Auth without sending any email. The preview opens the franchisee view with no login.</p>
+      <p className="text-xs text-muted-foreground">The account is recorded in the database; no email is sent and there is no login system. The preview opens the franchisee view with no login.</p>
     </div>
   );
 }
