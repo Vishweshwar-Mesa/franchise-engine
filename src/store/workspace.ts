@@ -37,7 +37,7 @@ export interface WorkspaceData {
 
 interface WorkspaceActions {
   loadDataset: (d: Dataset) => void;
-  loadDemo: (d: Dataset) => void;
+  loadDemo: (d: Dataset, extra?: Partial<WorkspaceData>) => void;
   setReviewer: (id: string, patch: Partial<ReviewerInput>, logDetail?: string) => void;
   setManualStatus: (id: string, status: Status | null, reason: string) => void;
   setAi: (results: Record<string, AiAssessment>) => void;
@@ -76,10 +76,10 @@ export const useWorkspace = create<WorkspaceData & WorkspaceActions>()(
             ...blank(get().sessionId), settings: get().settings, dataset: d,
             log: log("upload", `Loaded ${d.report.fileName}: ${d.applications.length} applicants, ${d.territories.length} territories.`),
           }),
-        loadDemo: (d) =>
+        loadDemo: (d, extra = {}) =>
           set({
-            ...blank(get().sessionId), settings: get().settings, dataset: d, demo: true,
-            log: log("upload", `Loaded ${d.report.fileName}: ${d.applications.length} applicants, ${d.territories.length} territories.`),
+            ...blank(get().sessionId), settings: get().settings, dataset: d, demo: true, ...extra,
+            log: [...(extra.log ?? []), { at: now(), kind: "upload", detail: `Loaded ${d.report.fileName}: ${d.applications.length} applicants, ${d.territories.length} territories.` }],
           }),
         setReviewer: (id, patch, logDetail) =>
           set({

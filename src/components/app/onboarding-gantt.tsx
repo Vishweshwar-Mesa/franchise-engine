@@ -3,7 +3,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { addDays, buildTimeline, computedSoftLaunch, PHASES, type Onboarding, type TimelineTask } from "@/lib/onboarding";
+import { addDays, buildTimeline, computedSoftLaunch, PHASES, taskDonePatch, type Onboarding, type TimelineTask } from "@/lib/onboarding";
 import { useWorkspace } from "@/store/workspace";
 import { SourceTag } from "./source-tag";
 import { cn } from "@/lib/utils";
@@ -26,14 +26,7 @@ export function OnboardingGantt({ id, o, readOnly = false }: { id: string; o: On
   const placed = tasks.filter((t) => t.start !== null);
   const span = Math.max(30, ...placed.map((t) => (t.start ?? 0) + (t.length ?? 1)));
   const suggested = computedSoftLaunch(o);
-  const toggle = (t: TimelineTask, v: boolean) => {
-    if (t.kind === "phase") set({ phases: { ...o.phases, [t.id]: { ...o.phases[t.id as keyof Onboarding["phases"]], done: v } } }, `${t.label}: ${v ? "done" : "not done"}.`);
-    else if (t.kind === "checkin") set({ checkins: { ...o.checkins, [t.id.replace("checkin-", "")]: v } }, `${t.label}: ${v ? "done" : "not done"}.`);
-    else {
-      const i = Number(t.id.replace("pay-", ""));
-      set({ payments: o.payments.map((p, j) => (j === i ? { ...p, done: v } : p)) }, `${t.label}: ${v ? "paid" : "not paid"}.`);
-    }
-  };
+  const toggle = (t: TimelineTask, v: boolean) => set(taskDonePatch(o, t, v), `${t.label}: ${v ? "done" : "not done"}.`);
 
   return (
     <div className="space-y-3 rounded-[20px] border bg-card p-5 text-sm">

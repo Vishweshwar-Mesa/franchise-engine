@@ -115,7 +115,8 @@ function Results() {
           </div>
         </div>
         <p className="text-xs text-muted-foreground">
-          Dots: Space · Money · Experience · Financial profile. Green = top third, amber = middle, red = bottom third; relative factors compare with the other applicants in this file; hollow = not provided.
+          The four dots on each card are the score factors, in order Space · Money · Experience · Financial profile: green = strong, amber = middle, red = weak, hollow = not provided.
+          Money, experience and finances are compared with the other applicants in this file. <a href="/guide#scores" className="text-brand hover:underline">More on scores</a>
         </p>
         {view === "cards" ? <ApplicantList rows={rows} showTotal={showTotal} /> : <div className="overflow-hidden rounded-[20px] border bg-card"><ApplicantsTable rows={rows} showTotal={showTotal} /></div>}
       </section>

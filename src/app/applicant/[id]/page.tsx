@@ -46,6 +46,9 @@ export default function ApplicantPage() {
           <WhyButton entry={e} />
         </div>
         <p className="max-w-3xl text-[15px] text-muted-foreground">{e.reason}</p>
+        <p className="max-w-3xl text-xs text-muted-foreground">
+          Score {e.total}/100 from four factors. Bar colour is the traffic light: green = strong, amber = middle, red = weak. The score only orders applicants within a territory; the checks decide holds. <a href="/guide#scores" className="text-brand hover:underline">How scoring works</a>
+        </p>
         <div className="grid max-w-3xl gap-3 sm:grid-cols-2">
           {e.factors.map((f) => <FactorBar key={f.key} f={f} />)}
         </div>
@@ -60,7 +63,7 @@ export default function ApplicantPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="space-y-4">
           <ExplanationCard entry={e} languages={dataset.languages} />
-          <div className="rounded-[20px] border bg-card p-5"><h3 className="mb-2 text-base font-semibold">Reason ledger</h3><LedgerView entry={e} /></div>
+          <div className="rounded-[20px] border bg-card p-5"><h3 className="text-base font-semibold">Reason ledger</h3><p className="mb-3 text-xs text-muted-foreground">Everything the engine checked for this applicant, in order, with the result and whether it is a case rule (fixed) or our choice (editable in Settings). The status above comes only from this.</p><LedgerView entry={e} /></div>
         </div>
         <div className="space-y-4">
           <ConfirmButton entry={e} />

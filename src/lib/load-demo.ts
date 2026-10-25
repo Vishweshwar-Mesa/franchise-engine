@@ -1,5 +1,6 @@
 "use client";
 import { parseWorkbook } from "./parse";
+import { demoOnboarding } from "./demo-onboarding";
 import { useWorkspace } from "@/store/workspace";
 
 /**
@@ -13,7 +14,7 @@ export async function loadDemoWorkspace(auto = false): Promise<boolean> {
     const d = parseWorkbook(await res.arrayBuffer(), "demo-messy.xlsx (synthetic, 30 applicants)");
     if (d.report.fatal) return false;
     if (auto && useWorkspace.getState().dataset !== before) return false;
-    useWorkspace.getState().loadDemo(d);
+    useWorkspace.getState().loadDemo(d, demoOnboarding());
     return true;
   } catch {
     return false;

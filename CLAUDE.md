@@ -28,7 +28,10 @@
 ```
 data/template.xlsx                 Judges' input format (Case1_Franchise_Test_Data_Format.xlsx)
 public/samples/                    template.xlsx copy + demo-messy.xlsx (synthetic, 30 applicants with traps)
-src/lib/load-demo.ts               Loads demo-messy.xlsx as demo data; Providers auto-loads it on a first visit with no saved data
+src/lib/load-demo.ts               Loads demo-messy.xlsx as demo data (+ demo onboarding); Providers auto-loads it on a first visit with no saved data
+src/lib/demo-onboarding.ts         3 demo onboarding records (APP-025, APP-030 running; APP-005 awaiting paperwork); money terms blank
+src/app/guide/page.tsx             Guide: what the site does, how decisions are made, where to find what, statuses, scores, onboarding, glossary
+src/components/app/onboarding-overview.tsx  Combined Gantt across franchisees + task list (overdue / next 14 days / later / paperwork / needs a date)
 scripts/make-demo-file.ts          Regenerates the demo file (npm run samples)
 scripts/check-context.sh           Warns when code changes without CLAUDE.md (pre-commit hook + CI)
 db/migrations/                     Versioned SQL schema for Neon; apply with `npm run db:migrate` (never edit only in the dashboard)
@@ -164,6 +167,8 @@ Score: Space 40 / Money 20 / Experience 20 / Financial profile 20 (rescaled to 5
 ## 9. Change Log (newest first)
 
 `YYYY-MM-DD | who/which tool | what changed | why | files touched | follow-ups`
+
+- 2026-10-26 | Claude Code (Opus 5.5) | Onboarding page is now a combined Gantt + task list; 3 demo onboarding cases added to the demo data (also added to browsers that already had the demo); new Guide page (how it works, where to find what, statuses, scores, glossary) linked in the nav; plain-language explanations on Settings (traffic lights, launch timing, checks, profiles), Today, Applicants, applicant page and Territories; taskDonePatch helper shared by both Gantts | User: onboarding should look like a Gantt/task manager, needs demo cases, and every term must be explained on the page | src/lib/demo-onboarding.ts (+test), load-demo.ts, providers.tsx, store, onboarding.ts, onboarding-overview.tsx, onboarding/page.tsx, onboarding-gantt.tsx, guide/page.tsx, nav.tsx, settings/page.tsx, page.tsx, results/page.tsx, applicant/[id]/page.tsx, territories/page.tsx | none
 
 - 2026-10-25 | Claude Code (Opus 5.5) | Redesign to V5 Bento Command Center: neutral dark/light tokens, Geist fonts, top nav, new Today bento home (Upload moved to /upload), neutral status tiles, `?status=` filter on Applicants, pointer-following tile glow; removed serif styles | User picked V5 from round 2 | globals.css, layout.tsx, nav.tsx, bento.tsx (new), page.tsx (Today), upload/page.tsx (moved), results/page.tsx, status-counts.tsx, page-header.tsx, many components (style sweep) | none
 

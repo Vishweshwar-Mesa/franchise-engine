@@ -61,7 +61,10 @@ export default function TodayPage() {
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-wrap items-baseline justify-between gap-2 pt-2">
-        <h1 className="text-[26px] font-semibold tracking-tight">Today</h1>
+        <div className="flex flex-col gap-1">
+          <h1 className="text-[26px] font-semibold tracking-tight">Today</h1>
+          <p className="text-sm text-muted-foreground">What needs you now. Click any tile for the details. New here? <Link href="/guide" className="text-brand hover:underline">Read the Guide</Link>.</p>
+        </div>
         <span className="font-mono text-xs text-muted-foreground">
           {fileName} · {total} applicants · {r.territories.length} territories
         </span>

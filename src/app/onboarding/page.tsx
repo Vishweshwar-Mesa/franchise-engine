@@ -2,35 +2,48 @@
 import Link from "next/link";
 import { useWorkspace } from "@/store/workspace";
 import { useResults } from "@/hooks/use-results";
-import { dayZero, gateComplete } from "@/lib/onboarding";
-import { StatusBadge } from "@/components/app/status-badge";
+import { gateComplete } from "@/lib/onboarding";
+import { PageHeader, Panel } from "@/components/app/page-header";
+import { PortfolioGantt, TaskList, type OnbRow } from "@/components/app/onboarding-overview";
+import { CountUp } from "@/components/app/motion";
 
-export default function OnboardingListPage() {
+export default function OnboardingPage() {
   const onboarding = useWorkspace((s) => s.onboarding);
+  const checkinBase = useWorkspace((s) => s.settings.checkinBase);
   const r = useResults();
-  const ids = Object.keys(onboarding);
+  const rows: OnbRow[] = Object.entries(onboarding).map(([id, o]) => ({ id, name: r?.ledger[id]?.name || id, o }));
+  const awaiting = rows.filter((x) => !gateComplete(x.o)).length;
+  const running = rows.filter((x) => x.o.stage === "Onboarding").length;
+  const opened = rows.filter((x) => x.o.phases.softLaunch.done).length;
+
   return (
-    <div className="space-y-3">
-      <h1 className="text-[26px] font-semibold tracking-tight md:text-3xl">Onboarding</h1>
-      <p className="text-sm text-muted-foreground">Applicants appear here after a reviewer confirms a Good to go recommendation (applicant page → Confirm).</p>
-      {ids.length === 0 && <p className="text-sm">No one confirmed yet.</p>}
-      <ul className="space-y-2">
-        {ids.map((id) => {
-          const o = onboarding[id];
-          const e = r?.ledger[id];
-          const g = o.gate;
-          const done = [g.agreement, g.gst, g.other].filter((i) => i.done && i.date).length;
-          return (
-            <li key={id} className="flex flex-wrap items-center gap-3 rounded-2xl border bg-card p-4 text-sm">
-              <Link href={`/onboarding/${encodeURIComponent(id)}`} className="font-mono underline">{id}</Link>
-              <span>{e?.name}</span>
-              <b>{o.stage}</b>
-              <span className="text-xs">Paperwork {done}/3{gateComplete(o) ? `, Day 0 = ${dayZero(o)}` : ""}</span>
-              {e && e.status !== "Good to go" && <span className="flex items-center gap-1 text-xs text-[var(--tone-info)]">Engine status is now <StatusBadge status={e.status} /></span>}
-            </li>
-          );
-        })}
-      </ul>
+    <div className="flex flex-col gap-6">
+      <PageHeader
+        title="Onboarding"
+        sub="After you confirm a Good to go applicant, they wait here for paperwork (agreement, GST, other registrations). Once all three are ticked, their timeline starts: stock arrival, POS set-up, training, soft launch, then check-ins at day 30, 60, 90 and 180."
+      />
+      <div className="grid grid-cols-3 gap-3">
+        {[[awaiting, "Awaiting paperwork"], [running, "Timeline running"], [opened, "Soft-launched"]].map(([n, l]) => (
+          <div key={l as string} className="tile rounded-2xl border bg-card p-4">
+            <CountUp value={n as number} className="text-3xl font-bold" />
+            <p className="text-[13px] text-muted-foreground">{l}</p>
+          </div>
+        ))}
+      </div>
+      {rows.length === 0 ? (
+        <Panel title="No one in onboarding yet">
+          <p>Open a Good to go applicant from <Link href="/results?status=Good%20to%20go" className="text-brand hover:underline">Applicants</Link> and press Confirm.</p>
+        </Panel>
+      ) : (
+        <>
+          <Panel title="Timeline (all franchisees)">
+            <PortfolioGantt rows={rows} checkinBase={checkinBase} />
+          </Panel>
+          <Panel title="Tasks" aside={<span className="text-xs text-muted-foreground">Tick to mark done. Each task says why it exists.</span>}>
+            <TaskList rows={rows} checkinBase={checkinBase} />
+          </Panel>
+        </>
+      )}
     </div>
   );
 }

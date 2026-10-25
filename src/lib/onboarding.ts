@@ -182,3 +182,17 @@ export function templateEmail(name: string, appId: string, o: Onboarding): { sub
     ].join("\n"),
   };
 }
+
+/** The change to an onboarding record when a timeline task is ticked or unticked. */
+export function taskDonePatch(o: Onboarding, task: TimelineTask, done: boolean): Partial<Onboarding> {
+  if (task.kind === "phase") return { phases: { ...o.phases, [task.id]: { ...o.phases[task.id as PhaseKey], done } } };
+  if (task.kind === "checkin") return { checkins: { ...o.checkins, [task.id.replace("checkin-", "")]: done } };
+  const i = Number(task.id.replace("pay-", ""));
+  return { payments: o.payments.map((p, j) => (j === i ? { ...p, done } : p)) };
+}
+
+export const GATE_LABELS: Record<keyof Onboarding["gate"], string> = {
+  agreement: "Franchise agreement signed",
+  gst: "GST registration done",
+  other: "Other legal registrations done",
+};

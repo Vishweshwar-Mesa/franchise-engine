@@ -14,6 +14,7 @@ const LINKS = [
   ["/onboarding", "Onboarding"],
   ["/settings", "Settings"],
   ["/activity", "Activity"],
+  ["/guide", "Guide"],
 ] as const;
 
 /** Top navigation bar (V5 Bento Command Center). Wraps on narrow screens. */
