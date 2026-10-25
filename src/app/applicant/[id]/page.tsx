@@ -10,6 +10,7 @@ import { AreaTypeSelect, FinancialProfileForm, RelevanceCard } from "@/component
 import { StatusBadge } from "@/components/app/status-badge";
 import { WhyButton } from "@/components/app/why-button";
 import { NoData } from "@/components/app/empty-state";
+import { ConfirmButton } from "@/components/app/confirm-button";
 import { columnLabel } from "@/lib/parse";
 
 export default function ApplicantPage() {
@@ -55,6 +56,7 @@ export default function ApplicantPage() {
           <div className="rounded-xl border p-4"><h3 className="mb-2 font-semibold">Reason ledger</h3><LedgerView entry={e} /></div>
         </div>
         <div className="space-y-4">
+          <ConfirmButton entry={e} />
           <ManualStatusForm key={e.manual?.at ?? "none"} entry={e} />
           <FinancialProfileForm key={JSON.stringify([input.netWorth, input.portfolio, input.liabilities])} id={id} input={input} />
           <RelevanceCard entry={e} input={input} aiFlag={ai?.contradiction ?? null} />

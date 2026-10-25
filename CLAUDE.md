@@ -46,8 +46,8 @@ src/lib/server/supabase.ts         Service-role client or null when not configur
 src/lib/sync.ts                    Browser <-> Supabase mirror via /api/state (silent on failure)
 src/store/workspace.ts             Zustand store, persisted to localStorage, one per browser session id
 src/hooks/use-results.ts           Runs the engine over the store (memoised)
-src/app/api/*                      status, state, ai/assess, ai/explain, ai/chat
-src/app/*/page.tsx                 Screens: / (upload), /results, /applicant/[id], /territories, /contested, /settings, /activity
+src/app/api/*                      status, state, ai/assess, ai/explain, ai/chat, ai/email, upload, franchisee-account, email/send
+src/app/*/page.tsx                 Screens: / (upload), /results, /applicant/[id], /territories, /contested, /onboarding, /onboarding/[id], /franchisee/[id] (no-login preview), /settings, /activity
 src/components/app/*               Small presentational components (designer can restyle)
 src/components/ui/*                shadcn/ui (Base UI flavour)
 ```
@@ -93,6 +93,15 @@ Flow: Excel -> `parseWorkbook` (browser) -> store -> `runEngine` -> **ledger** -
 | Chat: local what-if parser first (no AI needed), then AI, then ledger template answers | Our choice | Always works |
 | xlsx from SheetJS CDN 0.20.3 (not npm 0.18.5) | Our choice | npm version has known advisories |
 | `cacheComponents` turned off in next.config | Our choice | All screens are per-browser client pages |
+| Confirm Good to go -> stage "Awaiting paperwork" (a stage, not a status) | Prompt | Confirming never starts onboarding |
+| Paperwork gate: agreement, GST, other registrations (free-text list); each ticked + dated, optional upload; "confirm with the brand's legal/CA team"; only link: https://www.gst.gov.in/ (verified 2026-10-25: official "Goods & Services Tax (GST) Home", has "Register") | Prompt | No legal/tax advice, no numbers |
+| Day 0 = latest gate date; Start onboarding disabled until all three ticked and dated | Prompt | |
+| Deal terms, payment schedule, phase durations all blank; blank duration shows "set duration" and stops placement of later phases | Our choice | No official durations exist |
+| Phases in order: stock arrival, POS set-up, training, soft launch; payments placed by "due days after Day 0" | Our choice | Prompt lists them; order is ours |
+| Check-ins count from soft-launch date by default (Settings can switch to Day 0) | Our choice | "Check-ins review how the open store is doing, so they count from opening, not from paperwork." |
+| Franchisee account = Supabase Auth admin createUser, no email sent; "Preview as franchisee" needs no login | Our choice | Judges never hit a wall |
+| Email: AI draft in applicant's language (English template fallback); real send only via Resend to REVIEWER_EMAIL, never to the applicant | Prompt | |
+| Paperwork files: private Supabase Storage bucket `paperwork`; without Supabase only the file name is kept | Our choice | |
 
 Go Colors facts allowed (from official filings/investor material): 802 EBOs at 31 Mar 2026; ~195 cities, 23 states/UTs; average EBO ~540 sq ft, newer 700+ sq ft; management: stores under ~400 sq ft can't display the full range, overlapping catchments/cannibalisation, shift from "availability of space" to "quality of location and lease"; stores above 700 sq ft grew faster in Q1 FY27. Franchise-enquiry form asks name, address, state, district, 6-digit pin, email, mobile, store location yes/no, optional carpet area, image. No published fee, royalty, deposit or onboarding steps.
 
@@ -111,6 +120,9 @@ Score: Space 40 / Money 20 / Experience 20 / Financial profile 20 (rescaled to 5
 | OPENROUTER_API_KEY | AI calls |
 | OPENROUTER_MODEL | AI model id (no default in code; AI is off without it) |
 | GOOGLE_MAPS_API_KEY | Group 3 area snapshot |
+| RESEND_API_KEY | Optional: send a test copy of the confirmation email |
+| REVIEWER_EMAIL | Optional: the only address emails are ever sent to |
+| EMAIL_FROM | Optional: sender (defaults to Resend's test sender) |
 
 ## 7. Run, test, build, deploy, roll back
 
@@ -125,12 +137,15 @@ Score: Space 40 / Money 20 / Experience 20 / Financial profile 20 (rescaled to 5
 
 - Supabase is not connected yet: sync, AI cache, uploads and franchisee accounts are untested against a real project; the app uses browser storage.
 - AI (OpenRouter) has not been tested with a real key/model; only the no-key fallback path is verified.
+- Email sending (Resend) untested: no key configured; preview-only path verified.
 - Vercel Git integration not connected (see section 7).
 - Without AI, business relevance is "not rated" (0 of 6 points) until the reviewer rates it, and explanations/training plans are English templates.
 
 ## 9. Change Log (newest first)
 
 `YYYY-MM-DD | who/which tool | what changed | why | files touched | follow-ups`
+
+- 2026-10-25 | Claude Code (Opus 5.5) | Group 2 onboarding: confirm -> Awaiting paperwork, paperwork gate with uploads, deal terms + payment schedule, franchisee account + no-login preview, email draft (AI/template, reviewer-only send), Gantt + checklist with Why lines; 7 onboarding tests; aria-labels on checkboxes | Prompt section 6 | src/lib/onboarding*.ts, src/components/app/{confirm-button,paperwork-gate,deal-terms-form,franchisee-account,email-draft,onboarding-gantt}.tsx, src/app/{onboarding,franchisee}, src/app/api/{upload,franchisee-account,ai/email,email/send}, .env.example | Configure Resend if real test sends are wanted
 
 - 2026-10-25 | Claude Code (Opus 5.5) | First production deploy (CLI); recorded live URL; noted Git auto-deploy not connected | Delivery chain | CLAUDE.md | Install Vercel GitHub App, then `vercel git connect`
 

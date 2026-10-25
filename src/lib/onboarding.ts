@@ -158,3 +158,27 @@ export function computedSoftLaunch(o: Onboarding): string | null {
   }
   return null;
 }
+
+/** English template for the confirmation email (used when AI is not available). */
+export function templateEmail(name: string, appId: string, o: Onboarding): { subject: string; body: string } {
+  const terms = DEAL_FIELDS.filter(([k]) => o.deal[k].trim()).map(([k, label]) => `- ${label}: ${o.deal[k].trim()}`);
+  const other = o.gate.other.list.trim();
+  return {
+    subject: `Your franchise application ${appId}: next steps`,
+    body: [
+      `Dear ${name || "applicant"},`,
+      "",
+      `Thank you for your franchise application (${appId}). Our reviewer has confirmed it for the next stage: paperwork.`,
+      "",
+      "Paperwork to complete:",
+      "- Franchise agreement (signed)",
+      "- GST registration",
+      `- Other legal registrations${other ? `: ${other}` : " (our legal/CA team will confirm the list)"}`,
+      ...(terms.length ? ["", "Deal terms recorded so far:", ...terms] : []),
+      "",
+      "Nothing is final until the paperwork is complete. Our team will be in touch about the next steps.",
+      "",
+      "The franchise team",
+    ].join("\n"),
+  };
+}

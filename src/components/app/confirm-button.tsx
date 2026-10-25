@@ -1,0 +1,28 @@
+"use client";
+import Link from "next/link";
+import type { LedgerEntry } from "@/lib/engine";
+import { useWorkspace } from "@/store/workspace";
+import { Button } from "@/components/ui/button";
+
+/** Confirming a Good to go applicant only moves them to "Awaiting paperwork". */
+export function ConfirmButton({ entry }: { entry: LedgerEntry }) {
+  const onboarding = useWorkspace((s) => s.onboarding[entry.id]);
+  if (onboarding) {
+    return (
+      <div className="rounded-xl border p-4 text-sm">
+        Stage: <b>{onboarding.stage}</b> (confirmed {new Date(onboarding.confirmedAt).toLocaleDateString()}).{" "}
+        <Link href={`/onboarding/${encodeURIComponent(entry.id)}`} className="underline">Open onboarding →</Link>
+      </div>
+    );
+  }
+  if (entry.status !== "Good to go") return null;
+  return (
+    <div className="space-y-2 rounded-xl border p-4 text-sm">
+      <h3 className="font-semibold">Reviewer confirmation</h3>
+      <p className="text-xs text-muted-foreground">
+        &quot;Good to go&quot; is a recommendation. Confirming moves this applicant to the <b>Awaiting paperwork</b> stage. It does not start onboarding; the timeline starts only after the paperwork gate is complete.
+      </p>
+      <Button size="sm" onClick={() => useWorkspace.getState().confirmGoodToGo(entry.id)}>Confirm: move to Awaiting paperwork</Button>
+    </div>
+  );
+}
