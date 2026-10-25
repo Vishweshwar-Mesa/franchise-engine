@@ -18,7 +18,7 @@ export function DealTermsForm({ id, o }: { id: string; o: Onboarding }) {
         {DEAL_FIELDS.map(([k, label]) => (
           <div key={k}>
             <Label htmlFor={`deal-${k}`} className="text-xs">{label}</Label>
-            <Input id={`deal-${k}`} placeholder="not set" value={o.deal[k]} onChange={(e) => set({ deal: { ...o.deal, [k]: e.target.value } })} />
+            <Input id={`deal-${k}`} placeholder="not set" value={o.deal[k] ?? ""} onChange={(e) => set({ deal: { ...o.deal, [k]: e.target.value } })} />
           </div>
         ))}
       </div>

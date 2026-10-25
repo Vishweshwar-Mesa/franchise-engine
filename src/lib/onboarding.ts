@@ -9,6 +9,7 @@ export interface GateItem {
 }
 
 export const DEAL_FIELDS = [
+  ["storeName", "Store name"],
   ["franchiseFee", "Franchise fee"],
   ["securityDeposit", "Security deposit"],
   ["royalty", "Royalty % and its basis"],
@@ -161,7 +162,7 @@ export function computedSoftLaunch(o: Onboarding): string | null {
 
 /** English template for the confirmation email (used when AI is not available). */
 export function templateEmail(name: string, appId: string, o: Onboarding): { subject: string; body: string } {
-  const terms = DEAL_FIELDS.filter(([k]) => o.deal[k].trim()).map(([k, label]) => `- ${label}: ${o.deal[k].trim()}`);
+  const terms = DEAL_FIELDS.filter(([k]) => dealValue(o, k)).map(([k, label]) => `- ${label}: ${dealValue(o, k)}`);
   const other = o.gate.other.list.trim();
   return {
     subject: `Your franchise application ${appId}: next steps`,
@@ -196,3 +197,13 @@ export const GATE_LABELS: Record<keyof Onboarding["gate"], string> = {
   gst: "GST registration done",
   other: "Other legal registrations done",
 };
+
+/** A deal field's value; records saved before a field existed read as blank. */
+export function dealValue(o: Onboarding, k: DealKey): string {
+  return (o.deal[k] ?? "").trim();
+}
+
+/** How a store is named everywhere: the reviewer's store name, else "<City> <pin>". */
+export function storeLabel(o: Onboarding, city: string, pin: string): string {
+  return dealValue(o, "storeName") || [city, dealValue(o, "storePin") || pin].filter(Boolean).join(" ") || "Store";
+}

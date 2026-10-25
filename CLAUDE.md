@@ -31,7 +31,7 @@ public/samples/                    template.xlsx copy + demo-messy.xlsx (synthet
 src/lib/load-demo.ts               Loads demo-messy.xlsx as demo data (+ demo onboarding); Providers auto-loads it on a first visit with no saved data
 src/lib/demo-onboarding.ts         3 demo onboarding records (APP-025, APP-030 running; APP-005 awaiting paperwork); money terms blank
 src/app/guide/page.tsx             Guide: what the site does, how decisions are made, where to find what, statuses, scores, onboarding, glossary
-src/components/app/onboarding-overview.tsx  Combined Gantt across franchisees + task list (overdue / next 14 days / later / paperwork / needs a date)
+src/components/app/onboarding-overview.tsx  Onboarding across all stores: Gantt (store group, row per task) and Task board (Paperwork / Overdue / Next 14 days / Later / Needs a date / Done); stores labelled by storeLabel()
 scripts/make-demo-file.ts          Regenerates the demo file (npm run samples)
 scripts/check-context.sh           Warns when code changes without CLAUDE.md (pre-commit hook + CI)
 db/migrations/                     Versioned SQL schema for Neon; apply with `npm run db:migrate` (never edit only in the dashboard)
@@ -114,6 +114,7 @@ Flow: Excel -> `parseWorkbook` (browser) -> store -> `runEngine` -> **ledger** -
 | Day 0 = latest gate date; Start onboarding disabled until all three ticked and dated | Prompt | |
 | Deal terms, payment schedule, phase durations all blank; blank duration shows "set duration" and stops placement of later phases | Our choice | No official durations exist |
 | Phases in order: stock arrival, POS set-up, training, soft launch; payments placed by "due days after Day 0" | Our choice | Prompt lists them; order is ours |
+| Stores are named by the reviewer's "Store name" deal field, else "<City> <pin>" (no locality names guessed) | Our choice | User wants stores, not people, on the onboarding views |
 | Check-ins count from soft-launch date by default (Settings can switch to Day 0) | Our choice | "Check-ins review how the open store is doing, so they count from opening, not from paperwork." |
 | Franchisee account = a record in Neon `franchisee_accounts` (no login system, no email sent); "Preview as franchisee" needs no login | Our choice | Judges never hit a wall; Neon has no built-in auth (Neon Auth is an option later) |
 | Email: AI draft in applicant's language (English template fallback); real send only via Resend to REVIEWER_EMAIL, never to the applicant | Prompt | |
@@ -167,6 +168,8 @@ Score: Space 40 / Money 20 / Experience 20 / Financial profile 20 (rescaled to 5
 ## 9. Change Log (newest first)
 
 `YYYY-MM-DD | who/which tool | what changed | why | files touched | follow-ups`
+
+- 2026-10-26 | Claude Code (Opus 5.5) | Onboarding page: Gantt chart (row per task, grouped by store) and Task board (kanban columns) with a switch, replacing the list; everything labelled by store (new "Store name" deal field, else "<City> <pin>"); local-timezone today for overdue; dealValue() guards records saved before the new field | User: onboarding must be a Gantt/task manager and name stores, not people | onboarding.ts, onboarding-overview.tsx, onboarding/page.tsx, onboarding/[id]/page.tsx, deal-terms-form.tsx, email-draft.tsx, franchisee/[id]/page.tsx | none
 
 - 2026-10-26 | Claude Code (Opus 5.5) | Fix: browsers that loaded demo-messy.xlsx before the demo flag existed got no onboarding demo cases; demo is now also recognised by file name (flag set + cases added when onboarding is empty) | Reported by user (empty Onboarding page) | src/components/app/providers.tsx | none
 

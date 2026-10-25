@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { DEAL_FIELDS, templateEmail, type Onboarding } from "@/lib/onboarding";
+import { DEAL_FIELDS, dealValue, templateEmail, type Onboarding } from "@/lib/onboarding";
 import { useServices } from "@/hooks/use-services";
 import { useWorkspace } from "@/store/workspace";
 
@@ -21,7 +21,7 @@ export function EmailDraft({ id, name, language, o }: { id: string; name: string
         const facts = {
           applicantName: name, applicationId: id,
           paperwork: ["Franchise agreement (signed)", "GST registration", `Other legal registrations: ${o.gate.other.list || "list to be confirmed by the legal/CA team"}`],
-          dealTerms: Object.fromEntries(DEAL_FIELDS.filter(([k]) => o.deal[k].trim()).map(([k, l]) => [l, o.deal[k]])),
+          dealTerms: Object.fromEntries(DEAL_FIELDS.filter(([k]) => dealValue(o, k)).map(([k, l]) => [l, dealValue(o, k)])),
         };
         const body = await (await fetch("/api/ai/email", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ language, facts }) })).json();
         if (body.available) draft = { subject: body.subject, draft: body.body, language, by: "AI" };

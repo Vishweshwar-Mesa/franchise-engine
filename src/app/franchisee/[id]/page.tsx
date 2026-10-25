@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import { useWorkspace } from "@/store/workspace";
 import { useResults } from "@/hooks/use-results";
-import { DEAL_FIELDS } from "@/lib/onboarding";
+import { DEAL_FIELDS, dealValue } from "@/lib/onboarding";
 import { templateTraining, entryKey } from "@/lib/explain";
 import { OnboardingGantt } from "@/components/app/onboarding-gantt";
 
@@ -16,7 +16,7 @@ export default function FranchiseePage() {
   if (!o || !e) return <p className="text-sm">No franchisee view for {id} yet.</p>;
   const aiTraining = explanations?.data.by === "AI" && explanations.key === entryKey(e, explanations.data.language) ? explanations.data.training : null;
   const training = aiTraining ?? templateTraining(e);
-  const terms = DEAL_FIELDS.filter(([k]) => o.deal[k].trim());
+  const terms = DEAL_FIELDS.filter(([k]) => dealValue(o, k));
   return (
     <div className="space-y-4">
       <p className="rounded bg-[var(--tone-wait-bg)] p-2 text-xs text-[var(--tone-wait)]">Preview as franchisee: what {e.name} would see after signing in. No login is needed for this demo.</p>

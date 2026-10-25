@@ -10,6 +10,7 @@ import { EmailDraft } from "@/components/app/email-draft";
 import { OnboardingGantt } from "@/components/app/onboarding-gantt";
 import { StatusBadge } from "@/components/app/status-badge";
 import { WhyButton } from "@/components/app/why-button";
+import { storeLabel } from "@/lib/onboarding";
 
 export default function OnboardingPage() {
   const id = decodeURIComponent(useParams<{ id: string }>().id);
@@ -21,9 +22,9 @@ export default function OnboardingPage() {
   const language = languages.find((l) => l.toLowerCase() === e.language.toLowerCase()) ?? "English";
   return (
     <div className="space-y-4">
-      <Link href="/onboarding" className="text-sm underline">← Onboarding</Link>
+      <Link href="/onboarding" className="text-sm text-muted-foreground hover:text-foreground">← Onboarding</Link>
       <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-[26px] font-semibold tracking-tight md:text-3xl">{id} · {e.name}</h1>
+        <div className="flex flex-col"><h1 className="text-[26px] font-semibold tracking-tight md:text-3xl">{storeLabel(o, e.city, e.pin)}</h1><span className="text-sm text-muted-foreground">Franchisee: {e.name} ({id}) · name the store in Deal terms</span></div>
         <span className="rounded-md border px-2 py-0.5 text-xs font-medium">Stage: {o.stage}</span>
         <StatusBadge status={e.status} /><WhyButton entry={e} />
       </div>
