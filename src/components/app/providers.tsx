@@ -21,9 +21,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
       // The retired 10-applicant demo (demo-showcase.xlsx) is swapped for the current demo data.
       const name = useWorkspace.getState().dataset?.report.fileName ?? "";
       if (!useWorkspace.getState().dataset || name.startsWith("demo-showcase")) await loadDemoWorkspace(true);
-      // Demo data loaded before the onboarding demo cases existed: add them (only when none exist).
+      // Browsers that loaded the demo file before the demo flag / onboarding demo cases existed:
+      // recognise it by file name, flag it, and add the onboarding cases if there are none.
       const st = useWorkspace.getState();
-      if (st.demo && Object.keys(st.onboarding).length === 0) {
+      const isDemo = st.demo || (st.dataset?.report.fileName ?? "").startsWith("demo-messy");
+      if (isDemo && !st.demo) useWorkspace.setState({ demo: true });
+      if (isDemo && Object.keys(st.onboarding).length === 0) {
         const extra = demoOnboarding();
         useWorkspace.setState({ onboarding: extra.onboarding, log: [...st.log, ...extra.log] });
       }
