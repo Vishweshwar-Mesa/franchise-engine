@@ -1,5 +1,6 @@
 "use client";
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { ApplicantList } from "@/components/app/applicant-list";
 import { ApplicantsTable } from "@/components/app/applicants-table";
 import { NoData } from "@/components/app/empty-state";
@@ -24,9 +25,18 @@ const CHIPS: { label: string; match: (s: Status) => boolean }[] = [
 ];
 
 export default function ResultsPage() {
+  return (
+    <Suspense>
+      <Results />
+    </Suspense>
+  );
+}
+
+function Results() {
   const r = useResults();
+  const initial = useSearchParams().get("status");
   const fileName = useWorkspace((s) => s.dataset?.report.fileName ?? "");
-  const [status, setStatus] = useState<Status | null>(null);
+  const [status, setStatus] = useState<Status | null>(STATUSES.find((x) => x === initial) ?? null);
   const [chip, setChip] = useState(0);
   const [territory, setTerritory] = useState("");
   const [city, setCity] = useState("");
@@ -50,20 +60,19 @@ export default function ResultsPage() {
   return (
     <div className="flex flex-col gap-7">
       <PageHeader
-        eyebrow="Review desk"
-        title={<>{r.order.length} applicants, {r.counts["Good to go"]} ready for you</>}
+        title="Applicants"
         sub={<>From {fileName} · {r.territories.length} territories{pending ? ` · ${pending} contested pin${pending > 1 ? "s" : ""} waiting on your call` : ""}</>}
         actions={
           <>
-            <Button variant="outline" className="h-10 rounded-full px-4" onClick={() => downloadExport(r, "csv")}>Export CSV</Button>
-            <Button variant="outline" className="h-10 rounded-full px-4" onClick={() => downloadExport(r, "xlsx")}>Export XLSX</Button>
+            <Button variant="outline" className="h-10 rounded-[10px] px-4" onClick={() => downloadExport(r, "csv")}>Export CSV</Button>
+            <Button variant="outline" className="h-10 rounded-[10px] px-4" onClick={() => downloadExport(r, "xlsx")}>Export XLSX</Button>
           </>
         }
       />
       <StatusCounts counts={r.counts} active={status} onPick={(s) => { setStatus(s); setChip(0); }} />
       <section className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="font-serif text-2xl font-medium">Applicants <span className="text-base text-muted-foreground">({rows.length})</span></h2>
+          <h2 className="text-lg font-semibold">Showing {rows.length}</h2>
           <div className="flex flex-wrap gap-1.5">
             {CHIPS.map((c, i) => (
               <button
@@ -108,7 +117,7 @@ export default function ResultsPage() {
         <p className="text-xs text-muted-foreground">
           Dots: Space · Money · Experience · Financial profile. Green = top third, amber = middle, red = bottom third; relative factors compare with the other applicants in this file; hollow = not provided.
         </p>
-        {view === "cards" ? <ApplicantList rows={rows} showTotal={showTotal} /> : <div className="overflow-hidden rounded-3xl border bg-card"><ApplicantsTable rows={rows} showTotal={showTotal} /></div>}
+        {view === "cards" ? <ApplicantList rows={rows} showTotal={showTotal} /> : <div className="overflow-hidden rounded-[20px] border bg-card"><ApplicantsTable rows={rows} showTotal={showTotal} /></div>}
       </section>
     </div>
   );

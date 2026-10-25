@@ -85,7 +85,7 @@ export function ChatPanel() {
       <SheetTrigger render={<Button className="fixed right-5 bottom-5 z-40 h-11 rounded-full px-5 shadow-lg" />}>Ask / What-if</SheetTrigger>
       <SheetContent className="w-full sm:max-w-lg">
         <SheetHeader>
-          <SheetTitle className="font-serif text-2xl font-medium">Ask about the results</SheetTitle>
+          <SheetTitle className="text-xl font-semibold">Ask about the results</SheetTitle>
           <p className="text-xs text-muted-foreground">
             Answers come only from the reason ledger. Try &quot;Why is APP-004 on hold?&quot; or &quot;What if APP-004 had a 700 sq ft space?&quot;
           </p>

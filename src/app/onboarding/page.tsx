@@ -11,7 +11,7 @@ export default function OnboardingListPage() {
   const ids = Object.keys(onboarding);
   return (
     <div className="space-y-3">
-      <h1 className="font-serif text-4xl font-medium tracking-tight">Onboarding</h1>
+      <h1 className="text-[26px] font-semibold tracking-tight md:text-3xl">Onboarding</h1>
       <p className="text-sm text-muted-foreground">Applicants appear here after a reviewer confirms a Good to go recommendation (applicant page → Confirm).</p>
       {ids.length === 0 && <p className="text-sm">No one confirmed yet.</p>}
       <ul className="space-y-2">

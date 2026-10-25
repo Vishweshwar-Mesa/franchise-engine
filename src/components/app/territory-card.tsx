@@ -21,9 +21,9 @@ export function TerritoryCard({ t, r }: { t: TerritorySummary; r: EngineResult }
     );
   };
   return (
-    <div className="space-y-2 rounded-3xl border bg-card p-5 text-sm">
+    <div className="space-y-2 rounded-[20px] border bg-card p-5 text-sm">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="font-serif text-lg font-medium">{t.id} · {t.city} <span className="font-normal text-muted-foreground">({t.tier}, priority {t.priority || "not set"})</span></h3>
+        <h3 className="text-base font-semibold">{t.id} · {t.city} <span className="font-normal text-muted-foreground">({t.tier}, priority {t.priority || "not set"})</span></h3>
         <span className="flex items-center gap-1 text-xs">Capacity = min({t.openSlots} open slots, {t.freePins.length} free pins) = <b>{t.capacity}</b> <SourceTag source="Case rule" /></span>
       </div>
       <p className="text-xs">

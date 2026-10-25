@@ -37,11 +37,11 @@ export default function ApplicantPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <Link href="/results" className="text-sm text-muted-foreground hover:text-foreground">← Review desk</Link>
+      <Link href="/results" className="text-sm text-muted-foreground hover:text-foreground">← Applicants</Link>
       <header className="flex flex-col gap-3">
         <span className="font-mono text-xs text-muted-foreground">{e.id} · {e.city || "city missing"} · pin {e.pin || "—"} · {e.territory?.id ?? "no territory"}</span>
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="font-serif text-4xl font-medium tracking-tight md:text-5xl">{e.name || "Name missing"}</h1>
+          <h1 className="text-3xl font-bold tracking-tight md:text-4xl">{e.name || "Name missing"}</h1>
           <StatusBadge status={e.status} />
           <WhyButton entry={e} />
         </div>
@@ -60,18 +60,18 @@ export default function ApplicantPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="space-y-4">
           <ExplanationCard entry={e} languages={dataset.languages} />
-          <div className="rounded-3xl border bg-card p-5"><h3 className="mb-2 font-serif text-lg font-medium">Reason ledger</h3><LedgerView entry={e} /></div>
+          <div className="rounded-[20px] border bg-card p-5"><h3 className="mb-2 text-base font-semibold">Reason ledger</h3><LedgerView entry={e} /></div>
         </div>
         <div className="space-y-4">
           <ConfirmButton entry={e} />
           <ManualStatusForm key={e.manual?.at ?? "none"} entry={e} />
           <FinancialProfileForm key={JSON.stringify([input.netWorth, input.portfolio, input.liabilities])} id={id} input={input} />
           <RelevanceCard entry={e} input={input} aiFlag={ai?.contradiction ?? null} />
-          <div className="rounded-3xl border bg-card p-5"><AreaTypeSelect id={id} value={input.areaType} /></div>
+          <div className="rounded-[20px] border bg-card p-5"><AreaTypeSelect id={id} value={input.areaType} /></div>
           <AreaSnapshot pin={app.pin} city={app.city} />
           <PeopleResearch name={app.name} city={app.city} business={app.business} />
-          <div className="rounded-3xl border bg-card p-5 text-sm">
-            <h3 className="mb-2 font-serif text-lg font-medium">Application (row {app.rowNumber})</h3>
+          <div className="rounded-[20px] border bg-card p-5 text-sm">
+            <h3 className="mb-2 text-base font-semibold">Application (row {app.rowNumber})</h3>
             <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs">
               {fields.map(([k, v]) => (
                 <div key={k} className="contents"><dt className="text-muted-foreground">{columnLabel(k)}</dt><dd>{v === null || v === "" || v === undefined ? "—" : String(v)}</dd></div>

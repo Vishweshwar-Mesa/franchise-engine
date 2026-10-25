@@ -9,7 +9,7 @@ import { useStaggerIn } from "./motion";
 /** Applicants as cards with the one-line reason inline (V2 Warm Editorial). */
 export function ApplicantList({ rows, showTotal }: { rows: LedgerEntry[]; showTotal: boolean }) {
   const ref = useStaggerIn<HTMLUListElement>(rows.map((r) => r.id).join());
-  if (rows.length === 0) return <p className="rounded-3xl border bg-card p-6 text-sm text-muted-foreground">No applicants match these filters.</p>;
+  if (rows.length === 0) return <p className="rounded-[20px] border bg-card p-6 text-sm text-muted-foreground">No applicants match these filters.</p>;
   return (
     <ul ref={ref} className="flex flex-col gap-2.5">
       {rows.map((e) => (

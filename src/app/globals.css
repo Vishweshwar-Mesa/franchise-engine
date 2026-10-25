@@ -7,12 +7,13 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter);
-  --font-serif: var(--font-fraunces);
+  --font-sans: var(--font-geist);
+  --font-serif: var(--font-geist);
   --color-brand: var(--brand-text);
   --color-note: var(--note);
-  --font-mono: var(--font-jetbrains);
-  --font-heading: var(--font-fraunces);
+  --color-inset: var(--inset);
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-geist);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -52,93 +53,100 @@
 }
 
 :root {
-  /* V2 Warm Editorial, light. Brand accent from gocolors.com (#DF2E84), deepened for text contrast. */
-  --background: #F6F1E9;
-  --foreground: #1A1715;
-  --card: #FFFDF9;
-  --card-foreground: #1A1715;
-  --popover: #FFFDF9;
-  --popover-foreground: #1A1715;
+  /* V5 Bento Command Center, light. Brand accent from gocolors.com (#DF2E84), deepened for contrast. */
+  --background: #F6F6F6;
+  --foreground: #121212;
+  --card: #FFFFFF;
+  --card-foreground: #121212;
+  --popover: #FFFFFF;
+  --popover-foreground: #121212;
   --primary: #C9246F;
   --primary-foreground: #FFFFFF;
-  --secondary: #EFE8DD;
-  --secondary-foreground: #1A1715;
-  --muted: #EFE8DD;
-  --muted-foreground: #615A52;
-  --accent: #EFE8DD;
-  --accent-foreground: #1A1715;
+  --secondary: #F1F1F3;
+  --secondary-foreground: #121212;
+  --muted: #F1F1F3;
+  --muted-foreground: #5C5F69;
+  --accent: #F1F1F3;
+  --accent-foreground: #121212;
   --destructive: #B42318;
-  --border: #E7DFD3;
-  --input: #DDD3C5;
+  --border: #E4E4E7;
+  --input: #DCDCE0;
   --ring: #C9246F;
   --chart-1: #C9246F;
-  --chart-2: #615A52;
-  --chart-3: #9B8F80;
-  --chart-4: #C8BEB0;
-  --chart-5: #E7DFD3;
+  --chart-2: #5C5F69;
+  --chart-3: #9A9AA3;
+  --chart-4: #C8C8CE;
+  --chart-5: #E4E4E7;
   --radius: 0.75rem;
-  --sidebar: #1A1715;
-  --sidebar-foreground: #FAF9F6;
-  --sidebar-primary: #FAF9F6;
-  --sidebar-primary-foreground: #1A1715;
-  --sidebar-accent: rgba(250, 249, 246, 0.06);
-  --sidebar-accent-foreground: #FAF9F6;
-  --sidebar-border: rgba(250, 249, 246, 0.1);
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #121212;
+  --sidebar-primary: #121212;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #F1F1F3;
+  --sidebar-accent-foreground: #121212;
+  --sidebar-border: #E4E4E7;
   --sidebar-ring: #C9246F;
   --brand-text: #B81E66;
   --note: #FCE7F1;
+  --inset: #F1F1F3;
+  --glow: rgba(201, 36, 111, 0.16);
   /* Status tones: [text, tint]. Lightness differs, not hue alone. */
-  --tone-good: #14532D;      --tone-good-bg: #D9F2DF;
-  --tone-decide: #4C1D95;    --tone-decide-bg: #E8E1FA;
-  --tone-info: #78350F;      --tone-info-bg: #F8EBC4;
-  --tone-pin: #7C2D12;       --tone-pin-bg: #FBE0CB;
-  --tone-wait: #0C4A6E;      --tone-wait-bg: #D6EDF8;
-  --tone-stop: #3F3A35;      --tone-stop-bg: #E7E1D8;
+  --tone-good: #166534;      --tone-good-bg: #DCFCE7;
+  --tone-decide: #5B21B6;    --tone-decide-bg: #EDE9FE;
+  --tone-info: #92400E;      --tone-info-bg: #FEF3C7;
+  --tone-pin: #9A3412;       --tone-pin-bg: #FFEDD5;
+  --tone-wait: #075985;      --tone-wait-bg: #E0F2FE;
+  --tone-stop: #3F3F46;      --tone-stop-bg: #E4E4E7;
+  /* Solid status colours for bars and dots. */
+  --bar-good: #16A34A; --bar-decide: #8B5CF6; --bar-info: #D97706; --bar-pin: #EA580C; --bar-wait: #0284C7; --bar-stop: #71717A;
   --light-green: #16A34A;
   --light-amber: #D97706;
   --light-red: #DC2626;
 }
 
 .dark {
-  --background: #1A1715;
-  --foreground: #FAF9F6;
-  --card: #221E1B;
-  --card-foreground: #FAF9F6;
-  --popover: #221E1B;
-  --popover-foreground: #FAF9F6;
+  --background: #0B0B0D;
+  --foreground: #F4F4F5;
+  --card: #141417;
+  --card-foreground: #F4F4F5;
+  --popover: #141417;
+  --popover-foreground: #F4F4F5;
   --primary: #C9246F;
   --primary-foreground: #FFFFFF;
-  --secondary: #2B2622;
-  --secondary-foreground: #FAF9F6;
-  --muted: #2B2622;
-  --muted-foreground: #B9B4AC;
-  --accent: #2B2622;
-  --accent-foreground: #FAF9F6;
+  --secondary: #1D1D22;
+  --secondary-foreground: #F4F4F5;
+  --muted: #1D1D22;
+  --muted-foreground: #A1A1AA;
+  --accent: #1D1D22;
+  --accent-foreground: #F4F4F5;
   --destructive: #F87171;
-  --border: #34302B;
-  --input: #3E3933;
+  --border: #26262C;
+  --input: #2E2E35;
   --ring: #F05A9E;
   --chart-1: #F05A9E;
-  --chart-2: #B9B4AC;
-  --chart-3: #8C857C;
-  --chart-4: #5E5850;
-  --chart-5: #34302B;
-  --sidebar: #0F0D0C;
-  --sidebar-foreground: #FAF9F6;
-  --sidebar-primary: #FAF9F6;
-  --sidebar-primary-foreground: #1A1715;
-  --sidebar-accent: rgba(250, 249, 246, 0.06);
-  --sidebar-accent-foreground: #FAF9F6;
-  --sidebar-border: rgba(250, 249, 246, 0.08);
+  --chart-2: #A1A1AA;
+  --chart-3: #71717A;
+  --chart-4: #3F3F46;
+  --chart-5: #26262C;
+  --sidebar: #141417;
+  --sidebar-foreground: #F4F4F5;
+  --sidebar-primary: #F4F4F5;
+  --sidebar-primary-foreground: #0B0B0D;
+  --sidebar-accent: #1D1D22;
+  --sidebar-accent-foreground: #F4F4F5;
+  --sidebar-border: #26262C;
   --sidebar-ring: #F05A9E;
   --brand-text: #F05A9E;
   --note: rgba(240, 90, 158, 0.12);
-  --tone-good: #BBF7D0;      --tone-good-bg: #1F3A2A;
-  --tone-decide: #DDD6FE;    --tone-decide-bg: #2E2645;
-  --tone-info: #FDE68A;      --tone-info-bg: #3D3418;
-  --tone-pin: #FED7AA;       --tone-pin-bg: #40291A;
-  --tone-wait: #BAE6FD;      --tone-wait-bg: #183444;
-  --tone-stop: #D6D1C8;      --tone-stop-bg: #34302B;
+  --inset: #1D1D22;
+  --glow: rgba(223, 46, 132, 0.22);
+  --tone-good: #4ADE80;      --tone-good-bg: rgba(74, 222, 128, 0.12);
+  --tone-decide: #C4B5FD;    --tone-decide-bg: rgba(196, 181, 253, 0.14);
+  --tone-info: #FCD34D;      --tone-info-bg: rgba(252, 211, 77, 0.12);
+  --tone-pin: #FDBA74;       --tone-pin-bg: rgba(253, 186, 116, 0.12);
+  --tone-wait: #7DD3FC;      --tone-wait-bg: rgba(125, 211, 252, 0.12);
+  --tone-stop: #D4D4D8;      --tone-stop-bg: rgba(212, 212, 216, 0.1);
+  --bar-good: #22C55E; --bar-decide: #A78BFA; --bar-info: #F59E0B; --bar-pin: #FB923C; --bar-wait: #38BDF8; --bar-stop: #71717A;
   --light-green: #22C55E;
   --light-amber: #F59E0B;
   --light-red: #EF4444;
@@ -158,3 +166,22 @@
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* Bento tile: a soft magenta glow that follows the pointer (set by components/app/bento.tsx). */
+.tile {
+  position: relative;
+  isolation: isolate;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.tile::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: radial-gradient(420px circle at var(--x, 50%) var(--y, 50%), var(--glow), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.tile:hover { border-color: color-mix(in oklab, var(--primary) 55%, var(--border)); }
+.tile:hover::before { opacity: 1; }

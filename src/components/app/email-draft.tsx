@@ -47,8 +47,8 @@ export function EmailDraft({ id, name, language, o }: { id: string; name: string
   }
 
   return (
-    <div className="space-y-2 rounded-3xl border bg-card p-5 text-sm">
-      <h3 className="font-serif text-lg font-medium">Confirmation email (preview)</h3>
+    <div className="space-y-2 rounded-[20px] border bg-card p-5 text-sm">
+      <h3 className="text-base font-semibold">Confirmation email (preview)</h3>
       <Button size="sm" variant="outline" disabled={busy} onClick={generate}>{o.email ? "Regenerate draft" : "Generate draft"}</Button>
       {o.email && (
         <div className="space-y-1 rounded-lg bg-muted/50 p-3">

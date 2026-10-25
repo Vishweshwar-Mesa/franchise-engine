@@ -18,8 +18,8 @@ export function PeopleResearch({ name, city, business }: { name: string; city: s
     setBusy(false);
   }
   return (
-    <div className="space-y-2 rounded-3xl border bg-card p-5 text-sm">
-      <h3 className="font-serif text-lg font-medium">People research (reviewer only)</h3>
+    <div className="space-y-2 rounded-[20px] border bg-card p-5 text-sm">
+      <h3 className="text-base font-semibold">People research (reviewer only)</h3>
       <label className="flex items-center gap-2 text-xs">
         <Checkbox aria-label="Consent" checked={consent} onCheckedChange={(v) => setConsent(!!v)} />
         Only research an applicant with their knowledge. I confirm the applicant knows.

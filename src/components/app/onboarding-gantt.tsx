@@ -17,8 +17,8 @@ export function OnboardingGantt({ id, o, readOnly = false }: { id: string; o: On
   const set = (patch: Partial<Onboarding>, log?: string) => useWorkspace.getState().setOnboarding(id, patch, log);
   if (!day0 || o.stage !== "Onboarding") {
     return (
-      <div className="rounded-3xl border bg-card p-5 text-sm">
-        <h3 className="font-serif text-lg font-medium">Onboarding timeline</h3>
+      <div className="rounded-[20px] border bg-card p-5 text-sm">
+        <h3 className="text-base font-semibold">Onboarding timeline</h3>
         <p className="mt-2 text-muted-foreground">Timeline starts after paperwork is complete{day0 && !readOnly ? " (press Start onboarding)" : ""}.</p>
       </div>
     );
@@ -36,8 +36,8 @@ export function OnboardingGantt({ id, o, readOnly = false }: { id: string; o: On
   };
 
   return (
-    <div className="space-y-3 rounded-3xl border bg-card p-5 text-sm">
-      <h3 className="font-serif text-lg font-medium">Onboarding timeline (Day 0 = {day0})</h3>
+    <div className="space-y-3 rounded-[20px] border bg-card p-5 text-sm">
+      <h3 className="text-base font-semibold">Onboarding timeline (Day 0 = {day0})</h3>
       {!readOnly && (
         <div className="grid gap-2 md:grid-cols-5">
           {PHASES.map((ph) => (

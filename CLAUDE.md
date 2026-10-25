@@ -49,7 +49,7 @@ src/lib/sync.ts                    Browser <-> Neon mirror via /api/state (silen
 src/store/workspace.ts             Zustand store, persisted to localStorage, one per browser session id
 src/hooks/use-results.ts           Runs the engine over the store (memoised)
 src/app/api/*                      status, state, ai/assess, ai/explain, ai/chat, ai/email, ai/research, upload, franchisee-account, email/send, area
-src/app/*/page.tsx                 Screens: / (upload), /results, /applicant/[id], /territories, /contested, /onboarding, /onboarding/[id], /franchisee/[id] (no-login preview), /settings, /activity
+src/app/*/page.tsx                 Screens: / (Today bento), /upload, /results, /applicant/[id], /territories, /contested, /onboarding, /onboarding/[id], /franchisee/[id] (no-login preview), /settings, /activity
 src/components/app/*               Small presentational components (designer can restyle)
 src/components/ui/*                shadcn/ui (Base UI flavour)
 ```
@@ -58,15 +58,15 @@ Flow: Excel -> `parseWorkbook` (browser) -> store -> `runEngine` -> **ledger** -
 
 `AGENTS.md` starts with a pointer to this file; below it Next.js keeps its own managed block (re-added by `next dev`).
 
-## 3b. Design (V2 "Warm Editorial", chosen 2026-10-25)
+## 3b. Design (V5 "Bento Command Center", chosen 2026-10-25; replaced V2 Warm Editorial)
 
-- Dark theme by default, light theme via the button at the bottom of the sidebar (saved in localStorage `fe-theme`; an inline script in `layout.tsx` applies it before paint).
-- Colours come from gocolors.com: near-black/off-white base (#121212, #1A1A1A, #FAF9F6), brand magenta #DF2E84. Buttons use #C9246F (the brand magenta deepened so white text passes contrast); magenta text is #F05A9E on dark, #B81E66 on light. Warm neutrals: #1A1715 (dark ground), #F6F1E9 (light ground).
-- Status tones are CSS variables `--tone-<good|decide|info|pin|wait|stop>` and `-bg`, traffic lights `--light-green|amber|red`, all in `src/app/globals.css` for both themes. Never hardcode Tailwind colour classes in components; use the tokens.
-- Type: Fraunces (serif display: page titles, section titles, big numbers), Inter (body), JetBrains Mono (IDs, pins), via `next/font`.
-- Layout: floating dark sidebar (`components/app/nav.tsx`), `PageHeader` / `Panel` in `components/app/page-header.tsx`, rounded-3xl surfaces.
-- Motion (GSAP, `components/app/motion.tsx`): count-up on status tiles, staggered fade-in of applicant cards; both off under prefers-reduced-motion (plus a global CSS reduced-motion rule).
-- Design exploration (4 versions) is in a private claude.ai canvas: https://claude.ai/artifact/T7nkLboonRceQfV22z4CGF
+- Dark theme by default, light theme via the button in the top bar (saved in localStorage `fe-theme`; an inline script in `layout.tsx` applies it before paint).
+- Colours: neutral near-black #0B0B0D (dark) / #F6F6F6 (light), cards #141417 / #FFFFFF, with the Go Colors brand magenta from gocolors.com (#DF2E84; buttons #C9246F so white text passes contrast; magenta text #F05A9E dark, #B81E66 light).
+- Tokens in `src/app/globals.css`: status tones `--tone-<good|decide|info|pin|wait|stop>` (+ `-bg`), solid bar colours `--bar-*`, traffic lights `--light-*`, `--inset`, `--glow`. Never hardcode Tailwind colour classes in components.
+- Type: Geist (UI) and Geist Mono (IDs, pins, file names), via `next/font`.
+- Layout: top navigation bar (`components/app/nav.tsx`) with Upload and the theme toggle on the right; home `/` is **Today**, a bento grid of tiles (`components/app/bento.tsx` `Tile`) built only from engine results, onboarding records and the action log; Upload lives at `/upload`; `/results` (Applicants) accepts `?status=` from the tiles.
+- Motion: `.tile` glow follows the pointer (CSS vars set on pointer move); GSAP count-up on numbers and staggered fade-in (`components/app/motion.tsx`); all off under prefers-reduced-motion.
+- Design exploration (8 versions, 2 rounds) is in a private claude.ai canvas: https://claude.ai/artifact/T7nkLboonRceQfV22z4CGF
 
 ## 4. Decisions and why
 
@@ -164,6 +164,8 @@ Score: Space 40 / Money 20 / Experience 20 / Financial profile 20 (rescaled to 5
 ## 9. Change Log (newest first)
 
 `YYYY-MM-DD | who/which tool | what changed | why | files touched | follow-ups`
+
+- 2026-10-25 | Claude Code (Opus 5.5) | Redesign to V5 Bento Command Center: neutral dark/light tokens, Geist fonts, top nav, new Today bento home (Upload moved to /upload), neutral status tiles, `?status=` filter on Applicants, pointer-following tile glow; removed serif styles | User picked V5 from round 2 | globals.css, layout.tsx, nav.tsx, bento.tsx (new), page.tsx (Today), upload/page.tsx (moved), results/page.tsx, status-counts.tsx, page-header.tsx, many components (style sweep) | none
 
 - 2026-10-25 | Claude Code (Opus 5.5) | Removed the "Load demo data" button and the banner's button: demo data is just pre-loaded, with a small "Demo data" flag | User: no button to initiate demo data | upload-panel.tsx, demo-banner.tsx, page.tsx | none
 - 2026-10-25 | Claude Code (Opus 5.5) | Auto-loaded demo now gives way if the person loads a file while it downloads (race fix); browsers holding the retired 10-applicant demo get the 30-applicant one | Bug found in live check | src/lib/load-demo.ts, providers.tsx | none

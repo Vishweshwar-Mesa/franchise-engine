@@ -25,8 +25,8 @@ export function ContestCard({ c, r }: { c: ContestSummary; r: EngineResult }) {
   const setContest = useWorkspace((s) => s.setContest);
   const decision = useWorkspace((s) => s.contests[c.pin]);
   return (
-    <div className="space-y-3 rounded-3xl border bg-card p-5 text-sm">
-      <h3 className="font-serif text-lg font-medium">Pin {c.pin} · {c.territoryId}: {c.applicantIds.length} qualified applicants</h3>
+    <div className="space-y-3 rounded-[20px] border bg-card p-5 text-sm">
+      <h3 className="text-base font-semibold">Pin {c.pin} · {c.territoryId}: {c.applicantIds.length} qualified applicants</h3>
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {c.applicantIds.map((id) => {
           const e = r.ledger[id];

@@ -7,57 +7,54 @@ import { useWorkspace } from "@/store/workspace";
 import { ThemeToggle } from "./theme-toggle";
 
 const LINKS = [
-  ["/", "Upload"],
-  ["/results", "Results"],
+  ["/", "Today"],
+  ["/results", "Applicants"],
   ["/territories", "Territories"],
-  ["/contested", "Contested pins"],
+  ["/contested", "Contested"],
   ["/onboarding", "Onboarding"],
   ["/settings", "Settings"],
-  ["/activity", "Activity log"],
+  ["/activity", "Activity"],
 ] as const;
 
-/** Floating dark sidebar. Stacks above the content on narrow screens. */
+/** Top navigation bar (V5 Bento Command Center). Wraps on narrow screens. */
 export function Nav() {
   const path = usePathname();
   const r = useResults();
   const onboarding = useWorkspace((s) => Object.keys(s.onboarding).length);
   const counts: Record<string, number | undefined> = {
     "/results": r?.order.length,
-    "/territories": r?.territories.length,
-    "/contested": r?.contests.filter((c) => !c.decision?.winnerId).length,
+    "/contested": r?.contests.filter((c) => !c.decision?.winnerId).length || undefined,
     "/onboarding": onboarding || undefined,
   };
   return (
-    <aside className="flex w-full flex-col gap-1 rounded-3xl bg-sidebar p-4 text-sidebar-foreground md:sticky md:top-4 md:h-[calc(100vh-2rem)] md:w-60 md:shrink-0">
-      <div className="flex flex-col gap-0.5 px-2.5 pb-5">
-        <span className="font-serif text-2xl font-bold tracking-tight">Franchise</span>
-        <span className="text-xs text-[#B9B4AC]">Partner engine · Go Colors</span>
-      </div>
-      <nav className="flex flex-row flex-wrap gap-1 md:flex-col">
+    <header className="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-4 md:px-8">
+      <Link href="/" className="mr-3 flex items-center gap-2.5 text-base font-bold">
+        <span aria-hidden="true" className="size-[22px] rounded-[7px] bg-[#DF2E84]" />
+        Franchise Engine
+      </Link>
+      <nav className="flex flex-wrap gap-0.5">
         {LINKS.map(([href, label]) => {
-          const active = href === "/" ? path === "/" : path.startsWith(href);
+          const active =
+            href === "/" ? path === "/"
+            : href === "/results" ? path.startsWith("/results") || path.startsWith("/applicant")
+            : href === "/onboarding" ? path.startsWith("/onboarding") || path.startsWith("/franchisee")
+            : path.startsWith(href);
           return (
             <Link
               key={href}
               href={href}
               aria-current={active ? "page" : undefined}
-              className={cn(
-                "flex items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors",
-                active ? "bg-sidebar-primary text-sidebar-primary-foreground" : "text-[#D6D1C8] hover:bg-sidebar-accent",
-              )}
+              className={cn("flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors", active ? "bg-card text-foreground shadow-[inset_0_0_0_1px_var(--border)]" : "text-muted-foreground hover:text-foreground")}
             >
               {label}
-              {counts[href] ? <span className={cn("text-xs", active ? "text-[#615A52]" : "text-[#B9B4AC]")}>{counts[href]}</span> : null}
+              {counts[href] ? <span className="rounded-md bg-inset px-1.5 text-[11px] text-muted-foreground">{counts[href]}</span> : null}
             </Link>
           );
         })}
       </nav>
-      <div className="mt-4 flex flex-col gap-3 md:mt-auto">
-        <p className="rounded-2xl bg-sidebar-accent p-3 text-xs leading-relaxed text-[#D6D1C8]">
-          Scenario: Go Colors (Go Fashion (India) Ltd) scaling through franchise partners. Go Colors has not published India franchise terms. Every status is a recommendation; a human confirms.
-        </p>
-        <ThemeToggle className="border-sidebar-border text-sidebar-foreground hover:bg-sidebar-accent" />
-      </div>
-    </aside>
+      <span className="flex-1" />
+      <Link href="/upload" className={cn("h-10 rounded-[10px] border px-3.5 text-sm leading-10 font-semibold transition-colors hover:bg-muted", path === "/upload" && "bg-card")}>Upload file</Link>
+      <ThemeToggle className="h-10 rounded-[10px]" />
+    </header>
   );
 }

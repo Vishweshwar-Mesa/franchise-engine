@@ -11,8 +11,8 @@ export function DealTermsForm({ id, o }: { id: string; o: Onboarding }) {
   const set = (patch: Partial<Onboarding>) => useWorkspace.getState().setOnboarding(id, patch);
   const setPay = (i: number, patch: Partial<PaymentRow>) => set({ payments: o.payments.map((p, j) => (j === i ? { ...p, ...patch } : p)) });
   return (
-    <div className="space-y-3 rounded-3xl border bg-card p-5 text-sm">
-      <h3 className="font-serif text-lg font-medium">Deal terms</h3>
+    <div className="space-y-3 rounded-[20px] border bg-card p-5 text-sm">
+      <h3 className="text-base font-semibold">Deal terms</h3>
       <p className="text-xs text-muted-foreground">Blank until you enter them (can be filled during the paperwork gate; they are part of the agreement). Nothing is prefilled: Go Colors has not published franchise fee, royalty, deposit or onboarding terms.</p>
       <div className="grid gap-2 md:grid-cols-2">
         {DEAL_FIELDS.map(([k, label]) => (

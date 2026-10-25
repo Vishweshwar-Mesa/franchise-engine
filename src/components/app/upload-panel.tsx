@@ -34,9 +34,9 @@ export function UploadPanel({ onReport }: { onReport: (r: ValidationReport) => v
   }
 
   return (
-    <div className="flex flex-col gap-4 rounded-3xl border bg-card p-5">
+    <div className="flex flex-col gap-4 rounded-[20px] border bg-card p-5">
       <label className="block cursor-pointer rounded-2xl border-2 border-dashed p-8 text-center text-sm transition-colors hover:border-primary hover:bg-muted/50">
-        <span className="font-serif text-xl font-medium">Drop or choose the applications file (.xlsx)</span>
+        <span className="text-lg font-semibold">Drop or choose the applications file (.xlsx)</span>
         <input
           type="file"
           accept=".xlsx,.xls"

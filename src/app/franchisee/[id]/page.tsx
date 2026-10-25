@@ -20,22 +20,22 @@ export default function FranchiseePage() {
   return (
     <div className="space-y-4">
       <p className="rounded bg-[var(--tone-wait-bg)] p-2 text-xs text-[var(--tone-wait)]">Preview as franchisee: what {e.name} would see after signing in. No login is needed for this demo.</p>
-      <h1 className="font-serif text-4xl font-medium tracking-tight">Welcome, {e.name}</h1>
+      <h1 className="text-[26px] font-semibold tracking-tight md:text-3xl">Welcome, {e.name}</h1>
       <p className="text-sm">Application {id} · {e.city} · pin code of this store: {o.deal.storePin || e.pin}</p>
-      <div className="rounded-3xl border bg-card p-5 text-sm">
-        <h3 className="font-serif text-lg font-medium">Paperwork</h3>
+      <div className="rounded-[20px] border bg-card p-5 text-sm">
+        <h3 className="text-base font-semibold">Paperwork</h3>
         <ul className="mt-1 space-y-1">
           <li>{o.gate.agreement.done ? "✓" : "○"} Franchise agreement signed</li>
           <li>{o.gate.gst.done ? "✓" : "○"} GST registration</li>
           <li>{o.gate.other.done ? "✓" : "○"} Other legal registrations{o.gate.other.list ? `: ${o.gate.other.list}` : ""}</li>
         </ul>
       </div>
-      <div className="rounded-3xl border bg-card p-5 text-sm">
-        <h3 className="font-serif text-lg font-medium">Deal terms</h3>
+      <div className="rounded-[20px] border bg-card p-5 text-sm">
+        <h3 className="text-base font-semibold">Deal terms</h3>
         {terms.length === 0 ? <p className="text-muted-foreground">Not entered yet.</p> : <ul className="mt-1">{terms.map(([k, l]) => <li key={k}><b>{l}:</b> {o.deal[k]}</li>)}</ul>}
       </div>
-      <div className="rounded-3xl border bg-card p-5 text-sm">
-        <h3 className="font-serif text-lg font-medium">Your training plan</h3>
+      <div className="rounded-[20px] border bg-card p-5 text-sm">
+        <h3 className="text-base font-semibold">Your training plan</h3>
         <ul className="ml-5 list-disc">{training.map((t, i) => <li key={i}><b>{t.module}</b>: {t.why}</li>)}</ul>
         <p className="text-xs text-muted-foreground">Durations are set by the brand.</p>
       </div>

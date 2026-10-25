@@ -40,8 +40,8 @@ export function PaperworkGate({ id, o }: { id: string; o: Onboarding }) {
 
   const complete = gateComplete(o);
   return (
-    <div className="space-y-3 rounded-3xl border bg-card p-5 text-sm">
-      <h3 className="font-serif text-lg font-medium">Paperwork gate</h3>
+    <div className="space-y-3 rounded-[20px] border bg-card p-5 text-sm">
+      <h3 className="text-base font-semibold">Paperwork gate</h3>
       <p className="text-xs text-muted-foreground">
         The reviewer ticks these off. The tool does not verify them, does not state tax rates, thresholds or durations, and gives no legal or tax advice.
       </p>

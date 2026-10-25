@@ -14,7 +14,7 @@ export function ManualStatusForm({ entry }: { entry: LedgerEntry }) {
   const set = useWorkspace((s) => s.setManualStatus);
   return (
     <form
-      className="space-y-2 rounded-3xl border bg-card p-5 text-sm"
+      className="space-y-2 rounded-[20px] border bg-card p-5 text-sm"
       onSubmit={(e) => {
         e.preventDefault();
         if (!reason.trim()) return;
@@ -22,7 +22,7 @@ export function ManualStatusForm({ entry }: { entry: LedgerEntry }) {
         setReason("");
       }}
     >
-      <h3 className="font-serif text-lg font-medium">Change status manually</h3>
+      <h3 className="text-base font-semibold">Change status manually</h3>
       <p className="text-xs text-muted-foreground">Engine says: {entry.engineStatus}. A reason is required (especially for Not proceeding). Every change is logged.</p>
       <div className="flex flex-wrap gap-2">
         <NativeSelect value={status} onChange={(e) => setStatus(e.target.value as Status | "")}>

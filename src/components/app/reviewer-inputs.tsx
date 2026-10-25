@@ -18,13 +18,13 @@ export function FinancialProfileForm({ id, input }: { id: string; input: Reviewe
   const [li, setLi] = useState(input.liabilities ?? "");
   return (
     <form
-      className="space-y-2 rounded-3xl border bg-card p-5 text-sm"
+      className="space-y-2 rounded-[20px] border bg-card p-5 text-sm"
       onSubmit={(e) => {
         e.preventDefault();
         useWorkspace.getState().setReviewer(id, { netWorth: numOrNull(nw), portfolio: numOrNull(pf), liabilities: li }, `Financial profile saved (net worth ${nw || "blank"}, portfolio ${pf || "blank"}${li ? ", liabilities noted" : ""}).`);
       }}
     >
-      <h3 className="font-serif text-lg font-medium">Financial profile (typed by reviewer; not in the case data)</h3>
+      <h3 className="text-base font-semibold">Financial profile (typed by reviewer; not in the case data)</h3>
       <div className="grid grid-cols-2 gap-2">
         <div><Label htmlFor={`nw-${id}`}>Net worth (₹ lakh)</Label><Input id={`nw-${id}`} inputMode="decimal" value={nw} onChange={(e) => setNw(e.target.value)} /></div>
         <div><Label htmlFor={`pf-${id}`}>Portfolio (₹ lakh)</Label><Input id={`pf-${id}`} inputMode="decimal" value={pf} onChange={(e) => setPf(e.target.value)} /></div>
@@ -42,8 +42,8 @@ export function FinancialProfileForm({ id, input }: { id: string; input: Reviewe
 export function RelevanceCard({ entry, input, aiFlag }: { entry: LedgerEntry; input: ReviewerInput; aiFlag: { found: boolean; detail: string } | null }) {
   const set = useWorkspace((s) => s.setReviewer);
   return (
-    <div className="space-y-2 rounded-3xl border bg-card p-5 text-sm">
-      <h3 className="font-serif text-lg font-medium">Business relevance (part of Experience)</h3>
+    <div className="space-y-2 rounded-[20px] border bg-card p-5 text-sm">
+      <h3 className="text-base font-semibold">Business relevance (part of Experience)</h3>
       <p>
         {entry.relevance.rating ?? "Not rated"} <span className="text-xs text-muted-foreground">({entry.relevance.by})</span>: {entry.relevance.reason}
       </p>
