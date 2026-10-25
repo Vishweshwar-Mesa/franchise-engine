@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useWorkspace } from "@/store/workspace";
 import { useResults } from "@/hooks/use-results";
-import { gateComplete, storeLabel } from "@/lib/onboarding";
+import { gateComplete, localDate, storeLabel } from "@/lib/onboarding";
 import { cn } from "@/lib/utils";
 import { PageHeader, Panel } from "@/components/app/page-header";
 import { BoardView, GanttView, useTasks, type StoreRow } from "@/components/app/onboarding-overview";
@@ -22,7 +22,7 @@ export default function OnboardingPage() {
     [rows.filter((x) => !gateComplete(x.o)).length, "Stores awaiting paperwork"],
     [rows.filter((x) => x.o.stage === "Onboarding" && !x.o.phases.softLaunch.done).length, "Stores being set up"],
     [rows.filter((x) => x.o.phases.softLaunch.done).length, "Stores soft-launched"],
-    [tasks.filter((t) => !t.done && t.start && t.start < new Date().toLocaleDateString("en-CA") && t.kind !== "paperwork").length, "Tasks overdue"],
+    [tasks.filter((t) => !t.done && t.start && t.start < localDate() && t.kind !== "paperwork").length, "Tasks overdue"],
   ];
 
   return (

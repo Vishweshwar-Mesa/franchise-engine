@@ -6,7 +6,7 @@ import { useWorkspace } from "@/store/workspace";
 import { ExplanationCard } from "@/components/app/explanation-card";
 import { LedgerView } from "@/components/app/ledger-view";
 import { ManualStatusForm } from "@/components/app/manual-status-form";
-import { AreaTypeSelect, FinancialProfileForm, RelevanceCard } from "@/components/app/reviewer-inputs";
+import { AreaTypeSelect, FinancialProfileForm, QuestionsCard, RelevanceCard, SiteDetailsForm } from "@/components/app/reviewer-inputs";
 import { StatusBadge } from "@/components/app/status-badge";
 import { WhyButton } from "@/components/app/why-button";
 import { FactorBar } from "@/components/app/traffic-light";
@@ -22,7 +22,6 @@ export default function ApplicantPage() {
   const r = useResults();
   const dataset = useWorkspace((s) => s.dataset);
   const input = useWorkspace((s) => s.reviewer[id]) ?? {};
-  const ai = useWorkspace((s) => s.ai[id]);
   if (!r || !dataset) return <NoData />;
   const e = r.ledger[id];
   const app = dataset.applications.find((a) => a.id === id);
@@ -53,7 +52,7 @@ export default function ApplicantPage() {
           {e.factors.map((f) => <FactorBar key={f.key} f={f} />)}
         </div>
         {e.rescaled && (
-          <p className="max-w-3xl rounded-2xl bg-note px-4 py-2 text-xs">Score {e.total}/100, rescaled because financial profile was not provided (Space 50 / Money 25 / Experience 25).</p>
+          <p className="max-w-3xl rounded-2xl bg-note px-4 py-2 text-xs">Score {e.total}/100, rescaled because financial profile was not provided ({e.factors.filter((f) => f.provided).map((f) => `${f.label} ${f.max}`).join(" / ")}).</p>
         )}
         {e.flags.filter((f) => f.kind === "liabilities").map((f, i) => (
           <p key={i} className="max-w-3xl rounded-2xl bg-[var(--tone-pin-bg)] px-4 py-2 text-xs text-[var(--tone-pin)]">{f.text}</p>
@@ -67,9 +66,13 @@ export default function ApplicantPage() {
         </div>
         <div className="space-y-4">
           <ConfirmButton entry={e} />
+          <QuestionsCard entry={e} />
           <ManualStatusForm key={e.manual?.at ?? "none"} entry={e} />
           <FinancialProfileForm key={JSON.stringify([input.netWorth, input.portfolio, input.liabilities])} id={id} input={input} />
-          <RelevanceCard entry={e} input={input} aiFlag={ai?.contradiction ?? null} />
+          {(app.spaceAvailable === "Owned" || app.spaceAvailable === "Rented") && (
+            <SiteDetailsForm key={JSON.stringify(input.site ?? {})} id={id} input={input} rented={app.spaceAvailable === "Rented"} />
+          )}
+          <RelevanceCard entry={e} input={input} />
           <div className="rounded-[20px] border bg-card p-5"><AreaTypeSelect id={id} value={input.areaType} /></div>
           <AreaSnapshot pin={app.pin} city={app.city} />
           <PeopleResearch name={app.name} city={app.city} business={app.business} />

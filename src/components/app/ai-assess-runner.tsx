@@ -8,12 +8,12 @@ import type { AiAssessment } from "@/lib/types";
 
 export function AiAssessRunner() {
   const dataset = useWorkspace((s) => s.dataset);
-  const done = useRef<string | null>(null);
+  const done = useRef<object | null>(null);
   useEffect(() => {
     if (!dataset) return;
-    const sig = `${dataset.report.fileName}:${dataset.applications.length}`;
-    if (done.current === sig) return;
-    done.current = sig;
+    // Keyed on the dataset object itself: any new load (even same name and size) is assessed again.
+    if (done.current === dataset) return;
+    done.current = dataset;
     (async () => {
       const services = await fetchServices();
       if (!services.ai) return;
@@ -22,8 +22,8 @@ export function AiAssessRunner() {
         .filter((a) => !have[a.id] && (a.business || a.notes))
         .slice(0, 100)
         .map((a) => ({
-          id: a.id, business: a.business, notes: a.notes, spaceAvailable: a.spaceAvailable,
-          spaceSize: a.spaceSize, floor: a.floor, experienceYears: a.experience,
+          id: a.id.slice(0, 40), business: a.business.slice(0, 500), notes: a.notes.slice(0, 1000), spaceAvailable: a.spaceAvailable.slice(0, 40),
+          spaceSize: a.spaceSize, floor: a.floor.slice(0, 40), experienceYears: a.experience,
         }));
       if (!items.length) return;
       try {
@@ -31,6 +31,8 @@ export function AiAssessRunner() {
         const body = await res.json();
         const results: Record<string, AiAssessment> = {};
         for (const r of body.results ?? []) results[r.id] = { relevance: r.relevance, reason: r.reason, contradiction: r.contradiction, source: "ai" };
+        // Drop the answer if another file was loaded while the AI was working.
+        if (useWorkspace.getState().dataset !== dataset) return;
         if (Object.keys(results).length) useWorkspace.getState().setAi(results);
       } catch {
         /* AI is optional */

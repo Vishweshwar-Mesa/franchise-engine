@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { AssessResponse } from "@/lib/ai-schemas";
 import { aiJson } from "@/lib/server/openrouter";
+import { allow } from "@/lib/server/limit";
 
 // Rates the relevance of each applicant's current/past business and flags notes that
 // contradict the fields. Suggestions only. Bounded: at most 100 applicants, 25 per call.
@@ -21,6 +22,7 @@ const Input = z.object({
 });
 
 export async function POST(req: Request) {
+  if (!allow(req, "assess", 6)) return Response.json({ available: false, results: [] });
   const parsed = Input.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return Response.json({ available: false, results: [] });
   const items = parsed.data.items;
@@ -35,7 +37,7 @@ export async function POST(req: Request) {
         {
           role: "user",
           content:
-            "The brand is Go Colors, an apparel retailer (women's bottom-wear and related clothing) opening franchise stores. " +
+            "The brand is Go Colors, an apparel retailer opening franchise stores. " +
             "For each applicant: (1) rate how relevant their current/past business is to running an apparel retail store: High (apparel/footwear/fashion retail), Medium (other retail or shop management), Low (no retail). Give a one-line reason quoting their words. " +
             "(2) contradiction.found = true only if the 'notes' text clearly contradicts the structured fields (e.g. notes say they have no shop but spaceAvailable is Rented). Otherwise false with empty detail. " +
             'Reply as {"results":[{"id":"...","relevance":"High|Medium|Low","reason":"...","contradiction":{"found":false,"detail":""}}]}.\n\n' +

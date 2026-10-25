@@ -1,12 +1,14 @@
 import { z } from "zod";
 import { ExplainResponse } from "@/lib/ai-schemas";
 import { aiJson } from "@/lib/server/openrouter";
+import { allow } from "@/lib/server/limit";
 
 // Rewrites one ledger entry as a plain-language explanation, next steps and a training plan
 // in the applicant's preferred language. The ledger is the only input.
 const Input = z.object({ entry: z.record(z.string(), z.unknown()), language: z.string().max(30) });
 
 export async function POST(req: Request) {
+  if (!allow(req, "explain", 40)) return Response.json({ available: false });
   const parsed = Input.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return Response.json({ available: false });
   const { entry, language } = parsed.data;

@@ -69,6 +69,8 @@ export interface LedgerEntry {
   flags: { kind: "liabilities" | "ai-contradiction" | "launch" | "territory" | "language"; text: string }[];
   whatWouldChange: string[];
   nextSteps: string[];
+  /** Questions to ask the applicant: missing data first, then site details not yet known. */
+  questions: string[];
 }
 
 export interface TerritorySummary {
@@ -170,14 +172,22 @@ function scoreApplicant(
   ];
 
   // Financial profile: typed by the reviewer
+  // Each part counts only when this applicant has it AND at least 2 applicants have it to compare;
+  // a part that does not count gives its points to the other part (so entering data never lowers a score).
   const nw = reviewer.netWorth ?? null;
   const pf = reviewer.portfolio ?? null;
-  const financialProvided = nw !== null || pf !== null;
-  const nwShare = nw !== null ? percentRank(nw, pops.netWorth) : 0;
-  const pfShare = pf !== null ? percentRank(pf, pops.portfolio) : 0;
+  const nwOn = nw !== null && pops.netWorth.length >= 2;
+  const pfOn = pf !== null && pops.portfolio.length >= 2;
+  const financialProvided = nwOn || pfOn;
+  const finW = { nw: nwOn ? p.financialSplit.netWorth : 0, pf: pfOn ? p.financialSplit.portfolio : 0 };
+  const finScale = finW.nw + finW.pf > 0 ? w.financial / (finW.nw + finW.pf) : 0;
+  const nwShare = nwOn ? percentRank(nw!, pops.netWorth) : 0;
+  const pfShare = pfOn ? percentRank(pf!, pops.portfolio) : 0;
+  const finValue = (v: number | null, on: boolean, share: number, pop: number[]) =>
+    v === null ? "not provided" : on ? `₹${v} lakh (percent rank ${Math.round(share * 100)} among ${pop.length})` : `₹${v} lakh (not scored: needs at least 2 applicants with this to compare)`;
   const finParts: ScorePart[] = [
-    { label: "Net worth", value: nw !== null ? `₹${nw} lakh (percent rank ${Math.round(nwShare * 100)} among ${pops.netWorth.length})` : "not provided", points: p.financialSplit.netWorth * nwShare, max: p.financialSplit.netWorth },
-    { label: "Portfolio", value: pf !== null ? `₹${pf} lakh (percent rank ${Math.round(pfShare * 100)} among ${pops.portfolio.length})` : "not provided", points: p.financialSplit.portfolio * pfShare, max: p.financialSplit.portfolio },
+    { label: "Net worth", value: finValue(nw, nwOn, nwShare, pops.netWorth), points: finW.nw * finScale * nwShare, max: finW.nw * finScale },
+    { label: "Portfolio", value: finValue(pf, pfOn, pfShare, pops.portfolio), points: finW.pf * finScale * pfShare, max: finW.pf * finScale },
   ];
 
   const sum = (parts: ScorePart[]) => parts.reduce((a, b) => a + b.points, 0);
@@ -203,6 +213,29 @@ function scoreApplicant(
   ];
   const total = round1(factors.reduce((a, f) => a + f.points, 0));
   return { factors, total, rescaled, financialProvided };
+}
+
+/** What to ask the applicant: fixes for held applications, then site details not yet recorded. */
+export function siteQuestions(app: Application, site: ReviewerInput["site"], fixes: string[]): string[] {
+  const q = fixes.map((f) => `To fix: ${f}`);
+  const s = site ?? {};
+  if (app.spaceAvailable === "Not yet identified") {
+    q.push("Have you found a shop space yet? If so: is it owned or rented, its size (sq ft) and its floor?");
+    return q;
+  }
+  if (app.spaceAvailable !== "Owned" && app.spaceAvailable !== "Rented") return q;
+  if (s.frontageFt == null) q.push("How wide is the shop front facing the street (frontage, in feet)?");
+  if (!s.visibility) q.push("How visible is the shop: does it face a main road, sit on a side street, or is it inside a mall?");
+  if (app.spaceAvailable === "Rented" && s.monthlyRent == null) q.push("What is the monthly rent for the space (₹)?");
+  return q;
+}
+
+/** Phrases in the notes that say there is no shop yet, while the fields say Owned/Rented. */
+const NO_SHOP = /\b(no (shop|space|store)|(don'?t|do not|dont) (yet )?have (a |any )?(shop|space|store)|still (searching|looking)|looking for (a )?(shop|space|store)|yet to (find|identify))/i;
+export function notesContradiction(app: Application): { by: string; detail: string } | null {
+  if (!(app.spaceAvailable === "Owned" || app.spaceAvailable === "Rented") || !app.notes) return null;
+  const m = app.notes.match(NO_SHOP);
+  return m ? { by: "phrase check", detail: `notes say "${m[0]}" but Space available is ${app.spaceAvailable}.` } : null;
 }
 
 export function runEngine(input: EngineInput): EngineResult {
@@ -288,13 +321,15 @@ export function runEngine(input: EngineInput): EngineResult {
       if (["Ground", "Upper", "Mall unit"].includes(app.floor)) add({ key: "contradiction-floor", label: "No contradiction: space vs floor", input: `Not yet identified, ${app.floor}`, result: "fail", source: "Our choice", detail: `Space is 'Not yet identified' but the floor is given as '${app.floor}'. Confirm which is right.` });
     }
 
-    // AI reading of the notes: a flag only; it becomes a hold only if the reviewer confirms it
+    // Notes vs fields: flagged by the AI or by a simple phrase check. A flag only; it becomes a
+    // hold only if the reviewer confirms it.
     const a = ai[app.id];
-    if (a?.contradiction.found && settings.checks.checkContradictions) {
+    const noteIssue = a?.contradiction.found ? { by: "AI", detail: a.contradiction.detail } : notesContradiction(app);
+    if (noteIssue && settings.checks.checkContradictions) {
       if (r.aiContradiction === "confirmed") {
-        add({ key: "contradiction-notes", label: "Notes agree with the fields", input: app.notes, result: "fail", source: "Our choice", detail: `Notes contradict the fields (flagged by AI, confirmed by reviewer): ${a.contradiction.detail}` });
+        add({ key: "contradiction-notes", label: "Notes agree with the fields", input: app.notes, result: "fail", source: "Our choice", detail: `Notes contradict the fields (flagged by ${noteIssue.by}, confirmed by reviewer): ${noteIssue.detail}` });
       } else if (r.aiContradiction !== "dismissed") {
-        flags.push({ kind: "ai-contradiction", text: `AI flagged a possible contradiction in the notes (not applied until you confirm): ${a.contradiction.detail}` });
+        flags.push({ kind: "ai-contradiction", text: `${noteIssue.by === "AI" ? "AI" : "A phrase check"} flagged a possible contradiction in the notes (not applied until you confirm): ${noteIssue.detail}` });
       }
     }
 
@@ -304,6 +339,17 @@ export function runEngine(input: EngineInput): EngineResult {
     if (r.liabilities?.trim()) flags.push({ kind: "liabilities", text: `Liabilities / previous issues noted by reviewer: ${r.liabilities.trim()}` });
     if (settings.launchLimitMonths !== null && app.targetLaunch !== null && app.targetLaunch < settings.launchLimitMonths) {
       flags.push({ kind: "launch", text: `Feasibility note: target launch of ${app.targetLaunch} months is shorter than the ${settings.launchLimitMonths}-month limit set in Settings. Not scored.` });
+    }
+
+    // Site details asked of the applicant: shown for context, never scored.
+    const site = r.site ?? {};
+    const siteBits = [
+      site.frontageFt != null ? `frontage ${site.frontageFt} ft` : null,
+      site.visibility ? `visibility: ${site.visibility.toLowerCase()}` : null,
+      site.monthlyRent != null ? `rent ₹${site.monthlyRent.toLocaleString("en-IN")}/month` : null,
+    ].filter(Boolean);
+    if (app.spaceAvailable === "Owned" || app.spaceAvailable === "Rented") {
+      add({ key: "site-details", label: "Site details (asked; not scored)", input: siteBits.join(", ") || "not asked yet", result: "info", source: "Our choice", detail: siteBits.length ? `Reviewer recorded: ${siteBits.join(", ")}. Context only; not part of the score.` : "Frontage, visibility and rent have not been recorded yet. See 'Questions to ask'." });
     }
 
     // Same-pin rule (Case rule)
@@ -339,13 +385,32 @@ export function runEngine(input: EngineInput): EngineResult {
       profile: { id: profile.id, name: profile.name },
       territory: territory ? { id: territory.id, city: territory.city, priority: territory.priority, tier: territory.tier } : null,
       rank: null, rankOf: null, slot: null, waitlistPosition: null, contest: null,
-      flags, whatWouldChange: [], nextSteps: [],
+      flags, whatWouldChange: [], nextSteps: [], questions: siteQuestions(app, r.site, fixes),
     };
   }
 
-  // Manual changes take applicants out of the automatic pool (a manual "Good to go" takes a slot first).
+  // Traffic lights. Space is absolute (share of its points). Money, Experience and Financial are
+  // relative, so their light is the applicant's rank among everyone who has that factor (thirds by default).
+  for (const key of ["money", "experience", "financial"] as const) {
+    const pop = Object.values(ledger).map((e) => e.factors.find((f) => f.key === key)!).filter((f) => f.provided).map((f) => f.points);
+    for (const e of Object.values(ledger)) {
+      const f = e.factors.find((x) => x.key === key)!;
+      if (f.provided) f.light = lightFor(percentRank(f.points, pop), settings.lights);
+    }
+  }
+
+  // Manual changes take applicants out of the automatic pool. A manual "Good to go" takes a slot
+  // first AND reserves its pin, so the same-pin case rule still holds.
   const manualOf = (id: string) => ledger[id].manual?.status ?? null;
-  const qualified = apps.filter((a) => ledger[a.id].engineStatus === "Good to go" && manualOf(a.id) === null);
+  const manualPins = new Map<string, string>();
+  for (const a of apps) if (manualOf(a.id) === "Good to go" && !manualPins.has(a.pin)) manualPins.set(a.pin, a.id);
+  const pinTakenBy = new Map<string, string>();
+  const qualified = apps.filter((a) => {
+    if (ledger[a.id].engineStatus !== "Good to go" || manualOf(a.id) !== null) return false;
+    const holder = manualPins.get(a.pin);
+    if (holder) pinTakenBy.set(a.id, holder);
+    return !holder;
+  });
 
   // Contested pins: two or more qualified applicants on the same free pin. The tool never picks.
   const byPin = new Map<string, string[]>();
@@ -369,9 +434,11 @@ export function runEngine(input: EngineInput): EngineResult {
   }
 
   // Capacity per territory = min(open slots, free pins). Case rule.
+  const claimedPins = new Set<string>();
   const territories: TerritorySummary[] = dataset.territories.map((t) => {
     const occupied = t.pins.filter((p) => storeByPin.has(p)).map((p) => ({ pin: p, storeId: storeByPin.get(p)!.id }));
-    const freePins = t.pins.filter((p) => !storeByPin.has(p));
+    const freePins = t.pins.filter((p) => !storeByPin.has(p) && !claimedPins.has(p));
+    freePins.forEach((p) => claimedPins.add(p));
     const openSlots = Math.max(0, t.openSlots ?? 0);
     return {
       id: t.id, city: t.city, tier: t.tier, priority: t.priority, openSlots, pins: t.pins, freePins, occupied,
@@ -386,7 +453,7 @@ export function runEngine(input: EngineInput): EngineResult {
     const pending = [...new Set(members.filter((id) => pendingContest.has(id)).map((id) => ledger[id].pin))];
     t.pendingContests = pending;
     const pool = members.filter((id) => qualified.some((q) => q.id === id) && !pendingContest.has(id) && !losers.has(id));
-    const byScore = (x: string, y: string) => ledger[y].total - ledger[x].total || x.localeCompare(y);
+    const byScore = (x: string, y: string) => ledger[y].total - ledger[x].total || x.localeCompare(y, undefined, { numeric: true });
     const rankable = members.filter((id) => pool.includes(id) || pendingContest.has(id)).sort(byScore);
     rankable.forEach((id, i) => {
       ledger[id].rank = i + 1;
@@ -416,19 +483,34 @@ export function runEngine(input: EngineInput): EngineResult {
       }
       if (losers.has(id)) {
         const e = ledger[id];
+        const winner = losers.get(id)!;
         e.status = e.engineStatus = "Hold: pin occupied";
-        e.reason = `Reviewer's call gave pin ${e.pin} to ${losers.get(id)}. This profile may still be good; another pin is an option.`;
+        e.reason = `Reviewer's call gave pin ${e.pin} to ${winner}${ledger[winner].status === "Waitlist" ? ` (who is on the waitlist, so no store is assigned on this pin yet)` : ""}. This profile may still be good; another pin is an option.`;
+      }
+      if (pinTakenBy.has(id)) {
+        const e = ledger[id];
+        e.status = e.engineStatus = "Hold: pin occupied";
+        e.reason = `Pin ${e.pin} is taken by ${pinTakenBy.get(id)}, whom the reviewer set to Good to go. This profile may still be good; another pin is an option.`;
       }
       if (ledger[id].status.startsWith("Hold")) t.holds.push(id);
     }
     for (const id of forced) t.goodToGo.unshift(id);
+    if (forced.length > t.capacity) {
+      for (const id of forced) ledger[id].flags.push({ kind: "territory", text: `Warning: ${forced.length} applicants were set to Good to go by hand in ${t.id}, more than its capacity of ${t.capacity}.` });
+    }
   }
 
   // Manual status changes are applied last; the engine's own answer stays in engineStatus.
   for (const e of Object.values(ledger)) {
     if (e.manual) {
       e.status = e.manual.status;
-      e.reason = `Set manually by reviewer: ${e.manual.reason} (engine said: ${e.engineStatus}).`;
+      const engineSaid = e.engineStatus === "Good to go" ? "engine checks: all passed; not allocated a slot automatically" : `engine said: ${e.engineStatus}`;
+      e.reason = `Set manually by reviewer: ${e.manual.reason} (${engineSaid}).`;
+      if (e.manual.status === "Good to go") {
+        const store = storeByPin.get(e.pin);
+        if (store) e.flags.push({ kind: "territory", text: `Warning: existing store ${store.id} is on pin ${e.pin}. The case rule is one store per pin.` });
+        if (manualPins.get(e.pin) !== e.id) e.flags.push({ kind: "territory", text: `Warning: ${manualPins.get(e.pin)} was also set to Good to go on pin ${e.pin}. Only one store per pin; ${manualPins.get(e.pin)} keeps it.` });
+      }
     }
   }
 
@@ -465,6 +547,7 @@ export function runEngine(input: EngineInput): EngineResult {
         w.push("A higher-scoring applicant in the same territory, or fewer open slots, would move this to Waitlist.");
         if (!e.financialProvided) w.push("Entering the financial profile re-scores everyone who has one.");
         n.push("Review the ledger and confirm. Confirming moves the applicant to 'Awaiting paperwork'.");
+        if (e.questions.length) n.push("Ask the applicant the open site questions (frontage, visibility, rent) before confirming.");
         break;
       default:
         break;

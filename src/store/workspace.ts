@@ -2,7 +2,7 @@
 // One workspace per browser (session id in localStorage), so judges don't overwrite each
 // other. Saved locally always; mirrored to the database (Neon) when it is configured (see lib/sync.ts).
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { createJSONStorage, persist } from "zustand/middleware";
 import { DEFAULT_SETTINGS, type Settings } from "@/lib/settings";
 import type {
   ActionLogEntry, AiAssessment, ContestDecision, Dataset, ReviewerInput, Status, WaitlistConfirmation,
@@ -133,6 +133,12 @@ export const useWorkspace = create<WorkspaceData & WorkspaceActions>()(
     },
     {
       name: "franchise-engine-workspace-v1",
+      // A full or blocked localStorage must never break the app: failed writes are skipped.
+      storage: createJSONStorage(() => ({
+        getItem: (k) => { try { return localStorage.getItem(k); } catch { return null; } },
+        setItem: (k, v) => { try { localStorage.setItem(k, v); } catch { /* quota or blocked: keep working in memory */ } },
+        removeItem: (k) => { try { localStorage.removeItem(k); } catch { /* ignore */ } },
+      })),
       partialize: (s) => dataOnly(s),
     },
   ),
@@ -143,3 +149,10 @@ function dataOnly(s: object): WorkspaceData {
 }
 
 export const snapshot = (): WorkspaceData => dataOnly(useWorkspace.getState());
+
+// Another tab saved newer data: load it, so an older tab never writes stale state over it.
+if (typeof window !== "undefined") {
+  window.addEventListener("storage", (e) => {
+    if (e.key === "franchise-engine-workspace-v1") useWorkspace.persist.rehydrate();
+  });
+}

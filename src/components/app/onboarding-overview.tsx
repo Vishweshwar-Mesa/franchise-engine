@@ -5,7 +5,7 @@
 // Tasks come from the same timeline rules as the per-store page (lib/onboarding.ts).
 import Link from "next/link";
 import { Checkbox } from "@/components/ui/checkbox";
-import { addDays, buildTimeline, daysBetween, gateComplete, GATE_LABELS, taskDonePatch, type Onboarding } from "@/lib/onboarding";
+import { addDays, buildTimeline, daysBetween, gateComplete, GATE_LABELS, localDate, taskDonePatch, type Onboarding } from "@/lib/onboarding";
 import { cn } from "@/lib/utils";
 import { useWorkspace } from "@/store/workspace";
 
@@ -48,7 +48,7 @@ const KIND_LABEL: Record<Kind, string> = {
 };
 
 /** Today's date in the viewer's own timezone (not UTC), as YYYY-MM-DD. */
-export const localToday = () => new Date().toLocaleDateString("en-CA");
+export const localToday = () => localDate();
 const fmt = (iso: string) => new Date(iso + "T00:00:00Z").toLocaleDateString("en-IN", { day: "numeric", month: "short", timeZone: "UTC" });
 
 /** Every onboarding task for every store, with dates where they can be placed. */

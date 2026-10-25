@@ -1,11 +1,13 @@
 import { z } from "zod";
 import { EmailResponse } from "@/lib/ai-schemas";
 import { aiJson } from "@/lib/server/openrouter";
+import { allow } from "@/lib/server/limit";
 
 // Drafts the confirmation email in the applicant's language from the facts given only.
 const Input = z.object({ language: z.string().max(30), facts: z.record(z.string(), z.unknown()) });
 
 export async function POST(req: Request) {
+  if (!allow(req, "email", 10)) return Response.json({ available: false });
   const parsed = Input.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return Response.json({ available: false });
   const facts = JSON.stringify(parsed.data.facts);

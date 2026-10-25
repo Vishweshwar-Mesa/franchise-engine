@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { ChatResponse } from "@/lib/ai-schemas";
 import { aiJson } from "@/lib/server/openrouter";
+import { allow } from "@/lib/server/limit";
 
 // Chat over the ledger. The AI answers "why" questions from the ledger only, or returns a
 // structured what-if that the browser re-runs through the engine on a copy.
@@ -11,6 +12,7 @@ const Input = z.object({
 });
 
 export async function POST(req: Request) {
+  if (!allow(req, "chat", 20)) return Response.json({ available: false });
   const parsed = Input.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return Response.json({ available: false });
   const ctx = JSON.stringify(parsed.data.context);

@@ -61,7 +61,7 @@ const GLOSSARY: [string, string][] = [
   ["Feasibility note", "A note shown when an applicant wants to open sooner than the launch limit set in Settings. Never affects the score or status."],
   ["Financial profile", "Net worth and portfolio (in ₹ lakh), typed by the reviewer because the application does not include them, plus a free-text box for liabilities or past failures."],
   ["Free pin", "A pin code inside a territory that has no existing store on it."],
-  ["Gantt / timeline", "The onboarding plan drawn as bars on a calendar: stock arrival, POS set-up, training, soft launch, payments and check-ins. Durations are typed by the brand; none are made up."],
+  ["Gantt / timeline", "The onboarding plan drawn as bars on a calendar: stock arrival, POS set-up, training, soft launch, payments and check-ins. Durations are typed by the brand; the site never fills them in (the 3 demo stores use demo entries, marked on the demo banner)."],
   ["Hold", "A pause, not a rejection. Either information is needed, or the pin is already taken."],
   ["Launch timing (Target launch)", "How many months from now the applicant wants to open. Shown for context, never scored."],
   ["Liabilities", "Loans, past business failures or other issues the reviewer notes. Shown as a warning; never changes the score or status."],
@@ -75,6 +75,8 @@ const GLOSSARY: [string, string][] = [
   ["Rescaled score", "When no financial profile is entered, the other three factors are scaled up to total 100 (Space 50, Money 25, Experience 25), and the applicant's page says so."],
   ["Reviewer's call", "Your decision on a contested pin. The chosen applicant competes for a slot by score; the others move to Hold: pin occupied."],
   ["Scoring profile", "A set of scoring numbers for a region. Only \"Default (Karnataka)\" exists; you can add others in Settings."],
+  ["Site details", "Frontage (width of the shop front, in feet), visibility (main road, side street, inside a mall) and monthly rent. Not in the application file: the reviewer asks the applicant and records the answers. Shown in the ledger and export as context only; never scored."],
+  ["Questions to ask", "A list on each applicant's page of what to ask them next: anything missing or wrong in the application, then site details not yet recorded. Has a Copy button."],
   ["Soft launch", "A quiet first opening of the store before full operation."],
   ["Space", "Whether the applicant owns or rents a shop, its size and its floor. 40 of the 100 points. Stores under about 400 sq ft are marked as small-space risk; 700+ sq ft is preferred (from Go Colors' own statements)."],
   ["Territory", "An area the brand wants to grow in, made up of pin codes, with a number of open slots and a priority. Priority is shown for context only."],
@@ -179,7 +181,7 @@ export default function GuidePage() {
             <b>1. Confirm</b> a Good to go applicant. They move to <b>Awaiting paperwork</b>. <b>2. Paperwork gate:</b> tick and date the signed franchise agreement, GST registration and other legal registrations.
             <b> 3. Day 0</b> is the date the last one was done; the timeline starts there: payments, stock arrival, POS software, training, soft launch, then check-ins at day 30, 60, 90 and 180.
           </p>
-          <p className="text-sm text-muted-foreground">Durations, fees and terms are typed by the brand; the site never fills them in. Each task says why it exists.</p>
+          <p className="text-sm text-muted-foreground">Durations, fees and terms are typed by the brand; the site never fills them in. (The 3 demo stores have demo durations so the Gantt has something to show; their fees and amounts stay blank.) Each task says why it exists.</p>
         </div>
       </Panel>
 

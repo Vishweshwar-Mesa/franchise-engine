@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { LedgerEntry } from "@/lib/engine";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -25,7 +26,7 @@ export function ApplicantsTable({ rows, showTotal }: { rows: LedgerEntry[]; show
       <TableBody>
         {rows.map((e) => (
           <TableRow key={e.id} className="cursor-pointer" onClick={() => router.push(`/applicant/${encodeURIComponent(e.id)}`)}>
-            <TableCell className="font-mono text-xs">{e.id}</TableCell>
+            <TableCell className="font-mono text-xs"><Link href={`/applicant/${encodeURIComponent(e.id)}`} onClick={(ev) => ev.stopPropagation()} className="underline-offset-2 hover:underline">{e.id}</Link></TableCell>
             <TableCell>{e.name || <span className="text-muted-foreground">missing</span>}</TableCell>
             <TableCell>{e.city}</TableCell>
             <TableCell className="font-mono text-xs">{e.pin}</TableCell>

@@ -36,7 +36,7 @@ export function toNumber(v: unknown): { value: number | null; bad: boolean } {
   if (raw === "") return { value: null, bad: false };
   const cleaned = raw
     .replace(/[₹,]/g, "")
-    .replace(/\b(rs\.?|inr|lakhs?|sq\.?\s*ft|sqft|years?|yrs?|months?)\b/gi, "")
+    .replace(/(rs\.?|inr|lakhs?|lacs?|l\b|sq\.?\s*ft\.?|sqft|square\s*feet|years?|yrs?\.?|months?|mths?)/gi, "")
     .trim();
   if (/^-?\d+(\.\d+)?$/.test(cleaned)) return { value: Number(cleaned), bad: false };
   return { value: null, bad: true };
@@ -106,6 +106,16 @@ function canonical(value: string, options: readonly string[]): string {
   return hit ?? value;
 }
 
+type Table = NonNullable<ReturnType<typeof readTable>>;
+
+function skipTemplateExample(sheet: XLSX.WorkSheet, table: Table, problems: Problem[], sheetName: string): Table["rows"] {
+  const note = text(sheet["A1"]?.v).toLowerCase();
+  const first = table.rows[0];
+  if (!note.includes("is an example") || !first || first.n !== table.headerRow + 1 || table.rows.length < 2) return table.rows;
+  problems.push({ sheet: sheetName, row: first.n, message: "Skipped the template's example row (the sheet says real data starts on the next row)." });
+  return table.rows.slice(1);
+}
+
 export function parseWorkbook(data: ArrayBuffer, fileName: string): Dataset {
   const problems: Problem[] = [];
   const empty = (fatal: string, sheetsFound: string[] = []): Dataset => ({
@@ -130,7 +140,10 @@ export function parseWorkbook(data: ArrayBuffer, fileName: string): Dataset {
 
   const applications: Application[] = [];
   const seen = new Set<string>();
-  for (const { n, cells } of appTable.rows) {
+  // The template's first data row is a grey example ("Row 3 is an example ... enter data from row 4").
+  // Skip it when the sheet still carries that note and there is real data below it.
+  const appRows = skipTemplateExample(appSheet, appTable, problems, "Applications");
+  for (const { n, cells } of appRows) {
     const get = (f: string) => (appTable.col[f] === undefined ? "" : cells[appTable.col[f]]);
     const badNumbers: Record<string, string> = {};
     const num = (f: string) => {
@@ -156,6 +169,10 @@ export function parseWorkbook(data: ArrayBuffer, fileName: string): Dataset {
       spaceSize: num("spaceSize"), floor: canonical(text(get("floor")), ["Ground", "Upper", "Mall unit", "Not known"]),
       targetLaunch: num("targetLaunch"), language: text(get("language")), notes: text(get("notes")), badNumbers,
     };
+    if (app.investment !== null && app.investment > 10000) {
+      app.badNumbers.investment = `${app.investment} (looks like rupees; the column is in ₹ lakh)`;
+      app.investment = null;
+    }
     if (idMissing) problems.push({ sheet: "Applications", row: n, id, message: "Application ID is blank; shown as " + id + "." });
     for (const [f, raw] of Object.entries(badNumbers)) problems.push({ sheet: "Applications", row: n, id, message: `'${columnLabel(f)}' should be a number but is '${raw}'.` });
     applications.push(app);
@@ -173,7 +190,7 @@ export function parseWorkbook(data: ArrayBuffer, fileName: string): Dataset {
   if (!terTable) problems.push({ sheet: "Territories", row: null, message: "No usable 'Territories' sheet: nobody can be matched to a territory." });
   else {
     const seenT = new Set<string>();
-    for (const { n, cells } of terTable.rows) {
+    for (const { n, cells } of skipTemplateExample(terSheet!, terTable, problems, "Territories")) {
       const get = (f: string) => (terTable.col[f] === undefined ? "" : cells[terTable.col[f]]);
       const id = text(get("id")) || `TER-ROW-${n}`;
       if (seenT.has(id.toUpperCase())) {

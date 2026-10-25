@@ -3,6 +3,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { UploadPanel } from "@/components/app/upload-panel";
 import { ValidationReportView } from "@/components/app/validation-report";
+import { RowIssues } from "@/components/app/row-issues";
 import { StatusCounts } from "@/components/app/status-counts";
 import { PageHeader } from "@/components/app/page-header";
 import { useResults } from "@/hooks/use-results";
@@ -23,6 +24,7 @@ export default function UploadPage() {
       />
       <UploadPanel onReport={setReport} />
       {shown && <ValidationReportView report={shown} />}
+      {r && <RowIssues r={r} />}
       {r && (
         <div className="flex flex-col gap-3">
           <StatusCounts counts={r.counts} />

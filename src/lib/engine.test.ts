@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import * as fs from "fs";
 import * as XLSX from "xlsx";
 import { runEngine, percentRank, type EngineInput } from "./engine";
-import { parseWorkbook, CASE_ALLOWED_CITIES, CASE_EXISTING_STORES, CASE_LANGUAGES } from "./parse";
+import { parseWorkbook, toNumber, CASE_ALLOWED_CITIES, CASE_EXISTING_STORES, CASE_LANGUAGES } from "./parse";
 import { DEFAULT_SETTINGS, type Settings } from "./settings";
 import type { Application, Dataset, Territory } from "./types";
 
@@ -102,7 +102,7 @@ describe("scoring", () => {
     expect(e.factors[0].points).toBe(50);
   });
   it("uses the 40/20/20/20 split when the financial profile is provided", () => {
-    const e = run([app("A")], [ter("T1", ["570001"])], { reviewer: { A: { netWorth: 100 } } }).ledger.A;
+    const e = run([app("A"), app("B", { pin: "570002" })], [ter("T1", ["570001", "570002"])], { reviewer: { A: { netWorth: 100 }, B: { netWorth: 50 } } }).ledger.A;
     expect(e.rescaled).toBe(false);
     expect(e.factors.map((f) => f.max)).toEqual([40, 20, 20, 20]);
   });
@@ -138,7 +138,7 @@ describe("manual status changes", () => {
     const r = run([app("A")], [ter("T1", ["570001"])], { reviewer: { A: { manualStatus: { status: "Not proceeding", reason: "Withdrew", at: "x" } } } });
     expect(r.ledger.A.status).toBe("Not proceeding");
     expect(r.ledger.A.engineStatus).toBe("Good to go");
-    expect(r.ledger.A.reason).toMatch(/engine said: Good to go/);
+    expect(r.ledger.A.reason).toMatch(/engine checks: all passed/);
   });
   it("a manual Not proceeding frees the slot for the waitlist", () => {
     const apps = [app("A", { pin: "570001", investment: 50 }), app("B", { pin: "570002", investment: 10 })];
@@ -206,5 +206,95 @@ describe("demo file with deliberate traps", () => {
     expect(s("APP-016")).not.toMatch(/Hold/);
     expect(s("APP-017")).toBe("Needs your decision");
     expect(r.ledger["APP-031"].flags.some((f) => f.kind === "language")).toBe(true);
+  });
+});
+
+describe("audit fixes", () => {
+  it("a manual Good to go reserves its pin (one store per pin)", () => {
+    const r = run([app("A"), app("B")], [ter("T1", ["570001", "570002"])], { reviewer: { A: { manualStatus: { status: "Good to go", reason: "site visit", at: "x" } } } });
+    expect(r.ledger.A.status).toBe("Good to go");
+    expect(r.ledger.B.status).toBe("Hold: pin occupied");
+    expect(r.ledger.B.reason).toMatch(/taken by A/);
+  });
+  it("a manual Good to go on a pin with a store is warned", () => {
+    const r = run([app("A", { pin: "570009" })], [ter("T1", ["570001", "570009"])], { reviewer: { A: { manualStatus: { status: "Good to go", reason: "x", at: "x" } } } });
+    expect(r.ledger.A.flags.some((f) => /existing store/.test(f.text))).toBe(true);
+  });
+  it("entering one applicant's financial profile never lowers their score", () => {
+    const apps = [app("A"), app("B", { pin: "570002" })];
+    const T = [ter("T1", ["570001", "570002"])];
+    const before = run(apps, T).ledger.A.total;
+    const after = run(apps, T, { reviewer: { A: { netWorth: 500 } } }).ledger.A;
+    expect(after.total).toBe(before);
+    expect(after.factors[3].parts[0].value).toMatch(/needs at least 2/);
+  });
+  it("a financial profile with only one part scores that part at full weight", () => {
+    const apps = [app("A"), app("B", { pin: "570002" })];
+    const e = run(apps, [ter("T1", ["570001", "570002"])], { reviewer: { A: { netWorth: 500 }, B: { netWorth: 100 } } }).ledger.A;
+    expect(e.factors[3].points).toBe(20);
+  });
+  it("relative traffic lights follow rank thirds", () => {
+    const apps = [10, 20, 30, 40, 50, 60].map((inv, i) => app(`A${i}`, { pin: `57000${i}`, investment: inv }));
+    const r = run(apps, [ter("T1", apps.map((a) => a.pin), 6)]);
+    expect(r.ledger.A5.factors[1].light).toBe("green");
+    expect(r.ledger.A0.factors[1].light).toBe("red");
+  });
+  it("flags notes that say there is no shop, without AI, and holds only once confirmed", () => {
+    const a = app("A", { notes: "I don't have a shop yet, still searching" });
+    const flagged = run([a], [ter("T1", ["570001"])]).ledger.A;
+    expect(flagged.status).toBe("Good to go");
+    expect(flagged.flags.some((f) => f.kind === "ai-contradiction")).toBe(true);
+    expect(run([a], [ter("T1", ["570001"])], { reviewer: { A: { aiContradiction: "confirmed" } } }).ledger.A.status).toBe("Hold: info needed");
+  });
+  it("ties sort numerically by ID", () => {
+    const r = run([app("APP-10", { pin: "570001" }), app("APP-9", { pin: "570002" })], [ter("T1", ["570001", "570002"], 1)]);
+    expect(r.ledger["APP-9"].status).toBe("Good to go");
+  });
+  it("a pin listed in two territories is free in the first only", () => {
+    const r = run([], [ter("T1", ["570001"], 1), ter("T2", ["570001"], 1)]);
+    expect(r.territories[0].capacity).toBe(1);
+    expect(r.territories[1].capacity).toBe(0);
+  });
+});
+
+describe("parser audit fixes", () => {
+  it("reads common Indian number formats", () => {
+    for (const [v, n] of [["Rs. 20", 20], ["450 sq. ft.", 450], ["450sqft", 450], ["5yrs", 5], ["25L", 25], ["25 lakh", 25], ["1,200", 1200]] as const) {
+      expect(toNumber(v).value).toBe(n);
+    }
+    expect(toNumber("twenty").bad).toBe(true);
+  });
+  it("skips the template's example row when real rows follow, keeps it when it is alone", () => {
+    const header = ["Application ID", "Applicant name", "City", "State", "Pin code", "Investment capacity (₹ lakh)", "Retail experience (years)", "Space available"];
+    const note = "Applications — one row per record. Row 3 is an example (grey); enter data from row 4.";
+    const book = (rows: unknown[][]) => {
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([[note], header, ...rows]), "Applications");
+      return parseWorkbook(toBuf(wb), "t.xlsx");
+    };
+    const example = ["APP-001", "Ravi Kumar", "Mysuru", "Karnataka", 570001, 25, 4, "Rented"];
+    const two = book([example, ["APP-001", "Real Person", "Mysuru", "Karnataka", 570002, 30, 5, "Owned"]]);
+    expect(two.applications.map((a) => a.name)).toEqual(["Real Person"]);
+    expect(two.report.problems.some((p) => /example row/.test(p.message))).toBe(true);
+    expect(book([example]).applications).toHaveLength(1);
+  });
+  it("flags an investment that looks like rupees instead of lakh", () => {
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([["x"], ["Application ID", "Applicant name", "Investment capacity (₹ lakh)"], ["A", "B", "₹25,00,000"]]), "Applications");
+    const d = parseWorkbook(toBuf(wb), "t.xlsx");
+    expect(d.applications[0].investment).toBeNull();
+    expect(d.applications[0].badNumbers.investment).toMatch(/rupees/);
+  });
+});
+
+describe("site details (asked, not scored)", () => {
+  it("asks frontage, visibility and rent (rent only when rented) and never changes the score", () => {
+    const base = run([app("A", { spaceAvailable: "Rented" })], [ter("T1", ["570001"])]).ledger.A;
+    expect(base.questions).toHaveLength(3);
+    const filled = run([app("A", { spaceAvailable: "Rented" })], [ter("T1", ["570001"])], { reviewer: { A: { site: { frontageFt: 20, visibility: "Faces a main road", monthlyRent: 60000 } } } }).ledger.A;
+    expect(filled.questions).toHaveLength(0);
+    expect(filled.total).toBe(base.total);
+    expect(filled.checks.find((c) => c.key === "site-details")?.input).toMatch(/frontage 20 ft/);
+    expect(run([app("A", { spaceAvailable: "Owned" })], [ter("T1", ["570001"])]).ledger.A.questions.some((q) => /rent/.test(q))).toBe(false);
   });
 });

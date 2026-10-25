@@ -5,7 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { dayZero, gateComplete, type GateItem, type Onboarding } from "@/lib/onboarding";
+import { dayZero, gateComplete, localDate, type GateItem, type Onboarding } from "@/lib/onboarding";
 import { useWorkspace } from "@/store/workspace";
 
 type Key = keyof Onboarding["gate"];
@@ -19,10 +19,20 @@ const ITEMS: { key: Key; label: string; upload: string; link?: { href: string; t
 export function PaperworkGate({ id, o }: { id: string; o: Onboarding }) {
   const session = useWorkspace((s) => s.sessionId);
   const [msg, setMsg] = useState<Record<string, string>>({});
-  const update = (key: Key, patch: Partial<GateItem & { list: string }>, log?: string) =>
-    useWorkspace.getState().setOnboarding(id, { gate: { ...o.gate, [key]: { ...o.gate[key], ...patch } } }, log);
+  // Reads the latest gate from the store, so a slow upload never undoes a tick made meanwhile.
+  const update = (key: Key, patch: Partial<GateItem & { list: string }>, log?: string) => {
+    const gate = useWorkspace.getState().onboarding[id]?.gate ?? o.gate;
+    useWorkspace.getState().setOnboarding(id, { gate: { ...gate, [key]: { ...gate[key], ...patch } } }, log);
+  };
+  // Once the timeline has started, Day 0 is fixed: the gate is read-only until reopened.
+  const locked = o.stage === "Onboarding";
 
   async function upload(key: Key, file: File) {
+    if (file.size > 4 * 1024 * 1024) {
+      update(key, { file: { name: file.name, path: null, stored: false } }, `Document '${file.name}' noted (name only, file over 4 MB).`);
+      setMsg((m) => ({ ...m, [key]: "File is larger than 4 MB (the hosting limit), so only its name is kept. Upload a smaller scan or PDF to store it." }));
+      return;
+    }
     const fd = new FormData();
     fd.append("file", file);
     fd.append("session", session);
@@ -35,7 +45,7 @@ export function PaperworkGate({ id, o }: { id: string; o: Onboarding }) {
       /* keep defaults */
     }
     update(key, { file: { name: file.name, path: res.path ?? null, stored: res.stored } }, `Document '${file.name}' added to ${key} (${res.stored ? "stored" : "name only"}).`);
-    setMsg({ ...msg, [key]: res.message });
+    setMsg((m) => ({ ...m, [key]: res.message }));
   }
 
   const complete = gateComplete(o);
@@ -45,17 +55,23 @@ export function PaperworkGate({ id, o }: { id: string; o: Onboarding }) {
       <p className="text-xs text-muted-foreground">
         The reviewer ticks these off. The tool does not verify them, does not state tax rates, thresholds or durations, and gives no legal or tax advice.
       </p>
+      {locked && (
+        <div className="flex flex-wrap items-center gap-2 rounded-xl bg-inset p-3 text-xs">
+          <span>Locked: onboarding has started, so Day 0 ({dayZero(o)}) is fixed. To correct the paperwork, reopen it; the store goes back to Awaiting paperwork.</span>
+          <Button size="xs" variant="outline" onClick={() => { if (window.confirm("Reopen paperwork? The store goes back to Awaiting paperwork and its timeline pauses.")) useWorkspace.getState().setOnboarding(id, { stage: "Awaiting paperwork", startedAt: null }, "Paperwork reopened; stage back to Awaiting paperwork."); }}>Reopen paperwork</Button>
+        </div>
+      )}
       {ITEMS.map((it) => {
         const item = o.gate[it.key];
         return (
           <div key={it.key} className="space-y-2 rounded-2xl border p-4">
             <label className="flex items-center gap-2 font-medium">
-              <Checkbox aria-label={it.label} checked={item.done} onCheckedChange={(v) => update(it.key, { done: !!v, date: v ? item.date ?? new Date().toISOString().slice(0, 10) : item.date }, `${it.label}: ${v ? "ticked" : "unticked"}.`)} />
+              <Checkbox aria-label={it.label} disabled={locked} checked={item.done} onCheckedChange={(v) => update(it.key, { done: !!v, date: v ? item.date ?? localDate() : item.date }, `${it.label}: ${v ? "ticked" : "unticked"}.`)} />
               {it.label}
             </label>
             <div className="flex flex-wrap items-center gap-2">
               <Label htmlFor={`date-${it.key}`} className="text-xs">Date completed</Label>
-              <Input id={`date-${it.key}`} type="date" className="w-44" value={item.date ?? ""} onChange={(e) => update(it.key, { date: e.target.value || null })} />
+              <Input id={`date-${it.key}`} type="date" disabled={locked} className="w-44" value={item.date ?? ""} onChange={(e) => update(it.key, { date: e.target.value || null })} />
               <Label htmlFor={`file-${it.key}`} className="text-xs">{it.upload}</Label>
               <input id={`file-${it.key}`} type="file" className="text-xs" onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(it.key, f); e.target.value = ""; }} />
             </div>

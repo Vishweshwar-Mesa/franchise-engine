@@ -18,9 +18,9 @@ export function templateTraining(e: LedgerEntry): Explanation["training"] {
   const exp = e.factors.find((f) => f.key === "experience");
   const space = e.factors.find((f) => f.key === "space");
   const plan: Explanation["training"] = [
-    { module: "Brand product range and store display", why: "Every new franchisee needs to know the range and how it is displayed." },
-    { module: "Inventory and POS software", why: "Billing and stock tracking are used from day one." },
-    { module: "Customer service, exchanges and returns", why: "Part of everyday store operation." },
+    { module: "Brand product range and store display (suggested; brand to confirm)", why: "Every new franchisee needs to know the range and how it is displayed." },
+    { module: "Inventory and POS software (suggested; brand to confirm)", why: "Billing and stock tracking are used from day one." },
+    { module: "Customer service (suggested; brand to confirm)", why: "Part of everyday store operation." },
   ];
   if (exp && exp.light === "red") plan.unshift({ module: "Retail store operations basics", why: `Experience scored in the lower band (${exp.points}/${exp.max}) compared with other applicants.` });
   if (space && space.parts.some((p) => /small-space/.test(p.value))) plan.push({ module: "Display planning for a small store", why: "The space is in the small-space band, so the full range may not fit." });
@@ -57,7 +57,16 @@ export function parseWhatIf(q: string, apps: Application[]): { id: string; chang
 }
 
 /** Answers chat questions from the ledger without AI. */
+const NOT_IN_DATA = /\b(e-?mail|phone|mobile|contact|address|age|gender|salary|income|aadhaar|pan|bank account|caste|religion|family|married)\b/i;
+
 export function localAnswer(q: string, r: EngineResult): string {
+  if (NOT_IN_DATA.test(q)) return "That isn't in the data.";
+  const t = q.match(/\bTER-[\w-]+\b/i);
+  if (t) {
+    const ter = r.territories.find((x) => x.id.toLowerCase() === t[0].toLowerCase());
+    if (!ter) return `${t[0]} isn't in the data.`;
+    return `${ter.id} (${ter.city}): ${ter.openSlots} open slots, ${ter.freePins.length} free pins, capacity ${ter.capacity}. Good to go: ${ter.goodToGo.join(", ") || "none"}. Waitlist: ${ter.waitlist.join(", ") || "none"}.`;
+  }
   const m = q.match(APP_ID);
   if (m) {
     const e = r.ledger[Object.keys(r.ledger).find((k) => k.toLowerCase() === m[1].toLowerCase()) ?? ""];
@@ -71,12 +80,6 @@ export function localAnswer(q: string, r: EngineResult): string {
   }
   if (/how many|count|summary|overview/i.test(q)) {
     return Object.entries(r.counts).map(([s, n]) => `${s}: ${n}`).join("\n");
-  }
-  const t = q.match(/\bTER-[\w-]+\b/i);
-  if (t) {
-    const ter = r.territories.find((x) => x.id.toLowerCase() === t[0].toLowerCase());
-    if (!ter) return `${t[0]} isn't in the data.`;
-    return `${ter.id} (${ter.city}): ${ter.openSlots} open slots, ${ter.freePins.length} free pins, capacity ${ter.capacity}. Good to go: ${ter.goodToGo.join(", ") || "none"}. Waitlist: ${ter.waitlist.join(", ") || "none"}.`;
   }
   return "That isn't in the data I can read without AI. Ask about an application ID (e.g. 'Why is APP-004 on hold?'), a territory ID, or 'how many'. What-ifs work too: 'What if APP-004 had a 700 sq ft space?'";
 }
@@ -104,7 +107,7 @@ export function compactEntry(e: LedgerEntry) {
     factors: e.factors.map((f) => ({ factor: f.label, points: f.points, max: f.max, light: f.light, parts: f.parts.map((p) => `${p.label}: ${p.value} = ${p.points}/${p.max}`) })),
     total: e.total, rescaled: e.rescaled, relevance: e.relevance, profile: e.profile.name, territory: e.territory,
     rank: e.rank, rankOf: e.rankOf, slot: e.slot, waitlistPosition: e.waitlistPosition, contest: e.contest,
-    flags: e.flags.map((f) => f.text), whatWouldChange: e.whatWouldChange, nextSteps: e.nextSteps,
+    flags: e.flags.map((f) => f.text), whatWouldChange: e.whatWouldChange, nextSteps: e.nextSteps, questions: e.questions,
   };
 }
 

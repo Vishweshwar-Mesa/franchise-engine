@@ -127,6 +127,13 @@ export function profileProblems(p: ScoringProfile): string[] {
   const out: string[] = [];
   const w = p.weights;
   const sum = (o: Record<string, number>) => Object.values(o).reduce((a, b) => a + b, 0);
+  const blanks: string[] = [];
+  const walk = (o: unknown, path: string) => {
+    if (typeof o === "number") { if (!Number.isFinite(o)) blanks.push(path); return; }
+    if (o && typeof o === "object") for (const [k, v] of Object.entries(o)) walk(v, path ? `${path}.${k}` : k);
+  };
+  walk({ weights: p.weights, spaceSplit: p.spaceSplit, tenureRank: p.tenureRank, sizeBands: p.sizeBands, sizeRank: p.sizeRank, floorRank: p.floorRank, experienceSplit: p.experienceSplit, relevanceRank: p.relevanceRank, financialSplit: p.financialSplit }, "");
+  if (blanks.length) out.push(`These need a number: ${blanks.join(", ")}.`);
   if (sum(w) !== 100) out.push(`Factor weights add up to ${sum(w)}, not 100.`);
   if (sum(p.spaceSplit) !== w.space) out.push(`Space split adds up to ${sum(p.spaceSplit)}, not ${w.space}.`);
   if (sum(p.experienceSplit) !== w.experience)

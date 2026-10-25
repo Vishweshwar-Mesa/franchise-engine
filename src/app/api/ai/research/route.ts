@@ -1,12 +1,14 @@
 import { z } from "zod";
 import { ResearchResponse } from "@/lib/ai-schemas";
 import { aiJson } from "@/lib/server/openrouter";
+import { allow } from "@/lib/server/limit";
 
 // Reviewer-only people research through the AI's web search. Returns links labelled
 // "possible match, unverified". Never stored in the ledger and never used in decisions.
 const Input = z.object({ name: z.string().min(2).max(100), city: z.string().max(60), business: z.string().max(300), consent: z.literal(true) });
 
 export async function POST(req: Request) {
+  if (!allow(req, "research", 5)) return Response.json({ available: false, links: [] });
   const parsed = Input.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return Response.json({ available: false, links: [] });
   const { name, city, business } = parsed.data;

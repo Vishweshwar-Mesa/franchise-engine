@@ -105,7 +105,18 @@ export interface ReviewerInput {
   areaType?: AreaType | null;
   /** Reviewer's verdict on an AI-flagged contradiction in the notes. */
   aiContradiction?: "confirmed" | "dismissed" | null;
+  /** Site details asked of the applicant (not in the Excel file). Shown, never scored. */
+  site?: SiteDetails;
   manualStatus?: { status: Status; reason: string; at: string } | null;
+}
+
+export const VISIBILITY = ["Faces a main road", "On a side street", "Inside a mall", "Not known"] as const;
+export interface SiteDetails {
+  /** Width of the shop front facing the street, in feet. */
+  frontageFt?: number | null;
+  visibility?: (typeof VISIBILITY)[number] | null;
+  /** Monthly rent in rupees (only relevant when the space is rented). */
+  monthlyRent?: number | null;
 }
 
 export interface ContestDecision {

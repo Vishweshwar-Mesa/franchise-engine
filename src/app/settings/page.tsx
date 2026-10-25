@@ -30,7 +30,10 @@ export default function SettingsPage() {
   const [pi, setPi] = useState(0);
   const [msg, setMsg] = useState("");
   const p = draft.profiles[pi] ?? draft.profiles[0];
-  const problems = draft.profiles.flatMap((x) => profileProblems(x).map((m) => `${x.name}: ${m}`));
+  const problems = [
+    ...draft.profiles.flatMap((x) => profileProblems(x).map((m) => `${x.name}: ${m}`)),
+    ...(!Number.isFinite(draft.lights.green) || !Number.isFinite(draft.lights.amber) ? ["Traffic lights need both thresholds."] : []),
+  ];
   const dirty = JSON.stringify(draft) !== JSON.stringify(saved);
 
   const num = (path: Path, label: string, hint?: string) => (
@@ -40,8 +43,8 @@ export default function SettingsPage() {
         id={path.join(".")}
         type="number"
         step="any"
-        value={String(getAt(draft, path) ?? "")}
-        onChange={(e) => setDraft(setAt(draft, path, e.target.value === "" ? 0 : Number(e.target.value)))}
+        value={Number.isNaN(getAt(draft, path)) ? "" : String(getAt(draft, path) ?? "")}
+        onChange={(e) => setDraft(setAt(draft, path, e.target.value === "" ? NaN : Number(e.target.value)))}
       />
       {hint && <p className="text-[10px] text-muted-foreground">{hint}</p>}
     </div>
@@ -101,7 +104,10 @@ export default function SettingsPage() {
             <Switch checked={draft.checks[k]} onCheckedChange={(v) => setDraft(setAt(draft, ["checks", k], v))} /> {label}
           </label>
         ))}
-        <p className="text-xs text-muted-foreground">Always on: required fields present, numbers are numbers, 6-digit pin, a territory covers the pin.</p>
+        <p className="text-xs text-muted-foreground">
+          Always on (cannot be switched off, because the engine cannot work without them): required fields present, numbers are numbers, the pin has 6 digits, and a territory covers the pin
+          (applicants are matched to territories by pin only). Also fixed: a blank &quot;Open slots&quot; counts as 0 (never guess a capacity), and ties in score are ordered by Application ID.
+        </p>
       </section>
 
       <section className="grid gap-3 rounded-[20px] border bg-card p-5 md:grid-cols-2">

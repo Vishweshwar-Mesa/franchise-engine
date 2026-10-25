@@ -2,7 +2,7 @@
 // Reviewer-typed inputs: financial profile, liabilities, business relevance override, area type.
 import { useState } from "react";
 import type { LedgerEntry } from "@/lib/engine";
-import { AREA_TYPES, RELEVANCE, type AreaType, type Relevance, type ReviewerInput } from "@/lib/types";
+import { AREA_TYPES, RELEVANCE, VISIBILITY, type AreaType, type Relevance, type ReviewerInput, type SiteDetails } from "@/lib/types";
 import { useWorkspace } from "@/store/workspace";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,7 +39,9 @@ export function FinancialProfileForm({ id, input }: { id: string; input: Reviewe
   );
 }
 
-export function RelevanceCard({ entry, input, aiFlag }: { entry: LedgerEntry; input: ReviewerInput; aiFlag: { found: boolean; detail: string } | null }) {
+export function RelevanceCard({ entry, input }: { entry: LedgerEntry; input: ReviewerInput }) {
+  const noteFlag = entry.flags.find((f) => f.kind === "ai-contradiction");
+  const confirmed = entry.checks.find((c) => c.key === "contradiction-notes");
   const set = useWorkspace((s) => s.setReviewer);
   return (
     <div className="space-y-2 rounded-[20px] border bg-card p-5 text-sm">
@@ -58,9 +60,9 @@ export function RelevanceCard({ entry, input, aiFlag }: { entry: LedgerEntry; in
           {RELEVANCE.map((r) => <option key={r}>{r}</option>)}
         </NativeSelect>
       </div>
-      {aiFlag?.found && (
+      {(noteFlag || confirmed || input.aiContradiction === "dismissed") && (
         <div className="rounded bg-[var(--tone-info-bg)] p-2 text-xs">
-          <p><b>AI-flagged possible contradiction in the notes:</b> {aiFlag.detail}</p>
+          <p><b>Possible contradiction in the notes:</b> {noteFlag?.text ?? confirmed?.detail ?? "dismissed by reviewer"}</p>
           <p className="text-muted-foreground">Not applied unless you confirm. Current: {input.aiContradiction ?? "undecided"}.</p>
           <div className="mt-1 flex gap-2">
             <Button size="xs" variant="outline" onClick={() => set(entry.id, { aiContradiction: "confirmed" }, "Reviewer confirmed the AI-flagged contradiction (Hold: info needed).")}>Confirm (hold for info)</Button>
@@ -81,6 +83,59 @@ export function AreaTypeSelect({ id, value }: { id: string; value: AreaType | nu
         <option value="">Not set</option>
         {AREA_TYPES.map((a) => <option key={a}>{a}</option>)}
       </NativeSelect>
+    </div>
+  );
+}
+
+/** Site details asked of the applicant. Shown in the ledger; never scored. */
+export function SiteDetailsForm({ id, input, rented }: { id: string; input: ReviewerInput; rented: boolean }) {
+  const site = input.site ?? {};
+  const [front, setFront] = useState(site.frontageFt?.toString() ?? "");
+  const [vis, setVis] = useState<string>(site.visibility ?? "");
+  const [rent, setRent] = useState(site.monthlyRent?.toString() ?? "");
+  return (
+    <form
+      className="space-y-2 rounded-[20px] border bg-card p-5 text-sm"
+      onSubmit={(e) => {
+        e.preventDefault();
+        useWorkspace.getState().setReviewer(
+          id,
+          { site: { frontageFt: numOrNull(front), visibility: (vis || null) as SiteDetails["visibility"], monthlyRent: rented ? numOrNull(rent) : null } },
+          `Site details saved (frontage ${front || "blank"} ft, visibility ${vis || "blank"}${rented ? `, rent ${rent || "blank"}` : ""}).`,
+        );
+      }}
+    >
+      <h3 className="text-base font-semibold">Site details (asked of the applicant; not scored)</h3>
+      <p className="text-xs text-muted-foreground">Not in the application file. Record what the applicant tells you; it appears in the reason ledger and the export as context only.</p>
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+        <div><Label htmlFor={`front-${id}`}>Frontage (feet)</Label><Input id={`front-${id}`} inputMode="decimal" placeholder="not asked yet" value={front} onChange={(e) => setFront(e.target.value)} /></div>
+        <div>
+          <Label htmlFor={`vis-${id}`}>Visibility</Label>
+          <NativeSelect id={`vis-${id}`} className="w-full" value={vis} onChange={(e) => setVis(e.target.value)}>
+            <option value="">Not asked yet</option>
+            {VISIBILITY.map((v) => <option key={v}>{v}</option>)}
+          </NativeSelect>
+        </div>
+        {rented && <div><Label htmlFor={`rent-${id}`}>Monthly rent (₹)</Label><Input id={`rent-${id}`} inputMode="decimal" placeholder="not asked yet" value={rent} onChange={(e) => setRent(e.target.value)} /></div>}
+      </div>
+      <Button type="submit" size="sm">Save site details</Button>
+    </form>
+  );
+}
+
+/** What to ask the applicant next, ready to copy into a message or call notes. */
+export function QuestionsCard({ entry }: { entry: LedgerEntry }) {
+  const [copied, setCopied] = useState(false);
+  if (entry.questions.length === 0) return null;
+  return (
+    <div className="space-y-2 rounded-[20px] border bg-card p-5 text-sm">
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="text-base font-semibold">Questions to ask the applicant</h3>
+        <Button size="xs" variant="outline" onClick={async () => {
+          try { await navigator.clipboard.writeText(entry.questions.map((q, i) => `${i + 1}. ${q}`).join("\n")); setCopied(true); } catch { setCopied(false); }
+        }}>{copied ? "Copied" : "Copy"}</Button>
+      </div>
+      <ol className="ml-5 list-decimal space-y-1">{entry.questions.map((q, i) => <li key={i}>{q}</li>)}</ol>
     </div>
   );
 }

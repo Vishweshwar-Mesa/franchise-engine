@@ -54,7 +54,8 @@ export async function POST(req: Request) {
   const json = (v: unknown) => JSON.stringify(v ?? null);
   const apps = (dataset?.applications ?? []) as Row[];
   const ters = (dataset?.territories ?? []) as Row[];
-  const stores = ((dataset?.stores ?? []) as Row[]).map((s, i) => ({ ...s, id: String(s.id || `row-${i}`) }));
+  // Keyed by position so duplicate Store IDs in a file can never break the save.
+  const stores = ((dataset?.stores ?? []) as Row[]).map((s, i) => ({ ...s, id: `${i}:${String(s.id ?? "")}` }));
   const ledger = (body.ledger ?? []) as { app_id: string; status: string; entry: unknown }[];
   const log = ((d.log ?? []) as Row[]).slice(0, 500);
   const meta = dataset ? { allowedCities: dataset.allowedCities, languages: dataset.languages, report: dataset.report } : {};

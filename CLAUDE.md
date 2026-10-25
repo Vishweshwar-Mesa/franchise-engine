@@ -40,7 +40,11 @@ src/lib/types.ts                   Data types (Application, Territory, Store, Re
 src/lib/parse.ts                   Excel parser: headers by name, tolerant, never throws; validation report
 src/lib/settings.ts                Scoring defaults, rubric profiles, zone mapping, profile picker
 src/lib/engine.ts                  THE decision engine (deterministic) -> reason ledger per applicant
-src/lib/engine.test.ts             Vitest unit tests (engine + parser + demo file)
+src/lib/engine.test.ts             Vitest unit tests (engine, parser, demo file, audit regressions, site details)
+src/lib/onboarding.test.ts         Onboarding gate/timeline tests
+src/lib/demo-onboarding.test.ts    Demo onboarding cases (statuses, no money terms)
+src/lib/server/limit.ts            Per-visitor rate limit for the paid AI routes (over the limit -> template fallback)
+src/components/app/row-issues.tsx  Row-level validation report on /upload (held applicants and their fixes)
 src/lib/explain.ts                 Template explanations/training plan/chat answers/what-if parser (AI fallbacks)
 src/lib/whatif.ts                  What-if: re-run engine on a copy, before/after + knock-on changes
 src/lib/export.ts                  CSV/XLSX export
@@ -90,16 +94,22 @@ Flow: Excel -> `parseWorkbook` (browser) -> store -> `runEngine` -> **ledger** -
 | Space 40 = tenure 10 + size 20 + floor 10; Owned 1.0 / Rented 0.75; small 0.25 / medium 0.6 / preferred 1.0; Ground 1, Mall 1, Upper 0.5, Not known 0.2 | Our choice (placeholder) | Prompt asks for an editable placeholder split; bands from Go Colors statements |
 | Experience 20 = years 14 (relative) + business relevance 6 (High 1 / Medium 0.5 / Low 0) | Our choice | Prompt: years + AI-rated relevance |
 | Unrated relevance (no AI, no override) scores 0 | Our choice | No guessing; reviewer can rate |
-| Financial 20 = net worth 10 + portfolio 10, relative among applicants who have them | Our choice | Prompt |
+| Financial 20 = net worth 10 + portfolio 10, relative among applicants who have them; a part is scored only when at least 2 applicants have it (otherwise the factor is rescaled away, or the other part takes its points) | Our choice | Entering data must never lower a score |
 | Relative factors use percent rank among applicants in the file; alone = 0.5 | Our choice | Prompt: "compared with the other applicants" |
-| Traffic lights: share >= 2/3 green, >= 1/3 amber, else red (applied to all four factors) | Our choice | Prompt: thirds |
+| Traffic lights: Money, Experience, Financial by rank among applicants (top third green, middle amber, bottom red; thresholds editable); Space by share of its points | Our choice | Prompt: thirds for relative factors |
+| Notes contradicting the fields: flagged by the AI or by a simple phrase check ("don't have a shop", "still searching" ...) when Space is Owned/Rented; becomes a hold only when the reviewer confirms | Our choice | Works without AI; AI/heuristics never change a status alone |
+| Template example row ("Row 3 is an example") skipped when real rows follow; kept if it is the only row | Our choice | Judges may leave it in |
+| Investment above 10,000 (lakh) flagged as "looks like rupees" | Our choice | Common entry mistake |
+| Site details (frontage ft, visibility, monthly rent if rented): asked of the applicant via a "Questions to ask" list, recorded by the reviewer, shown in ledger/export, never scored | User's choice | Not in the input file; no invented thresholds |
+| Paperwork gate locks once onboarding starts ("Reopen paperwork" moves the store back) | Our choice | Day 0 must not shift silently |
+| AI routes rate-limited per visitor (assess 6/min, chat 20, explain 40, email 10, research 5); over the limit -> template fallback | Our choice | Bounded cost without blocking the site |
 | Financial blank -> rescale others to 100 (50/25/25) with banner | Our choice | Prompt |
 | Liabilities = flag only | Our choice | Prompt |
 | Waitlist / slot order: total score desc, ties by Application ID | Our choice | Deterministic and explainable |
 | Territory priority and launch timing not scored; launch note only if a limit is set (blank default) | Our choice | Prompt |
 | Contested pin: only "qualified" applicants (no holds) contest a pin | Our choice | A held applicant can't take the pin anyway |
 | Reviewer's call: winner competes for a slot by score; others -> Hold: pin occupied ("reviewer gave this pin to X") | Our choice | One store per pin |
-| Manual status change: reason required, logged; takes the applicant out of the automatic pool; a manual Good to go takes a slot first | Our choice | Reviewer can change any status |
+| Manual status change: reason required, logged; takes the applicant out of the automatic pool; a manual Good to go takes a slot first AND reserves its pin (others on that pin -> Hold: pin occupied); warnings if it sits on an existing store's pin or over-fills the territory | Our choice | Reviewer can change any status, but the same-pin case rule must still hold |
 | Zones = MHA Zonal Councils | Our choice | Official grouping; only used to match profiles |
 | Profile specificity: country 1, zone 2, state 4, city 8, area type 16; ties -> earlier profile | Our choice | "Most specific wins" |
 | Per-browser session id, data in localStorage, mirrored to Neon when configured | Our choice | No login; judges don't overwrite each other |
@@ -108,7 +118,7 @@ Flow: Excel -> `parseWorkbook` (browser) -> store -> `runEngine` -> **ledger** -
 | Chat: local what-if parser first (no AI needed), then AI, then ledger template answers | Our choice | Always works |
 | xlsx from SheetJS CDN 0.20.3 (not npm 0.18.5) | Our choice | npm version has known advisories |
 | `cacheComponents` turned off in next.config | Our choice | All screens are per-browser client pages |
-| First visit with no saved data auto-loads the synthetic 30-applicant demo file (demo-messy.xlsx), plain (no reviewer inputs), with a small "Demo data" flag and no button to load it; any upload replaces it | User's choice | The empty app was too blank to review; judges still upload their own file. A 10-applicant pre-filled demo workspace was tried and removed the same day at the user's request |
+| First visit with no saved data auto-loads the synthetic 30-applicant demo file (demo-messy.xlsx) plus 3 demo onboarding stores (demo durations/due days; money terms blank), with a small "Demo data" flag and no button to load it; any upload replaces it | User's choice | The empty app was too blank to review; judges still upload their own file. A 10-applicant pre-filled demo workspace was tried and removed the same day at the user's request |
 | Confirm Good to go -> stage "Awaiting paperwork" (a stage, not a status) | Prompt | Confirming never starts onboarding |
 | Paperwork gate: agreement, GST, other registrations (free-text list); each ticked + dated, optional upload; "confirm with the brand's legal/CA team"; only link: https://www.gst.gov.in/ (verified 2026-10-25: official "Goods & Services Tax (GST) Home", has "Register") | Prompt | No legal/tax advice, no numbers |
 | Day 0 = latest gate date; Start onboarding disabled until all three ticked and dated | Prompt | |
@@ -158,16 +168,19 @@ Score: Space 40 / Money 20 / Experience 20 / Financial profile 20 (rescaled to 5
 
 - Neon: created 2026-10-25 (`franchise-engine-db`), migration 001 applied; session sync verified end to end (30 applicants, ledger and action log saved and read back). AI cache, Places cache/cap and franchisee account records are untested against it.
 - The Vercel Neon integration also drops Neon "agent skills" into `.agents/`, `.claude/skills/` and `skills-lock.json`; they are git-ignored (third-party docs, not part of the app).
-- AI (OpenRouter) has not been tested with a real key/model; only the no-key fallback path is verified.
+- AI: OPENROUTER_API_KEY and OPENROUTER_MODEL=anthropic/claude-sonnet-5.5 are set (2026-10-26), but the OpenRouter account's guardrails block every model tried ("Model blocked by guardrail"). The owner must allow the model/provider at https://openrouter.ai/workspaces/default/guardrails. Until then the app uses templates.
 - Google Places / Geocoding untested with a real key (only the no-key path verified); the Places type names and field masks follow Google's Places API (New) docs but have not been exercised.
 - People research untested with a real model; depends on the OpenRouter web plugin being available for the chosen model.
 - Without DATABASE_URL the Places daily cap is per server instance (weak on Vercel).
 - Email sending (Resend) untested: no key configured; preview-only path verified.
-- Without AI, business relevance is "not rated" (0 of 6 points) until the reviewer rates it, and explanations/training plans are English templates.
+- Without AI, business relevance is "not rated" (0 of 6 points) until the reviewer rates it, and explanations/training plans are English templates (training modules labelled "suggested; brand to confirm").
+- Places rate limit and AI rate limit are per server instance (in memory), not global.
 
 ## 9. Change Log (newest first)
 
 `YYYY-MM-DD | who/which tool | what changed | why | files touched | follow-ups`
+
+- 2026-10-26 | Claude Code (Opus 5.5) | Full re-audit against the brief + bug hunt (two independent reviewers). Fixes: manual Good to go reserves its pin (the case rule could be broken); financial profile needs >=2 applicants to compare (entering data could lower a score); rank-based traffic lights; phrase-check note contradictions without AI; template example row skipped; Indian number formats + rupee check; AI assessment keyed to the loaded file with trimmed inputs; offline chat answers territory questions and says "That isn't in the data"; local-timezone dates; paperwork gate locks after start; upload no longer reverts ticks; 4 MB upload check; tab sync; safe localStorage; duplicate store IDs; per-call Places quota + negative cache; AI per-visitor limits; keyboard links in table; computed rescale note; check-in why follows the setting; franchisee preview hides reviewer UI and shows the legal/CA line; Today waitlist tile uses confirmations; Why? on Today, what-if and confirm; row-level validation report; settings blank numbers + fixed-check reasons; demo banner and Guide honest about demo durations; training modules labelled suggested; Go Colors description limited to section 9. NEW: site details (frontage, visibility, rent) asked + shown, not scored. OpenRouter key + model set in Vercel | User asked for a re-audit and site questions | engine.ts, parse.ts, explain.ts, onboarding.ts, types.ts, settings.ts, workspace.ts, export.ts, api/{state,area,upload,ai/*}, server/limit.ts, many components and pages, tests | Owner: allow the model in OpenRouter guardrails; set the deadline in this file
 
 - 2026-10-26 | Claude Code (Opus 5.5) | Onboarding page: Gantt chart (row per task, grouped by store) and Task board (kanban columns) with a switch, replacing the list; everything labelled by store (new "Store name" deal field, else "<City> <pin>"); local-timezone today for overdue; dealValue() guards records saved before the new field | User: onboarding must be a Gantt/task manager and name stores, not people | onboarding.ts, onboarding-overview.tsx, onboarding/page.tsx, onboarding/[id]/page.tsx, deal-terms-form.tsx, email-draft.tsx, franchisee/[id]/page.tsx | none
 

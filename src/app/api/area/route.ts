@@ -15,7 +15,6 @@ const CATEGORIES: Record<string, string[]> = {
   competitors: ["clothing_store"],
   restaurants: ["restaurant"],
 };
-const CALLS_PER_LOOKUP = 1 + Object.keys(CATEGORIES).length;
 // Older and newer official names, so the geocode check accepts either spelling.
 const CITY_NAMES: Record<string, string[]> = {
   bengaluru: ["bengaluru", "bangalore"],
@@ -64,19 +63,32 @@ export async function GET(req: NextRequest) {
       const rows = await sql`select data from area_cache where key = ${cacheKey}`;
       if (rows[0]) return Response.json(rows[0].data);
     }
-    if (!(await takeQuota(CALLS_PER_LOOKUP))) return na("not available (daily lookup limit reached; try tomorrow)");
+    // Charge the daily cap per Google call actually made: 1 geocode now, the Places searches later.
+    if (!(await takeQuota(1))) return na("not available (daily lookup limit reached; try tomorrow)");
+    // Answers that will not change (pin not found, wrong city) are cached too, so they cost nothing next time.
+    const remember = async (reason: string) => {
+      const out = { available: false, reason };
+      memCache.set(cacheKey, out);
+      try {
+        if (sql) await sql`insert into area_cache (key, data) values (${cacheKey}, ${JSON.stringify(out)}::jsonb) on conflict (key) do update set data = excluded.data, fetched_at = now()`;
+      } catch {
+        /* cache is best effort */
+      }
+      return Response.json(out);
+    };
 
     const geo = await fetch(
       `https://maps.googleapis.com/maps/api/geocode/json?components=${encodeURIComponent(`postal_code:${pin}|country:IN`)}&key=${key}`,
       { signal: AbortSignal.timeout(10000) },
     ).then((r) => r.json());
     const first = geo?.results?.[0];
-    if (!first) return na("not available (pin could not be located)");
+    if (!first) return remember("not available (pin could not be located)");
     const names: string[] = (first.address_components ?? []).map((c: { long_name: string }) => c.long_name.toLowerCase());
     const wanted = CITY_NAMES[city.toLowerCase()] ?? [city.toLowerCase()];
     if (!city || !names.some((n) => wanted.some((w) => n.includes(w)))) {
-      return na(`not available (the pin's location does not match ${city || "the city"})`);
+      return remember(`not available (the pin's location does not match ${city || "the city"})`);
     }
+    if (!(await takeQuota(Object.keys(CATEGORIES).length))) return na("not available (daily lookup limit reached; try tomorrow)");
     const { lat, lng } = first.geometry.location;
 
     const counts: Record<string, { count: number; capped: boolean }> = {};

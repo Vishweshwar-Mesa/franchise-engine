@@ -1,11 +1,11 @@
 // Demo onboarding records layered on the 30-applicant demo file, so the Onboarding pages are
 // not empty. Made-up entries "as if a reviewer typed them". Fees, royalty, deposit and payment
 // amounts stay blank (no invented money terms); phase durations are demo entries.
-import { addDays, newOnboarding, templateEmail, type Onboarding } from "./onboarding";
+import { addDays, localDate, newOnboarding, templateEmail, type Onboarding } from "./onboarding";
 import type { ActionLogEntry } from "./types";
 
 export function demoOnboarding(now = new Date()): { onboarding: Record<string, Onboarding>; log: ActionLogEntry[] } {
-  const today = now.toISOString().slice(0, 10);
+  const today = localDate(now);
   const d = (n: number) => addDays(today, n);
   const at = (n: number, hh = "10:00") => `${d(n)}T${hh}:00.000Z`;
   const demoList = "Shop and establishment registration (demo entry; the real list comes from the brand's legal/CA team)";

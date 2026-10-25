@@ -22,6 +22,7 @@ export function Nav() {
   const path = usePathname();
   const r = useResults();
   const onboarding = useWorkspace((s) => Object.keys(s.onboarding).length);
+  if (path.startsWith("/franchisee")) return null;
   const counts: Record<string, number | undefined> = {
     "/results": r?.order.length,
     "/contested": r?.contests.filter((c) => !c.decision?.winnerId).length || undefined,

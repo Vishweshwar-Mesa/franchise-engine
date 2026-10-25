@@ -12,6 +12,8 @@ export function exportRows(r: EngineResult) {
       "Score /100": e.total, "Score rescaled": e.rescaled ? "Yes (financial profile not provided)" : "No",
       Space: f.space, Money: f.money, Experience: f.experience, "Financial profile": f.financial,
       "Rank in territory": e.rank ? `${e.rank} of ${e.rankOf}` : "", "Waitlist position": e.waitlistPosition ?? "",
+      "Site details (not scored)": e.checks.find((c) => c.key === "site-details")?.input ?? "",
+      "Questions to ask": e.questions.join(" | "),
       "Fixes needed": e.fixes.join(" | "), Flags: e.flags.map((x) => x.text).join(" | "),
       "What would change this": e.whatWouldChange.join(" | "), "Next steps": e.nextSteps.join(" | "),
       "Profile used": e.profile.name,

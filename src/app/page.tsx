@@ -8,6 +8,7 @@ import { Tile } from "@/components/app/bento";
 import { CountUp, useStaggerIn } from "@/components/app/motion";
 import { NoData } from "@/components/app/empty-state";
 import { StatusBadge, TONE, toneStyle } from "@/components/app/status-badge";
+import { WhyButton } from "@/components/app/why-button";
 import { gateComplete } from "@/lib/onboarding";
 import { STATUSES, type Status } from "@/lib/types";
 
@@ -34,6 +35,7 @@ export default function TodayPage() {
   const fileName = useWorkspace((s) => s.dataset?.report.fileName ?? "");
   const onboarding = useWorkspace((s) => s.onboarding);
   const log = useWorkspace((s) => s.log);
+  const waitlistConf = useWorkspace((s) => s.waitlist);
   const gridRef = useStaggerIn<HTMLDivElement>(fileName);
   if (!r) return <NoData />;
 
@@ -54,7 +56,7 @@ export default function TodayPage() {
   const awaiting = onb.filter(([, o]) => o.stage === "Awaiting paperwork");
   const running = onb.filter(([, o]) => o.stage === "Onboarding");
   const waitlisted = entries.filter((e) => e.status === "Waitlist");
-  const unconfirmedWaitlists = r.territories.filter((t) => t.waitlist.length > 0).length;
+  const unconfirmedWaitlists = r.territories.filter((t) => t.waitlist.length > 0 && waitlistConf[t.id]?.order.join() !== t.waitlist.join()).length;
   const recent = log.filter((l) => l.applicantId && r.ledger[l.applicantId]).slice(0, 5);
   const attention = [...pending.flatMap((c) => c.applicantIds), ...holds.map((e) => e.id)].slice(0, 5);
 
@@ -151,7 +153,7 @@ export default function TodayPage() {
 
         <Tile title="Waitlist" href={statusHref("Waitlist")} className="md:col-span-2 lg:col-span-4">
           <CountUp value={waitlisted.length} className="text-4xl font-bold" />
-          <span className="text-xs text-muted-foreground">{unconfirmedWaitlists ? `${unconfirmedWaitlists} territor${unconfirmedWaitlists === 1 ? "y has" : "ies have"} a waitlist order to confirm.` : "No waitlists."}</span>
+          <span className="text-xs text-muted-foreground">{unconfirmedWaitlists ? `${unconfirmedWaitlists} territor${unconfirmedWaitlists === 1 ? "y has" : "ies have"} a waitlist order to confirm.` : waitlisted.length ? "All waitlist orders confirmed." : "No waitlists."}</span>
         </Tile>
 
         <Tile title="Hold: pin occupied" href={statusHref("Hold: pin occupied")} className="md:col-span-2 lg:col-span-4">
@@ -168,12 +170,12 @@ export default function TodayPage() {
         {(recent.length ? recent.map((l) => ({ id: l.applicantId!, note: l.detail })) : attention.map((id) => ({ id, note: r.ledger[id].reason }))).map(({ id, note }, i) => {
           const e = r.ledger[id];
           return (
-            <Link key={`${id}-${i}`} href={`/applicant/${encodeURIComponent(id)}`} className="grid grid-cols-[90px_1fr] items-center gap-3 border-t px-5 py-3 text-[13px] first:border-t-0 hover:bg-inset md:grid-cols-[110px_minmax(0,1.2fr)_170px_minmax(0,2fr)]">
-              <span className="font-mono text-muted-foreground">{id}</span>
-              <span className="font-semibold">{e.name || "Name missing"}</span>
-              <span className="hidden md:block"><StatusBadge status={e.status} /></span>
+            <div key={`${id}-${i}`} className="grid grid-cols-[90px_1fr] items-center gap-3 border-t px-5 py-3 text-[13px] first:border-t-0 hover:bg-inset md:grid-cols-[110px_minmax(0,1.2fr)_220px_minmax(0,2fr)]">
+              <Link href={`/applicant/${encodeURIComponent(id)}`} className="font-mono text-muted-foreground hover:text-foreground">{id}</Link>
+              <Link href={`/applicant/${encodeURIComponent(id)}`} className="font-semibold hover:underline">{e.name || "Name missing"}</Link>
+              <span className="hidden items-center gap-2 md:flex"><StatusBadge status={e.status} /><WhyButton entry={e} /></span>
               <span className="col-span-2 truncate text-muted-foreground md:col-span-1">{note}</span>
-            </Link>
+            </div>
           );
         })}
         {recent.length === 0 && attention.length === 0 && <p className="px-5 py-4 text-sm text-muted-foreground">Nothing needs you right now.</p>}

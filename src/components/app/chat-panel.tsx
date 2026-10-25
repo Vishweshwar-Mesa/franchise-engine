@@ -13,6 +13,7 @@ import { runWhatIf, sanitizeChanges, type WhatIfOutcome } from "@/lib/whatif";
 import { columnLabel } from "@/lib/parse";
 import { useWorkspace } from "@/store/workspace";
 import { StatusBadge } from "./status-badge";
+import { WhyButton } from "./why-button";
 
 interface Msg {
   role: "user" | "assistant";
@@ -27,6 +28,7 @@ export function ChatPanel() {
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [q, setQ] = useState("");
   const [busy, setBusy] = useState(false);
+  const hidden = path.startsWith("/franchisee");
   const focusId = path.startsWith("/applicant/") ? decodeURIComponent(path.split("/")[2] ?? "") : undefined;
 
   function whatIf(id: string, changes: Record<string, unknown>): WhatIfOutcome | null {
@@ -80,6 +82,7 @@ export function ChatPanel() {
     }
   }
 
+  if (hidden) return null;
   return (
     <Sheet>
       <SheetTrigger render={<Button className="fixed right-5 bottom-5 z-40 h-11 rounded-full px-5 shadow-lg" />}>Ask / What-if</SheetTrigger>
@@ -125,8 +128,8 @@ function WhatIfCard({ w }: { w: WhatIfOutcome }) {
     <div className="mt-2 space-y-2 rounded-lg border p-2 text-xs">
       <p><b>Change (copy only):</b> {desc}</p>
       <div className="grid grid-cols-2 gap-2">
-        <div><p className="font-medium">Before</p><StatusBadge status={b.status} /><p>Score {b.total}/100</p><p className="text-muted-foreground">{b.reason}</p></div>
-        <div><p className="font-medium">After</p><StatusBadge status={a.status} /><p>Score {a.total}/100</p><p className="text-muted-foreground">{a.reason}</p></div>
+        <div><p className="font-medium">Before</p><StatusBadge status={b.status} /> <WhyButton entry={b} /><p>Score {b.total}/100</p><p className="text-muted-foreground">{b.reason}</p></div>
+        <div><p className="font-medium">After</p><StatusBadge status={a.status} /> <WhyButton entry={a} label="Why? (after)" /><p>Score {a.total}/100</p><p className="text-muted-foreground">{a.reason}</p></div>
       </div>
       {w.knockOn.length > 0 && (
         <p><b>Also changes:</b> {w.knockOn.map((k) => `${k.id}: ${k.from} → ${k.to}`).join("; ")}</p>

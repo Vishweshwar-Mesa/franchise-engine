@@ -85,6 +85,11 @@ export function dayZero(o: Onboarding): string | null {
   return [g.agreement.date!, g.gst.date!, g.other.date!].sort().at(-1)!;
 }
 
+/** Today in the viewer's own timezone as YYYY-MM-DD (toISOString would give the UTC date). */
+export function localDate(d = new Date()): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 export function addDays(isoDate: string, days: number): string {
   const d = new Date(isoDate + "T00:00:00Z");
   d.setUTCDate(d.getUTCDate() + days);
@@ -138,7 +143,9 @@ export function buildTimeline(o: Onboarding, checkinBase: "softLaunch" | "day0")
   for (const c of CHECKINS) {
     tasks.push({
       id: `checkin-${c}`, kind: "checkin", label: `Day ${c} check-in`,
-      why: "Check-ins review how the open store is doing, so they count from opening, not from paperwork.",
+      why: checkinBase === "softLaunch"
+        ? "Check-ins review how the open store is doing, so they count from opening (the soft-launch date), not from paperwork."
+        : "Check-ins review how the store is doing; Settings has them counting from Day 0 (paperwork complete).",
       start: base === null ? null : base + c, length: base === null ? null : 1,
       missing: base === null ? "set soft-launch date" : null, done: !!o.checkins[String(c)],
     });

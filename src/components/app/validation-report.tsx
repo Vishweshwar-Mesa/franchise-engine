@@ -24,7 +24,7 @@ export function ValidationReportView({ report }: { report: ValidationReport }) {
           </ul>
         </>
       ) : (
-        !report.fatal && <p className="text-xs text-muted-foreground">No file-level problems. Row-level checks are on the Results page.</p>
+        !report.fatal && <p className="text-xs text-muted-foreground">No file-level problems. Row-level problems are listed below.</p>
       )}
     </div>
   );
