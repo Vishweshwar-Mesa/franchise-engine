@@ -19,7 +19,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       // First visit with nothing saved: show the pre-filled demo workspace instead of a blank app.
       // The retired 10-applicant demo (demo-showcase.xlsx) is swapped for the current demo data.
       const name = useWorkspace.getState().dataset?.report.fileName ?? "";
-      if (!useWorkspace.getState().dataset || name.startsWith("demo-showcase")) await loadDemoWorkspace();
+      if (!useWorkspace.getState().dataset || name.startsWith("demo-showcase")) await loadDemoWorkspace(true);
       if (s.database) stopSync = startSync();
     });
     return () => {

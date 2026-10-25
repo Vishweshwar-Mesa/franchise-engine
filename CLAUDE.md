@@ -165,6 +165,7 @@ Score: Space 40 / Money 20 / Experience 20 / Financial profile 20 (rescaled to 5
 
 `YYYY-MM-DD | who/which tool | what changed | why | files touched | follow-ups`
 
+- 2026-10-25 | Claude Code (Opus 5.5) | Auto-loaded demo now gives way if the person loads a file while it downloads (race fix); browsers holding the retired 10-applicant demo get the 30-applicant one | Bug found in live check | src/lib/load-demo.ts, providers.tsx | none
 - 2026-10-25 | Claude Code (Opus 5.5) | Removed the 10-applicant demo workspace (demo-showcase.xlsx, demo-workspace.ts and its test); first visit now auto-loads the 30-applicant demo-messy.xlsx with a "Demo data" banner; "Load demo data" button sets the same banner | User asked to keep only the 30-applicant demo | scripts/make-demo-file.ts, src/lib/load-demo.ts, store, upload-panel.tsx, demo-banner.tsx | none
 
 - 2026-10-25 | Claude Code (Opus 5.5) | Demo workspace: 10 synthetic applicants (demo-showcase.xlsx) with reviewer inputs and 2 onboarding records, auto-loaded on first visit + "Load demo workspace" button + banner; 3 tests; fixed Gantt payment bar colour broken by the earlier colour sweep; vitest config uses import.meta.dirname | User wanted something to review | scripts/make-demo-file.ts, public/samples/demo-showcase.xlsx, src/lib/{demo-workspace,load-demo}.ts, demo-workspace.test.ts, store, providers, layout, demo-banner.tsx, upload-panel.tsx, onboarding-gantt.tsx, vitest.config.mts | none
