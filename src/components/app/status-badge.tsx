@@ -1,18 +1,24 @@
 import type { Status } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-const STYLE: Record<Status, string> = {
-  "Good to go": "bg-green-100 text-green-900 border-green-300",
-  "Needs your decision": "bg-purple-100 text-purple-900 border-purple-300",
-  "Hold: info needed": "bg-amber-100 text-amber-900 border-amber-300",
-  "Hold: pin occupied": "bg-orange-100 text-orange-900 border-orange-300",
-  Waitlist: "bg-sky-100 text-sky-900 border-sky-300",
-  "Not proceeding": "bg-zinc-200 text-zinc-800 border-zinc-300",
+/** Status -> CSS tone variables (defined in globals.css for dark and light). */
+export const TONE: Record<Status, string> = {
+  "Good to go": "good",
+  "Needs your decision": "decide",
+  "Hold: info needed": "info",
+  "Hold: pin occupied": "pin",
+  Waitlist: "wait",
+  "Not proceeding": "stop",
 };
+
+export function toneStyle(status: Status): React.CSSProperties {
+  const k = TONE[status];
+  return { color: `var(--tone-${k})`, background: `var(--tone-${k}-bg)` };
+}
 
 export function StatusBadge({ status, className }: { status: Status; className?: string }) {
   return (
-    <span className={cn("inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium whitespace-nowrap", STYLE[status], className)}>
+    <span style={toneStyle(status)} className={cn("inline-flex items-center rounded-full px-3 py-1 text-xs font-bold whitespace-nowrap", className)}>
       {status}
     </span>
   );

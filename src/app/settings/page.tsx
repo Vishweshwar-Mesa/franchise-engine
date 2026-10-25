@@ -65,17 +65,17 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6 text-sm">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-xl font-semibold">Settings</h1>
+        <h1 className="font-serif text-4xl font-medium tracking-tight">Settings</h1>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => { if (window.confirm("Reset every setting to the defaults?")) { setDraft(DEFAULT_SETTINGS); setPi(0); useWorkspace.getState().setSettings(DEFAULT_SETTINGS, "Settings reset to defaults."); setMsg("Reset to defaults."); } }}>Reset to defaults</Button>
           <Button disabled={!dirty || problems.length > 0} onClick={save}>Save settings</Button>
         </div>
       </div>
-      {msg && <p className="text-green-700">{msg}</p>}
-      {problems.length > 0 && <ul className="list-disc rounded bg-red-50 p-2 pl-6 text-red-800">{problems.map((m) => <li key={m}>{m}</li>)}</ul>}
+      {msg && <p className="text-[var(--tone-good)]">{msg}</p>}
+      {problems.length > 0 && <ul className="list-disc rounded bg-[var(--tone-pin-bg)] p-2 pl-6 text-[var(--tone-pin)]">{problems.map((m) => <li key={m}>{m}</li>)}</ul>}
 
-      <section className="space-y-2 rounded-xl border p-4">
-        <h2 className="font-semibold">Case rules (locked)</h2>
+      <section className="space-y-2 rounded-3xl border bg-card p-5">
+        <h2 className="font-serif text-lg font-medium">Case rules (locked)</h2>
         <ul className="space-y-1">
           <li className="flex items-center gap-2"><SourceTag source="Case rule" /> The brand never opens two stores in the same pin code. Existing store on the pin → Hold: pin occupied. Two or more qualified applicants on one free pin → Needs your decision.</li>
           <li className="flex items-center gap-2"><SourceTag source="Case rule" /> Territory capacity = min(open slots, free pins). Qualified applicants beyond capacity → Waitlist. A contested pin holds one slot until decided.</li>
@@ -83,7 +83,7 @@ export default function SettingsPage() {
         <p className="text-xs text-muted-foreground">Everything below is Our choice: defaults we picked, editable here.</p>
       </section>
 
-      <section className="space-y-3 rounded-xl border p-4">
+      <section className="space-y-3 rounded-3xl border bg-card p-5">
         <h2 className="flex items-center gap-2 font-semibold">Checks <SourceTag source="Our choice" /></h2>
         {([
           ["holdWhenNoSpace", "Hold when Space available = Not yet identified"],
@@ -97,7 +97,7 @@ export default function SettingsPage() {
         <p className="text-xs text-muted-foreground">Always on: required fields present, numbers are numbers, 6-digit pin, a territory covers the pin.</p>
       </section>
 
-      <section className="grid gap-3 rounded-xl border p-4 md:grid-cols-3">
+      <section className="grid gap-3 rounded-3xl border bg-card p-5 md:grid-cols-3">
         <h2 className="flex items-center gap-2 font-semibold md:col-span-3">Traffic lights and launch timing <SourceTag source="Our choice" /></h2>
         {num(["lights", "green"], "Green from (share of max, 0-1)", "Default 0.667: top third")}
         {num(["lights", "amber"], "Amber from (share of max, 0-1)", "Default 0.333: middle third")}
@@ -108,7 +108,7 @@ export default function SettingsPage() {
         </div>
       </section>
 
-      <section className="space-y-3 rounded-xl border p-4">
+      <section className="space-y-3 rounded-3xl border bg-card p-5">
         <h2 className="flex items-center gap-2 font-semibold">Onboarding check-ins <SourceTag source="Our choice" /></h2>
         <div className="flex items-center gap-2">
           <Label htmlFor="checkin-base">Day 30/60/90/180 check-ins count from</Label>
@@ -120,7 +120,7 @@ export default function SettingsPage() {
         <p className="text-xs text-muted-foreground">Check-ins review how the open store is doing, so they count from opening, not from paperwork.</p>
       </section>
 
-      <section className="space-y-4 rounded-xl border p-4">
+      <section className="space-y-4 rounded-3xl border bg-card p-5">
         <div className="flex flex-wrap items-center gap-2">
           <h2 className="flex items-center gap-2 font-semibold">Scoring rubric profiles <SourceTag source="Our choice" /></h2>
           <NativeSelect value={pi} onChange={(e) => setPi(Number(e.target.value))}>

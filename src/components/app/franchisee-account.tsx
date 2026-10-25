@@ -21,8 +21,8 @@ export function FranchiseeAccount({ id, name, o }: { id: string; name: string; o
     setBusy(false);
   }
   return (
-    <div className="space-y-2 rounded-xl border p-4 text-sm">
-      <h3 className="font-semibold">Franchisee account</h3>
+    <div className="space-y-2 rounded-3xl border bg-card p-5 text-sm">
+      <h3 className="font-serif text-lg font-medium">Franchisee account</h3>
       <div className="flex flex-wrap items-end gap-2">
         <div><Label htmlFor="fr-email" className="text-xs">Franchisee email (entered by reviewer)</Label><Input id="fr-email" type="email" className="w-64" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
         <Button size="sm" variant="outline" disabled={busy || !email} onClick={create}>Create account</Button>

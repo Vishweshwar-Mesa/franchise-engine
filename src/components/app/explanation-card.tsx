@@ -45,9 +45,9 @@ export function ExplanationCard({ entry, languages }: { entry: LedgerEntry; lang
 
   const x = fresh ?? templateExplanation(entry);
   return (
-    <div className="space-y-3 rounded-xl border p-4 text-sm">
+    <div className="space-y-3 rounded-3xl border bg-card p-5 text-sm">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold">Explanation</h3>
+        <h3 className="font-serif text-lg font-medium">Explanation</h3>
         <span className="text-xs text-muted-foreground">
           {x.by === "AI" ? `Written by AI from the ledger, in ${x.language}` : "Template from the ledger (English)"}
           {state === "loading" && " · AI version loading…"}

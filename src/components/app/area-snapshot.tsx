@@ -28,9 +28,9 @@ export function AreaSnapshot({ pin, city }: { pin: string; city: string }) {
   }
   const fmt = (o: Record<string, number>) => Object.entries(o).map(([k, v]) => `${k}: ${v}`).join(", ") || "none";
   return (
-    <div className="space-y-2 rounded-xl border p-4 text-sm">
-      <h3 className="font-semibold">Area snapshot for pin {pin}</h3>
-      <p className="text-xs text-amber-800">Reference only, not used in decisions.</p>
+    <div className="space-y-2 rounded-3xl border bg-card p-5 text-sm">
+      <h3 className="font-serif text-lg font-medium">Area snapshot for pin {pin}</h3>
+      <p className="text-xs text-[var(--tone-info)]">Reference only, not used in decisions.</p>
       <Button size="sm" variant="outline" disabled={busy} onClick={load}>{busy ? "Looking up…" : s ? "Refresh" : "Get area snapshot"}</Button>
       {s && !s.available && <p className="text-xs">Area data: {s.reason ?? "not available"}</p>}
       {s?.available && s.counts && (

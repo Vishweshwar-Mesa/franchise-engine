@@ -9,7 +9,7 @@ export default function TerritoriesPage() {
   const unmatched = Object.values(r.ledger).filter((e) => !e.territory);
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold">Territories</h1>
+      <h1 className="font-serif text-4xl font-medium tracking-tight">Territories</h1>
       {r.territories.length === 0 && <p className="text-sm">No territories in this file.</p>}
       {r.territories.map((t) => <TerritoryCard key={t.id} t={t} r={r} />)}
       {unmatched.length > 0 && (

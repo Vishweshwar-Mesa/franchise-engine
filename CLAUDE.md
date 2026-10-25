@@ -56,6 +56,16 @@ Flow: Excel -> `parseWorkbook` (browser) -> store -> `runEngine` -> **ledger** -
 
 `AGENTS.md` starts with a pointer to this file; below it Next.js keeps its own managed block (re-added by `next dev`).
 
+## 3b. Design (V2 "Warm Editorial", chosen 2026-10-25)
+
+- Dark theme by default, light theme via the button at the bottom of the sidebar (saved in localStorage `fe-theme`; an inline script in `layout.tsx` applies it before paint).
+- Colours come from gocolors.com: near-black/off-white base (#121212, #1A1A1A, #FAF9F6), brand magenta #DF2E84. Buttons use #C9246F (the brand magenta deepened so white text passes contrast); magenta text is #F05A9E on dark, #B81E66 on light. Warm neutrals: #1A1715 (dark ground), #F6F1E9 (light ground).
+- Status tones are CSS variables `--tone-<good|decide|info|pin|wait|stop>` and `-bg`, traffic lights `--light-green|amber|red`, all in `src/app/globals.css` for both themes. Never hardcode Tailwind colour classes in components; use the tokens.
+- Type: Fraunces (serif display: page titles, section titles, big numbers), Inter (body), JetBrains Mono (IDs, pins), via `next/font`.
+- Layout: floating dark sidebar (`components/app/nav.tsx`), `PageHeader` / `Panel` in `components/app/page-header.tsx`, rounded-3xl surfaces.
+- Motion (GSAP, `components/app/motion.tsx`): count-up on status tiles, staggered fade-in of applicant cards; both off under prefers-reduced-motion (plus a global CSS reduced-motion rule).
+- Design exploration (4 versions) is in a private claude.ai canvas: https://claude.ai/artifact/T7nkLboonRceQfV22z4CGF
+
 ## 4. Decisions and why
 
 | Decision | Tag | Why |
@@ -152,6 +162,8 @@ Score: Space 40 / Money 20 / Experience 20 / Financial profile 20 (rescaled to 5
 ## 9. Change Log (newest first)
 
 `YYYY-MM-DD | who/which tool | what changed | why | files touched | follow-ups`
+
+- 2026-10-25 | Claude Code (Opus 5.5) | Redesign to V2 Warm Editorial: dark default + light toggle, Go Colors magenta, Fraunces/Inter/JetBrains Mono, floating sidebar, tinted status tiles, applicant cards with inline reason (table view kept), factor bars on applicant page, GSAP count-up and stagger, colour tokens replace hardcoded Tailwind colours | User found the UI bland; picked V2 of 4 directions | src/app/globals.css, src/app/layout.tsx, src/app/**/page.tsx, src/components/app/* (new: theme-toggle, motion, page-header, applicant-list), package.json (gsap) | none
 
 - 2026-10-25 | Claude Code (Opus 5.5) | Group 3: area snapshot (Google Geocoding + Places New, city check, cache, daily cap) and reviewer-only people research with consent; both on the applicant page, labelled reference only | Prompt section 7 | src/app/api/{area,ai/research}, src/components/app/{area-snapshot,people-research}.tsx, applicant page, .env.example | Set GOOGLE_MAPS_API_KEY and test with a real key
 

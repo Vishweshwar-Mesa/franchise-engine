@@ -4,6 +4,7 @@ import Link from "next/link";
 import { UploadPanel } from "@/components/app/upload-panel";
 import { ValidationReportView } from "@/components/app/validation-report";
 import { StatusCounts } from "@/components/app/status-counts";
+import { PageHeader } from "@/components/app/page-header";
 import { useResults } from "@/hooks/use-results";
 import { useWorkspace } from "@/store/workspace";
 import type { ValidationReport } from "@/lib/types";
@@ -14,14 +15,18 @@ export default function Home() {
   const r = useResults();
   const shown = report ?? stored;
   return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-semibold">Upload applications</h1>
+    <div className="flex flex-col gap-6">
+      <PageHeader
+        eyebrow="Start here"
+        title="Bring in the applications"
+        sub="Upload the judges' Excel file, or try the case sample or our synthetic demo. Everything stays in this browser unless the database is connected."
+      />
       <UploadPanel onReport={setReport} />
       {shown && <ValidationReportView report={shown} />}
       {r && (
-        <div className="space-y-2">
+        <div className="flex flex-col gap-3">
           <StatusCounts counts={r.counts} />
-          <Link href="/results" className="inline-block text-sm font-medium underline">Open the results dashboard →</Link>
+          <Link href="/results" className="self-start rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90">Open the review desk →</Link>
         </div>
       )}
     </div>

@@ -23,11 +23,11 @@ export default function OnboardingPage() {
     <div className="space-y-4">
       <Link href="/onboarding" className="text-sm underline">← Onboarding</Link>
       <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-xl font-semibold">{id} · {e.name}</h1>
+        <h1 className="font-serif text-4xl font-medium tracking-tight">{id} · {e.name}</h1>
         <span className="rounded-md border px-2 py-0.5 text-xs font-medium">Stage: {o.stage}</span>
         <StatusBadge status={e.status} /><WhyButton entry={e} />
       </div>
-      {e.status !== "Good to go" && <p className="rounded bg-amber-50 p-2 text-sm text-amber-900">Note: the engine status is now &quot;{e.status}&quot;. Review before continuing.</p>}
+      {e.status !== "Good to go" && <p className="rounded bg-[var(--tone-info-bg)] p-2 text-sm text-[var(--tone-info)]">Note: the engine status is now &quot;{e.status}&quot;. Review before continuing.</p>}
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="space-y-4">
           <PaperworkGate id={id} o={o} />

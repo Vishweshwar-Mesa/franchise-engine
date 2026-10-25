@@ -25,14 +25,14 @@ export function ContestCard({ c, r }: { c: ContestSummary; r: EngineResult }) {
   const setContest = useWorkspace((s) => s.setContest);
   const decision = useWorkspace((s) => s.contests[c.pin]);
   return (
-    <div className="space-y-3 rounded-xl border p-4 text-sm">
-      <h3 className="font-semibold">Pin {c.pin} · {c.territoryId}: {c.applicantIds.length} qualified applicants</h3>
+    <div className="space-y-3 rounded-3xl border bg-card p-5 text-sm">
+      <h3 className="font-serif text-lg font-medium">Pin {c.pin} · {c.territoryId}: {c.applicantIds.length} qualified applicants</h3>
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {c.applicantIds.map((id) => {
           const e = r.ledger[id];
           const { strengths, concerns } = strengthsAndConcerns(e);
           return (
-            <div key={id} className="space-y-2 rounded-lg border p-3">
+            <div key={id} className="space-y-2 rounded-2xl border p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <Link href={`/applicant/${encodeURIComponent(id)}`} className="font-mono text-xs underline">{id}</Link>
                 <span className="font-medium">{e.name}</span>

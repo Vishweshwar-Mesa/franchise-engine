@@ -8,7 +8,7 @@ import { useWorkspace } from "@/store/workspace";
 import { SourceTag } from "./source-tag";
 import { cn } from "@/lib/utils";
 
-const BAR: Record<TimelineTask["kind"], string> = { payment: "bg-sky-500", phase: "bg-emerald-500", checkin: "bg-purple-500" };
+const BAR: Record<TimelineTask["kind"], string> = { payment: "bg-[var(--tone-wait-bg)]0", phase: "bg-[var(--light-green)]", checkin: "bg-primary" };
 
 /** Gantt + checklist from Day 0. Durations are blank fields the brand fills in. */
 export function OnboardingGantt({ id, o, readOnly = false }: { id: string; o: Onboarding; readOnly?: boolean }) {
@@ -17,8 +17,8 @@ export function OnboardingGantt({ id, o, readOnly = false }: { id: string; o: On
   const set = (patch: Partial<Onboarding>, log?: string) => useWorkspace.getState().setOnboarding(id, patch, log);
   if (!day0 || o.stage !== "Onboarding") {
     return (
-      <div className="rounded-xl border p-4 text-sm">
-        <h3 className="font-semibold">Onboarding timeline</h3>
+      <div className="rounded-3xl border bg-card p-5 text-sm">
+        <h3 className="font-serif text-lg font-medium">Onboarding timeline</h3>
         <p className="mt-2 text-muted-foreground">Timeline starts after paperwork is complete{day0 && !readOnly ? " (press Start onboarding)" : ""}.</p>
       </div>
     );
@@ -36,8 +36,8 @@ export function OnboardingGantt({ id, o, readOnly = false }: { id: string; o: On
   };
 
   return (
-    <div className="space-y-3 rounded-xl border p-4 text-sm">
-      <h3 className="font-semibold">Onboarding timeline (Day 0 = {day0})</h3>
+    <div className="space-y-3 rounded-3xl border bg-card p-5 text-sm">
+      <h3 className="font-serif text-lg font-medium">Onboarding timeline (Day 0 = {day0})</h3>
       {!readOnly && (
         <div className="grid gap-2 md:grid-cols-5">
           {PHASES.map((ph) => (
@@ -74,7 +74,7 @@ export function OnboardingGantt({ id, o, readOnly = false }: { id: string; o: On
                   style={{ left: `${(t.start / span) * 100}%`, width: `${Math.max(0.8, ((t.length || 1) / span) * 100)}%` }}
                 />
               ) : (
-                <span className="absolute inset-0 px-2 text-[11px] leading-5 text-amber-800">{t.missing ?? (t.start !== null ? `starts day ${t.start}: set duration` : "set duration")}</span>
+                <span className="absolute inset-0 px-2 text-[11px] leading-5 text-[var(--tone-info)]">{t.missing ?? (t.start !== null ? `starts day ${t.start}: set duration` : "set duration")}</span>
               )}
               {t.start !== null && t.length !== null && <span className="absolute right-1 text-[10px] leading-5 text-muted-foreground">{addDays(day0, t.start)}</span>}
             </div>

@@ -40,15 +40,15 @@ export function PaperworkGate({ id, o }: { id: string; o: Onboarding }) {
 
   const complete = gateComplete(o);
   return (
-    <div className="space-y-3 rounded-xl border p-4 text-sm">
-      <h3 className="font-semibold">Paperwork gate</h3>
+    <div className="space-y-3 rounded-3xl border bg-card p-5 text-sm">
+      <h3 className="font-serif text-lg font-medium">Paperwork gate</h3>
       <p className="text-xs text-muted-foreground">
         The reviewer ticks these off. The tool does not verify them, does not state tax rates, thresholds or durations, and gives no legal or tax advice.
       </p>
       {ITEMS.map((it) => {
         const item = o.gate[it.key];
         return (
-          <div key={it.key} className="space-y-2 rounded-lg border p-3">
+          <div key={it.key} className="space-y-2 rounded-2xl border p-4">
             <label className="flex items-center gap-2 font-medium">
               <Checkbox aria-label={it.label} checked={item.done} onCheckedChange={(v) => update(it.key, { done: !!v, date: v ? item.date ?? new Date().toISOString().slice(0, 10) : item.date }, `${it.label}: ${v ? "ticked" : "unticked"}.`)} />
               {it.label}
@@ -67,7 +67,7 @@ export function PaperworkGate({ id, o }: { id: string; o: Onboarding }) {
                 <Textarea id="other-list" rows={2} value={o.gate.other.list} onChange={(e) => update("other", { list: e.target.value })} />
               </div>
             )}
-            <p className="text-xs text-amber-800">Confirm with the brand&apos;s legal/CA team.</p>
+            <p className="text-xs text-[var(--tone-info)]">Confirm with the brand&apos;s legal/CA team.</p>
             {it.link && <a className="text-xs underline" href={it.link.href} target="_blank" rel="noreferrer">{it.link.text}</a>}
           </div>
         );

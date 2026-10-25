@@ -21,9 +21,9 @@ export function TerritoryCard({ t, r }: { t: TerritorySummary; r: EngineResult }
     );
   };
   return (
-    <div className="space-y-2 rounded-xl border p-4 text-sm">
+    <div className="space-y-2 rounded-3xl border bg-card p-5 text-sm">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="font-semibold">{t.id} · {t.city} <span className="font-normal text-muted-foreground">({t.tier}, priority {t.priority || "not set"})</span></h3>
+        <h3 className="font-serif text-lg font-medium">{t.id} · {t.city} <span className="font-normal text-muted-foreground">({t.tier}, priority {t.priority || "not set"})</span></h3>
         <span className="flex items-center gap-1 text-xs">Capacity = min({t.openSlots} open slots, {t.freePins.length} free pins) = <b>{t.capacity}</b> <SourceTag source="Case rule" /></span>
       </div>
       <p className="text-xs">
@@ -31,7 +31,7 @@ export function TerritoryCard({ t, r }: { t: TerritorySummary; r: EngineResult }
         {t.occupied.length > 0 && <>Pins with an existing store: {t.occupied.map((o) => `${o.pin} (${o.storeId})`).join(", ")}.</>}
       </p>
       {t.pendingContests.length > 0 && (
-        <p className="text-xs text-purple-800">Contested pin(s) {t.pendingContests.join(", ")} each hold one slot until you decide on the <Link href="/contested" className="underline">Contested pins</Link> board.</p>
+        <p className="text-xs text-[var(--tone-decide)]">Contested pin(s) {t.pendingContests.join(", ")} each hold one slot until you decide on the <Link href="/contested" className="underline">Contested pins</Link> board.</p>
       )}
       <div>
         <h4 className="font-medium">Assigned (Good to go): {t.goodToGo.length}</h4>
@@ -45,8 +45,8 @@ export function TerritoryCard({ t, r }: { t: TerritorySummary; r: EngineResult }
             <Button size="xs" variant="outline" onClick={() => useWorkspace.getState().confirmWaitlist(t.id, t.waitlist)}>
               {confirmed ? "Re-confirm order" : "Confirm order"}
             </Button>
-            {confirmed && !changed && <span className="text-green-700">Confirmed {new Date(confirmed.at).toLocaleString()}</span>}
-            {changed && <span className="text-amber-700">The recommended order changed since you confirmed ({confirmed.order.join(", ")}).</span>}
+            {confirmed && !changed && <span className="text-[var(--tone-good)]">Confirmed {new Date(confirmed.at).toLocaleString()}</span>}
+            {changed && <span className="text-[var(--tone-info)]">The recommended order changed since you confirmed ({confirmed.order.join(", ")}).</span>}
             <span className="text-muted-foreground">Order = score, highest first (ties by Application ID). Territory priority is not scored.</span>
           </div>
         )}

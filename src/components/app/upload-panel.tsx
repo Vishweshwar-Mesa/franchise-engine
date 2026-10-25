@@ -34,9 +34,9 @@ export function UploadPanel({ onReport }: { onReport: (r: ValidationReport) => v
   }
 
   return (
-    <div className="space-y-3 rounded-xl border p-4">
-      <label className="block rounded-lg border-2 border-dashed p-6 text-center text-sm hover:bg-muted/50">
-        <span className="font-medium">Upload the applications file (.xlsx)</span>
+    <div className="flex flex-col gap-4 rounded-3xl border bg-card p-5">
+      <label className="block cursor-pointer rounded-2xl border-2 border-dashed p-8 text-center text-sm transition-colors hover:border-primary hover:bg-muted/50">
+        <span className="font-serif text-xl font-medium">Drop or choose the applications file (.xlsx)</span>
         <input
           type="file"
           accept=".xlsx,.xls"
@@ -49,8 +49,8 @@ export function UploadPanel({ onReport }: { onReport: (r: ValidationReport) => v
         />
       </label>
       <div className="flex flex-wrap gap-2">
-        <Button disabled={busy} onClick={() => loadSample("/samples/template.xlsx", "template.xlsx (case sample)")}>Load sample data</Button>
-        <Button variant="outline" disabled={busy} onClick={() => loadSample("/samples/demo-messy.xlsx", "demo-messy.xlsx (synthetic, 30 applicants)")}>
+        <Button className="h-10 rounded-full px-5" disabled={busy} onClick={() => loadSample("/samples/template.xlsx", "template.xlsx (case sample)")}>Load sample data</Button>
+        <Button variant="outline" className="h-10 rounded-full px-5" disabled={busy} onClick={() => loadSample("/samples/demo-messy.xlsx", "demo-messy.xlsx (synthetic, 30 applicants)")}>
           Load demo data (30 synthetic applicants with traps)
         </Button>
       </div>

@@ -8,7 +8,7 @@ export default function ContestedPage() {
   if (!r) return <NoData />;
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold">Contested pins</h1>
+      <h1 className="font-serif text-4xl font-medium tracking-tight">Contested pins</h1>
       <p className="text-sm text-muted-foreground">
         Case rule: the brand never opens two stores in the same pin code. When two or more qualified applicants want the same free pin, the tool does not pick. You do.
       </p>

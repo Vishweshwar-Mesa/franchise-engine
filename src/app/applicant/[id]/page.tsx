@@ -9,6 +9,7 @@ import { ManualStatusForm } from "@/components/app/manual-status-form";
 import { AreaTypeSelect, FinancialProfileForm, RelevanceCard } from "@/components/app/reviewer-inputs";
 import { StatusBadge } from "@/components/app/status-badge";
 import { WhyButton } from "@/components/app/why-button";
+import { FactorBar } from "@/components/app/traffic-light";
 import { NoData } from "@/components/app/empty-state";
 import { ConfirmButton } from "@/components/app/confirm-button";
 import { AreaSnapshot } from "@/components/app/area-snapshot";
@@ -35,38 +36,42 @@ export default function ApplicantPage() {
   ];
 
   return (
-    <div className="space-y-4">
-      <Link href="/results" className="text-sm underline">← Results</Link>
-      <div className="space-y-1">
+    <div className="flex flex-col gap-6">
+      <Link href="/results" className="text-sm text-muted-foreground hover:text-foreground">← Review desk</Link>
+      <header className="flex flex-col gap-3">
+        <span className="font-mono text-xs text-muted-foreground">{e.id} · {e.city || "city missing"} · pin {e.pin || "—"} · {e.territory?.id ?? "no territory"}</span>
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-xl font-semibold">{e.id} · {e.name || "name missing"}</h1>
+          <h1 className="font-serif text-4xl font-medium tracking-tight md:text-5xl">{e.name || "Name missing"}</h1>
           <StatusBadge status={e.status} />
           <WhyButton entry={e} />
         </div>
-        <p className="text-sm">{e.reason}</p>
+        <p className="max-w-3xl text-[15px] text-muted-foreground">{e.reason}</p>
+        <div className="grid max-w-3xl gap-3 sm:grid-cols-2">
+          {e.factors.map((f) => <FactorBar key={f.key} f={f} />)}
+        </div>
         {e.rescaled && (
-          <p className="rounded bg-amber-50 px-2 py-1 text-xs text-amber-900">Score rescaled because financial profile was not provided (Space 50 / Money 25 / Experience 25).</p>
+          <p className="max-w-3xl rounded-2xl bg-note px-4 py-2 text-xs">Score {e.total}/100, rescaled because financial profile was not provided (Space 50 / Money 25 / Experience 25).</p>
         )}
         {e.flags.filter((f) => f.kind === "liabilities").map((f, i) => (
-          <p key={i} className="rounded bg-red-50 px-2 py-1 text-xs text-red-900">⚠ {f.text}</p>
+          <p key={i} className="max-w-3xl rounded-2xl bg-[var(--tone-pin-bg)] px-4 py-2 text-xs text-[var(--tone-pin)]">{f.text}</p>
         ))}
-      </div>
+      </header>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="space-y-4">
           <ExplanationCard entry={e} languages={dataset.languages} />
-          <div className="rounded-xl border p-4"><h3 className="mb-2 font-semibold">Reason ledger</h3><LedgerView entry={e} /></div>
+          <div className="rounded-3xl border bg-card p-5"><h3 className="mb-2 font-serif text-lg font-medium">Reason ledger</h3><LedgerView entry={e} /></div>
         </div>
         <div className="space-y-4">
           <ConfirmButton entry={e} />
           <ManualStatusForm key={e.manual?.at ?? "none"} entry={e} />
           <FinancialProfileForm key={JSON.stringify([input.netWorth, input.portfolio, input.liabilities])} id={id} input={input} />
           <RelevanceCard entry={e} input={input} aiFlag={ai?.contradiction ?? null} />
-          <div className="rounded-xl border p-4"><AreaTypeSelect id={id} value={input.areaType} /></div>
+          <div className="rounded-3xl border bg-card p-5"><AreaTypeSelect id={id} value={input.areaType} /></div>
           <AreaSnapshot pin={app.pin} city={app.city} />
           <PeopleResearch name={app.name} city={app.city} business={app.business} />
-          <div className="rounded-xl border p-4 text-sm">
-            <h3 className="mb-2 font-semibold">Application (row {app.rowNumber})</h3>
+          <div className="rounded-3xl border bg-card p-5 text-sm">
+            <h3 className="mb-2 font-serif text-lg font-medium">Application (row {app.rowNumber})</h3>
             <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs">
               {fields.map(([k, v]) => (
                 <div key={k} className="contents"><dt className="text-muted-foreground">{columnLabel(k)}</dt><dd>{v === null || v === "" || v === undefined ? "—" : String(v)}</dd></div>

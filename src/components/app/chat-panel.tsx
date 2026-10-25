@@ -82,17 +82,17 @@ export function ChatPanel() {
 
   return (
     <Sheet>
-      <SheetTrigger render={<Button className="fixed right-4 bottom-4 z-40 shadow-lg" />}>Ask / What-if</SheetTrigger>
+      <SheetTrigger render={<Button className="fixed right-5 bottom-5 z-40 h-11 rounded-full px-5 shadow-lg" />}>Ask / What-if</SheetTrigger>
       <SheetContent className="w-full sm:max-w-lg">
         <SheetHeader>
-          <SheetTitle>Ask about the results</SheetTitle>
+          <SheetTitle className="font-serif text-2xl font-medium">Ask about the results</SheetTitle>
           <p className="text-xs text-muted-foreground">
             Answers come only from the reason ledger. Try &quot;Why is APP-004 on hold?&quot; or &quot;What if APP-004 had a 700 sq ft space?&quot;
           </p>
         </SheetHeader>
         <div className="flex-1 space-y-3 overflow-y-auto px-4">
           {msgs.map((m, i) => (
-            <div key={i} className={m.role === "user" ? "ml-8 rounded-lg bg-muted p-2 text-sm" : "mr-4 text-sm"}>
+            <div key={i} className={m.role === "user" ? "ml-8 rounded-2xl bg-muted px-3 py-2 text-sm" : "mr-4 text-sm"}>
               <p className="whitespace-pre-wrap">{m.content}</p>
               {m.by && <p className="mt-1 text-[10px] text-muted-foreground">Answered by: {m.by}</p>}
               {m.whatIf && <WhatIfCard w={m.whatIf} />}
@@ -132,7 +132,7 @@ function WhatIfCard({ w }: { w: WhatIfOutcome }) {
         <p><b>Also changes:</b> {w.knockOn.map((k) => `${k.id}: ${k.from} → ${k.to}`).join("; ")}</p>
       )}
       {applied ? (
-        <p className="text-green-700">Applied to the real data and logged.</p>
+        <p className="text-[var(--tone-good)]">Applied to the real data and logged.</p>
       ) : (
         <Button size="xs" variant="outline" onClick={() => {
           if (!window.confirm(`Apply this change to ${w.id} in the real data?`)) return;

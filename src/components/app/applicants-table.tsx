@@ -34,7 +34,7 @@ export function ApplicantsTable({ rows, showTotal }: { rows: LedgerEntry[]; show
               <div className="flex items-center gap-2">
                 <StatusBadge status={e.status} />
                 <WhyButton entry={e} />
-                {e.flags.some((f) => f.kind === "liabilities") && <span title="Liabilities noted" className="text-xs text-red-700">⚠</span>}
+                {e.flags.some((f) => f.kind === "liabilities") && <span title="Liabilities noted" className="text-xs text-[var(--tone-pin)]">⚠</span>}
               </div>
             </TableCell>
             <TableCell><FactorLights factors={e.factors} total={e.total} showTotal={showTotal} /></TableCell>

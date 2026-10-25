@@ -11,7 +11,7 @@ export default function OnboardingListPage() {
   const ids = Object.keys(onboarding);
   return (
     <div className="space-y-3">
-      <h1 className="text-xl font-semibold">Onboarding</h1>
+      <h1 className="font-serif text-4xl font-medium tracking-tight">Onboarding</h1>
       <p className="text-sm text-muted-foreground">Applicants appear here after a reviewer confirms a Good to go recommendation (applicant page → Confirm).</p>
       {ids.length === 0 && <p className="text-sm">No one confirmed yet.</p>}
       <ul className="space-y-2">
@@ -21,12 +21,12 @@ export default function OnboardingListPage() {
           const g = o.gate;
           const done = [g.agreement, g.gst, g.other].filter((i) => i.done && i.date).length;
           return (
-            <li key={id} className="flex flex-wrap items-center gap-3 rounded-xl border p-3 text-sm">
+            <li key={id} className="flex flex-wrap items-center gap-3 rounded-2xl border bg-card p-4 text-sm">
               <Link href={`/onboarding/${encodeURIComponent(id)}`} className="font-mono underline">{id}</Link>
               <span>{e?.name}</span>
               <b>{o.stage}</b>
               <span className="text-xs">Paperwork {done}/3{gateComplete(o) ? `, Day 0 = ${dayZero(o)}` : ""}</span>
-              {e && e.status !== "Good to go" && <span className="flex items-center gap-1 text-xs text-amber-800">Engine status is now <StatusBadge status={e.status} /></span>}
+              {e && e.status !== "Good to go" && <span className="flex items-center gap-1 text-xs text-[var(--tone-info)]">Engine status is now <StatusBadge status={e.status} /></span>}
             </li>
           );
         })}

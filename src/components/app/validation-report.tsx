@@ -2,10 +2,10 @@ import type { ValidationReport } from "@/lib/types";
 
 export function ValidationReportView({ report }: { report: ValidationReport }) {
   return (
-    <div className="space-y-2 rounded-xl border p-4 text-sm">
-      <h3 className="font-semibold">Validation report: {report.fileName}</h3>
+    <div className="space-y-2 rounded-3xl border bg-card p-5 text-sm">
+      <h3 className="font-serif text-lg font-medium">Validation report: {report.fileName}</h3>
       {report.fatal ? (
-        <p className="rounded bg-red-50 p-2 text-red-800">{report.fatal}</p>
+        <p className="rounded bg-[var(--tone-pin-bg)] p-2 text-[var(--tone-pin)]">{report.fatal}</p>
       ) : (
         <p>
           Read {report.rowsRead.applications} applicants, {report.rowsRead.territories} territories, {report.rowsRead.stores} existing stores.

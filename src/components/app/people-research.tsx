@@ -18,8 +18,8 @@ export function PeopleResearch({ name, city, business }: { name: string; city: s
     setBusy(false);
   }
   return (
-    <div className="space-y-2 rounded-xl border p-4 text-sm">
-      <h3 className="font-semibold">People research (reviewer only)</h3>
+    <div className="space-y-2 rounded-3xl border bg-card p-5 text-sm">
+      <h3 className="font-serif text-lg font-medium">People research (reviewer only)</h3>
       <label className="flex items-center gap-2 text-xs">
         <Checkbox aria-label="Consent" checked={consent} onCheckedChange={(v) => setConsent(!!v)} />
         Only research an applicant with their knowledge. I confirm the applicant knows.
@@ -31,7 +31,7 @@ export function PeopleResearch({ name, city, business }: { name: string; city: s
         <ul className="space-y-1 text-xs">
           {res.links.map((l, i) => (
             <li key={i}>
-              <span className="rounded bg-amber-100 px-1">possible match, unverified</span>{" "}
+              <span className="rounded bg-[var(--tone-info-bg)] px-1">possible match, unverified</span>{" "}
               <a href={l.url} target="_blank" rel="noreferrer nofollow" className="underline">{l.title}</a>: {l.why}
             </li>
           ))}

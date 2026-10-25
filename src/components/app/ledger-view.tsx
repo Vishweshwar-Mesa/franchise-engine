@@ -44,7 +44,7 @@ export function LedgerView({ entry: e, compact = false }: { entry: LedgerEntry; 
 
       <section>
         <h4 className="mb-1 font-semibold">Score: {e.total}/100</h4>
-        {e.rescaled && <p className="mb-1 text-xs text-amber-800">Score rescaled because financial profile was not provided.</p>}
+        {e.rescaled && <p className="mb-1 text-xs text-[var(--tone-info)]">Score rescaled because financial profile was not provided.</p>}
         <div className="space-y-2">
           {e.factors.map((f) => (
             <div key={f.key}>

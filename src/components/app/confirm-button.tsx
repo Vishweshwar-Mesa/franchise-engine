@@ -9,7 +9,7 @@ export function ConfirmButton({ entry }: { entry: LedgerEntry }) {
   const onboarding = useWorkspace((s) => s.onboarding[entry.id]);
   if (onboarding) {
     return (
-      <div className="rounded-xl border p-4 text-sm">
+      <div className="rounded-3xl border bg-card p-5 text-sm">
         Stage: <b>{onboarding.stage}</b> (confirmed {new Date(onboarding.confirmedAt).toLocaleDateString()}).{" "}
         <Link href={`/onboarding/${encodeURIComponent(entry.id)}`} className="underline">Open onboarding →</Link>
       </div>
@@ -17,8 +17,8 @@ export function ConfirmButton({ entry }: { entry: LedgerEntry }) {
   }
   if (entry.status !== "Good to go") return null;
   return (
-    <div className="space-y-2 rounded-xl border p-4 text-sm">
-      <h3 className="font-semibold">Reviewer confirmation</h3>
+    <div className="space-y-2 rounded-3xl border bg-card p-5 text-sm">
+      <h3 className="font-serif text-lg font-medium">Reviewer confirmation</h3>
       <p className="text-xs text-muted-foreground">
         &quot;Good to go&quot; is a recommendation. Confirming moves this applicant to the <b>Awaiting paperwork</b> stage. It does not start onboarding; the timeline starts only after the paperwork gate is complete.
       </p>
