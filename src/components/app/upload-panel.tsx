@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { parseWorkbook } from "@/lib/parse";
 import type { ValidationReport } from "@/lib/types";
 import { useWorkspace } from "@/store/workspace";
-import { loadDemoWorkspace } from "@/lib/load-demo";
 
 /** Upload box plus one-click sample files. Parsing happens in the browser. */
 export function UploadPanel({ onReport }: { onReport: (r: ValidationReport) => void }) {
@@ -51,24 +50,11 @@ export function UploadPanel({ onReport }: { onReport: (r: ValidationReport) => v
       </label>
       <div className="flex flex-wrap gap-2">
         <Button className="h-10 rounded-full px-5" disabled={busy} onClick={() => loadSample("/samples/template.xlsx", "template.xlsx (case sample)")}>Load sample data</Button>
-        <Button
-          variant="outline"
-          className="h-10 rounded-full px-5"
-          disabled={busy}
-          onClick={async () => {
-            if (hasData && !window.confirm("Replace the current data with the demo data?")) return;
-            setBusy(true);
-            await loadDemoWorkspace();
-            setBusy(false);
-          }}
-        >
-          Load demo data (30 synthetic applicants with traps)
-        </Button>
       </div>
       <p className="text-xs text-muted-foreground">
         Required columns in the Applications sheet: Application ID, Applicant name, City, State, Pin code, Investment capacity (₹ lakh),
         Retail experience (years), Space available. Columns are found by name, so order does not matter. Applicants link to territories by pin code.
-        The sample is the case&apos;s template (one example row). The demo data is made up: 30 applicants with deliberate problems to show every check.
+        The sample is the case&apos;s template (one example row).
       </p>
     </div>
   );

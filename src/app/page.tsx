@@ -19,7 +19,7 @@ export default function Home() {
       <PageHeader
         eyebrow="Start here"
         title="Bring in the applications"
-        sub="Upload the judges' Excel file, or try the case sample or our synthetic demo. Everything stays in this browser unless the database is connected."
+        sub="Upload the applications Excel file, or try the case sample. Until you do, the app shows demo data."
       />
       <UploadPanel onReport={setReport} />
       {shown && <ValidationReportView report={shown} />}

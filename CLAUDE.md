@@ -105,7 +105,7 @@ Flow: Excel -> `parseWorkbook` (browser) -> store -> `runEngine` -> **ledger** -
 | Chat: local what-if parser first (no AI needed), then AI, then ledger template answers | Our choice | Always works |
 | xlsx from SheetJS CDN 0.20.3 (not npm 0.18.5) | Our choice | npm version has known advisories |
 | `cacheComponents` turned off in next.config | Our choice | All screens are per-browser client pages |
-| First visit with no saved data auto-loads the synthetic 30-applicant demo file (demo-messy.xlsx), plain (no reviewer inputs), with a "Demo data" banner; any upload replaces it | User's choice | The empty app was too blank to review; judges still upload their own file. A 10-applicant pre-filled demo workspace was tried and removed the same day at the user's request |
+| First visit with no saved data auto-loads the synthetic 30-applicant demo file (demo-messy.xlsx), plain (no reviewer inputs), with a small "Demo data" flag and no button to load it; any upload replaces it | User's choice | The empty app was too blank to review; judges still upload their own file. A 10-applicant pre-filled demo workspace was tried and removed the same day at the user's request |
 | Confirm Good to go -> stage "Awaiting paperwork" (a stage, not a status) | Prompt | Confirming never starts onboarding |
 | Paperwork gate: agreement, GST, other registrations (free-text list); each ticked + dated, optional upload; "confirm with the brand's legal/CA team"; only link: https://www.gst.gov.in/ (verified 2026-10-25: official "Goods & Services Tax (GST) Home", has "Register") | Prompt | No legal/tax advice, no numbers |
 | Day 0 = latest gate date; Start onboarding disabled until all three ticked and dated | Prompt | |
@@ -165,6 +165,7 @@ Score: Space 40 / Money 20 / Experience 20 / Financial profile 20 (rescaled to 5
 
 `YYYY-MM-DD | who/which tool | what changed | why | files touched | follow-ups`
 
+- 2026-10-25 | Claude Code (Opus 5.5) | Removed the "Load demo data" button and the banner's button: demo data is just pre-loaded, with a small "Demo data" flag | User: no button to initiate demo data | upload-panel.tsx, demo-banner.tsx, page.tsx | none
 - 2026-10-25 | Claude Code (Opus 5.5) | Auto-loaded demo now gives way if the person loads a file while it downloads (race fix); browsers holding the retired 10-applicant demo get the 30-applicant one | Bug found in live check | src/lib/load-demo.ts, providers.tsx | none
 - 2026-10-25 | Claude Code (Opus 5.5) | Removed the 10-applicant demo workspace (demo-showcase.xlsx, demo-workspace.ts and its test); first visit now auto-loads the 30-applicant demo-messy.xlsx with a "Demo data" banner; "Load demo data" button sets the same banner | User asked to keep only the 30-applicant demo | scripts/make-demo-file.ts, src/lib/load-demo.ts, store, upload-panel.tsx, demo-banner.tsx | none
 
