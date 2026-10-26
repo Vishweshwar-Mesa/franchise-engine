@@ -50,7 +50,7 @@ src/lib/whatif.ts                  What-if: re-run engine on a copy, before/afte
 src/lib/export.ts                  CSV/XLSX export
 src/lib/onboarding.ts              Group 2 model: paperwork gate, deal terms, timeline (Gantt) builder
 src/lib/ai-schemas.ts              Zod schemas for every AI response
-src/lib/server/openrouter.ts       OpenRouter call; returns null on any failure; caches in Neon ai_cache
+src/lib/server/openrouter.ts       AI calls: Gemini first (key rotation), OpenRouter backup; returns null on any failure; caches in Neon ai_cache
 src/lib/server/db.ts               Neon HTTP client (`@neondatabase/serverless`) or null when DATABASE_URL is missing
 src/lib/sync.ts                    Browser <-> Neon mirror via /api/state (silent on failure)
 src/store/workspace.ts             Zustand store, persisted to localStorage, one per browser session id
@@ -148,7 +148,9 @@ Score: Space 40 / Money 20 / Experience 20 / Financial profile 20 (rescaled to 5
 |---|---|
 | DATABASE_URL | Neon Postgres connection string (set by the Vercel Neon integration) |
 | BLOB_READ_WRITE_TOKEN | Vercel Blob store for paperwork uploads (optional) |
-| OPENROUTER_API_KEY | AI calls |
+| GEMINI_API_KEYS | Comma-separated Gemini API keys (primary AI provider; rotated on quota/auth/server errors) |
+| GEMINI_MODEL | Gemini model id (set to gemini-3.8-flash; no default in code) |
+| OPENROUTER_API_KEY | AI calls (backup provider) |
 | OPENROUTER_MODEL | AI model id (no default in code; AI is off without it) |
 | GOOGLE_MAPS_API_KEY | Group 3 area snapshot |
 | RESEND_API_KEY | Optional: send a test copy of the confirmation email |
@@ -169,7 +171,7 @@ Score: Space 40 / Money 20 / Experience 20 / Financial profile 20 (rescaled to 5
 
 - Neon: created 2026-10-25 (`franchise-engine-db`), migration 001 applied; session sync verified end to end (30 applicants, ledger and action log saved and read back). AI cache, Places cache/cap and franchisee account records are untested against it.
 - The Vercel Neon integration also drops Neon "agent skills" into `.agents/`, `.claude/skills/` and `skills-lock.json`; they are git-ignored (third-party docs, not part of the app).
-- AI: OPENROUTER_API_KEY and OPENROUTER_MODEL=anthropic/claude-sonnet-5.5 are set (2026-10-26), but the OpenRouter account's guardrails block every model tried ("Model blocked by guardrail"). The owner must allow the model/provider at https://openrouter.ai/workspaces/default/guardrails. Until then the app uses templates.
+- AI runs on Gemini (gemini-3.8-flash, 2 keys rotated; a third key supplied was invalid). Verified 2026-10-26: relevance + contradiction rating, Kannada explanation/training plan, chat, people research (Google Search grounding). OpenRouter is a backup but its account guardrails block every model, so it currently never answers.
 - Google Places / Geocoding untested with a real key (only the no-key path verified); the Places type names and field masks follow Google's Places API (New) docs but have not been exercised.
 - People research untested with a real model; depends on the OpenRouter web plugin being available for the chosen model.
 - Without DATABASE_URL the Places daily cap is per server instance (weak on Vercel).
@@ -180,6 +182,8 @@ Score: Space 40 / Money 20 / Experience 20 / Financial profile 20 (rescaled to 5
 ## 9. Change Log (newest first)
 
 `YYYY-MM-DD | who/which tool | what changed | why | files touched | follow-ups`
+
+- 2026-10-26 | Claude Code (Opus 5.5) | AI switched to Gemini as primary provider (GEMINI_API_KEYS rotated, GEMINI_MODEL=gemini-3.8-flash, thinking level low, JSON mode, Google Search grounding for research); OpenRouter kept as backup; env vars set in Vercel | OpenRouter guardrails blocked every model; user supplied Gemini keys | src/lib/server/openrouter.ts, .env.example, CLAUDE.md | Rotate the keys after the hackathon
 
 - 2026-10-26 | Claude Code (Opus 5.5) | Checked against the official hackathon guidelines + Case 1 brief PDFs. Chat now handles the judges' Part 2 test without AI: new information is parsed (space found, floor, tenure, size, investment, years, pin, city, language, months) and applied with before/after + Undo; what-ifs stay previews; overview questions (who is on the waitlist, which territory has most applicants); example question chips | Official test: "APP-012 has now found a ground-floor space" must change the decision | src/lib/explain.ts, chat-panel.tsx, guide/page.tsx, engine.test.ts | Deck (8 slides) and 1-minute video still to make
 
