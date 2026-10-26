@@ -46,3 +46,6 @@ next-env.d.ts
 .agents/
 .claude/skills/
 skills-lock.json
+
+# e2e test output
+/tests/e2e/out/

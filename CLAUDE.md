@@ -165,6 +165,7 @@ Score: Space 40 / Money 20 / Experience 20 / Financial profile 20 (rescaled to 5
 ## 7. Run, test, build, deploy, roll back
 
 - `npm install` (also sets the git hook path `.githooks`), `npm run dev`, `npm test`, `npm run build`, `npm run samples` (regenerate demo file).
+- End-to-end tests: `npm run test:e2e` (live site) or `BASE_URL=http://localhost:3000 npm run test:e2e`. Three cases in parallel (tests/e2e/run.mjs, workbooks built by tests/e2e/workbooks.mjs from data/template.xlsx), report-only; writes deliverables/TEST_REPORT.md and deliverables/test-screens/.
 - Deploy: push to `main` -> Vercel production. Other branches/PRs -> preview URLs. Never push code that fails `npm test` or `npm run build`.
 - Roll back: Vercel dashboard "Promote" an earlier deployment, or `git revert` and push. Release tags: `group-1`, `group-2`, `group-3`.
 - Database: `vercel env pull .env.local` then `npm run db:migrate` (applies db/migrations/*.sql in order, once each).
@@ -186,6 +187,8 @@ Score: Space 40 / Money 20 / Experience 20 / Financial profile 20 (rescaled to 5
 ## 9. Change Log (newest first)
 
 `YYYY-MM-DD | who/which tool | what changed | why | files touched | follow-ups`
+
+- 2026-10-26 | Claude Code (Opus 5.5) | Added an end-to-end test suite (tests/e2e: 3 parallel cases in fresh Playwright contexts, 90 s cap each, generated workbooks, AI blocked by request interception in case 3) and deliverables/TEST_REPORT.md. Result on the live site: 52 PASS, 3 MISMATCH (single financial profile keeps the rescale; pin-occupied takes precedence over a prefix mismatch; no Google key for the area snapshot), 1 NOT BUILT (map); 75 unit tests pass; run takes about 7 s. Report only, no app changes. playwright added as a dev dependency | Requested test run before fixes | tests/e2e/*, deliverables/TEST_REPORT.md, deliverables/test-screens/*, package.json, .gitignore | Decide on the 3 mismatches
 
 - 2026-10-26 | Claude Code (Opus 5.5) | Added deliverables/: FACTS_FOR_DECK.md (factual brief from a live check in fresh browser sessions: feature status, sample-data run, hard-rule check, worked examples from the live ledger, scoring, AI with keys removed, tests, changes, gaps, timings), 23 live screenshots in deliverables/screens/, and evidence files (live-run.json, sample-run.json, export-sample.csv, export-demo.csv, ledger-examples.json). No code changes | Needed for the hackathon deck | deliverables/* | none
 
