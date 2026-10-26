@@ -36,10 +36,10 @@ export function UploadPanel({ onReport }: { onReport: (r: ValidationReport) => v
   return (
     <div className="flex flex-col gap-4 rounded-[20px] border bg-card p-5">
       <label className="block cursor-pointer rounded-2xl border-2 border-dashed p-8 text-center text-sm transition-colors hover:border-primary hover:bg-muted/50">
-        <span className="text-lg font-semibold">Drop or choose the applications file (.xlsx)</span>
+        <span className="text-lg font-semibold">Drop or choose the applications file (.xlsx, or .csv for applications only)</span>
         <input
           type="file"
-          accept=".xlsx,.xls"
+          accept=".xlsx,.xls,.csv"
           className="mt-2 block w-full text-xs"
           onChange={async (e) => {
             const f = e.target.files?.[0];

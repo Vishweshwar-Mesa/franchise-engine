@@ -7,6 +7,7 @@ import { ChatPanel } from "@/components/app/chat-panel";
 import { DemoBanner } from "@/components/app/demo-banner";
 import { SiteFooter } from "@/components/app/site-footer";
 import { BrandStripe } from "@/components/app/brand-stripe";
+import { SaveWarning } from "@/components/app/save-warning";
 
 const montserrat = Montserrat({ subsets: ["latin"], variable: "--font-montserrat" });
 const condensed = Barlow_Condensed({ subsets: ["latin"], weight: ["700", "800"], style: ["italic", "normal"], variable: "--font-condensed" });
@@ -30,6 +31,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <Providers>
           <BrandStripe />
           <Nav />
+          <SaveWarning />
           <main className="px-4 pb-24 md:px-8">
             <div className="mx-auto max-w-7xl">
               <DemoBanner />

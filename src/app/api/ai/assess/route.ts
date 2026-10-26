@@ -22,7 +22,7 @@ const Input = z.object({
 });
 
 export async function POST(req: Request) {
-  if (!allow(req, "assess", 6)) return Response.json({ available: false, results: [] });
+  if (!allow(req, "assess", 20)) return Response.json({ available: false, results: [] });
   const parsed = Input.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return Response.json({ available: false, results: [] });
   const items = parsed.data.items;

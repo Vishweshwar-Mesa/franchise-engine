@@ -3,6 +3,7 @@
 // other. Saved locally always; mirrored to the database (Neon) when it is configured (see lib/sync.ts).
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import { useSaveHealth } from "@/lib/save-health";
 import { DEFAULT_SETTINGS, type Settings } from "@/lib/settings";
 import type {
   ActionLogEntry, AiAssessment, ContestDecision, Dataset, ReviewerInput, Status, WaitlistConfirmation,
@@ -136,7 +137,15 @@ export const useWorkspace = create<WorkspaceData & WorkspaceActions>()(
       // A full or blocked localStorage must never break the app: failed writes are skipped.
       storage: createJSONStorage(() => ({
         getItem: (k) => { try { return localStorage.getItem(k); } catch { return null; } },
-        setItem: (k, v) => { try { localStorage.setItem(k, v); } catch { /* quota or blocked: keep working in memory */ } },
+        setItem: (k, v) => {
+          try {
+            localStorage.setItem(k, v);
+            if (!useSaveHealth.getState().browser) useSaveHealth.setState({ browser: true });
+          } catch {
+            // Quota or blocked: keep working in memory, and tell the reviewer.
+            useSaveHealth.setState({ browser: false });
+          }
+        },
         removeItem: (k) => { try { localStorage.removeItem(k); } catch { /* ignore */ } },
       })),
       partialize: (s) => dataOnly(s),

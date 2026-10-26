@@ -43,20 +43,22 @@ export function ChatPanel() {
   }
 
   async function ask() {
-    const question = q.trim();
-    if (!question || busy) return;
+    const typed = q.trim();
+    if (!typed || busy) return;
     setQ("");
-    const next: Msg[] = [...msgs, { role: "user", content: question }];
+    const next: Msg[] = [...msgs, { role: "user", content: typed }];
     setMsgs(next);
     if (!r) {
       setMsgs([...next, { role: "assistant", content: "Load a file first (Upload page).", by: "Ledger template" }]);
       return;
     }
-    const g = guard(question);
+    const g = guard(typed);
     if (g.blocked) {
       setMsgs([...next, { role: "assistant", content: g.reply, by: "Ledger template" }]);
       return;
     }
+    // "How can APP-004 pass?" is answered as "What would change APP-004?".
+    const question = g.rewrite ?? typed;
     const brand = brandAnswer(question);
     if (brand) {
       setMsgs([...next, { role: "assistant", content: brand, by: "Ledger template" }]);
@@ -154,7 +156,7 @@ export function ChatPanel() {
 }
 
 function describe(changes: Record<string, unknown>): string {
-  return Object.entries(changes).map(([k, v]) => `${columnLabel(k)} = ${v ?? "blank"}`).join(", ");
+  return Object.entries(changes).filter(([k]) => k !== "notes").map(([k, v]) => `${columnLabel(k)} = ${v ?? "blank"}`).join(", ");
 }
 
 /** Example questions built from the loaded data, so they always work. */

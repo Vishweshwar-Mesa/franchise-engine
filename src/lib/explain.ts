@@ -69,7 +69,8 @@ export function parseUpdate(q: string, apps: Application[]): ParsedUpdate | null
   if (yrs) changes.experience = Number(yrs[1]);
   const months = rest.match(/(\d+)\s*months?/i);
   if (months) changes.targetLaunch = Number(months[1]);
-  const pin = rest.match(/\b(\d{6})\b/);
+  // "moved from 560011 to 560025": the last pin mentioned is the new one.
+  const pin = [...rest.matchAll(/\b(\d{6})\b/g)].at(-1);
   if (pin) changes.pin = pin[1];
   for (const [re, city] of CITY_ALIASES) if (re.test(rest)) { changes.city = city; break; }
   const lang = rest.match(/\b(kannada|english|hindi)\b/i);
@@ -80,14 +81,16 @@ export function parseUpdate(q: string, apps: Application[]): ParsedUpdate | null
   else if (/\b(rent|rents|rented|lease|leased|renting)\b/i.test(rest)) changes.spaceAvailable = "Rented";
 
   if (/\bmall\b/i.test(rest)) changes.floor = "Mall unit";
-  else if (/ground/i.test(rest)) changes.floor = "Ground";
-  else if (/\b(upper|first|1st|second|2nd|third|3rd)[\s-]*floor\b|\bupper\b/i.test(rest)) changes.floor = "Upper";
+  else if (/ground|downstairs|street level/i.test(rest)) changes.floor = "Ground";
+  else if (/\b(upper|first|1st|second|2nd|third|3rd)[\s-]*floor\b|\bupper\b|\bupstairs\b/i.test(rest)) changes.floor = "Upper";
 
-  const foundSpace = /\b(found|identified|got|secured|located|finali[sz]ed|has|have)\b[^.]*\b(space|shop|unit|store|premises|location)\b/i.test(rest);
+  const foundSpace = /\b(found|identified|got|secured|located|finali[sz]ed|has|have|bagged|booked|signed|took|taken|picked|locked|landed|shortlisted|zeroed in)\b[^.]*\b(space|shop|unit|store|premises|location|spot|place|outlet|showroom|property|site|frontage)\b/i.test(rest);
   const spaceNow = changes.spaceAvailable ?? app.spaceAvailable;
   if ((foundSpace || changes.spaceSize || changes.floor) && spaceNow === "Not yet identified" && changes.spaceAvailable !== "Not yet identified") {
     changes.spaceAvailable = "Rented";
     assumptions.push("Owned or rented was not stated, so it is treated as rented. Ask the applicant to confirm.");
+    // Keep the assumption on the record itself, not only in the chat.
+    changes.notes = `${app.notes ? `${app.notes} ` : ""}[Rented assumed in chat; owned or rented not stated. Confirm with the applicant.]`;
   }
   if (changes.spaceAvailable && changes.spaceAvailable !== "Not yet identified" && !changes.floor && app.floor === "") changes.floor = "Not known";
 

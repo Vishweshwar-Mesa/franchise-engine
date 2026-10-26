@@ -3,15 +3,19 @@
 // Go Colors from verified facts. Anything else gets a short, polite refusal.
 import { GO_COLORS_FACTS } from "./brand";
 
-export type GuardResult = { blocked: true; reply: string } | { blocked: false };
+export type GuardResult = { blocked: true; reply: string } | { blocked: false; rewrite?: string };
 
 const APP_OR_TER = /\b(APP|TER|ROW)-[\w-]+\b/i;
 
+/** Clear attempts to cheat the checks. Always refused. */
+const CHEATING = /\b(cheat|loophole|hack|trick|bypass|game the|fool|fake|forge|work ?around|get (around|past)|beat the (system|checks|score)|lie|hide)\b/i;
 /** Questions that try to get past the checks rather than review an applicant. */
 const GAMING = /\b(cheat|loophole|hack|trick|bypass|game the|fool|fake|forge|work ?around|get (around|past)|beat the (system|checks|score))\b|\bhow (do|can|could|should) (i|we|you|an? applicants?|someone|they|people) (pass|clear|get (approved|selected|through|a slot|good to go)|avoid (a )?hold|score higher|qualify)|\bwhat (should|do|must) (i|we|they|an? applicants?) (write|enter|fill|put|say|type|answer)\b|\bwhat (answers?|values?|inputs?) (get|gets|will get|guarantee)/i;
 
 /** Commercial terms the brand has not published. */
-const PRICING = /\b(franchise fee|royalt(y|ies)|security deposit|deposit amount|commission|margin|price list|pricing|how much (does|will|is) (it|the franchise|a franchise|go colors) (cost|charge)|cost of (the|a) franchise|profit|payback|roi|return on investment|revenue share)\b/i;
+const PRICING = /\b(franchise fee|royalt(y|ies)|security deposit|deposit amount|commission|margin|price list|pricing|how much (does|will|is) (it|the franchise|a franchise|go colors) (cost|charge)|cost of (the|a) franchise|revenue share)\b/i;
+/** Returns and payback: not in the file and not published, so the answer is simply that. */
+const RETURNS = /\b(profit|profits|profitability|payback|break-?even|roi|return on investment|returns|earnings|how much (will|can|could) (i|we|they|the store) (earn|make))\b/i;
 
 /** Attempts to change the chat's instructions or read them. */
 const INJECTION = /\b(ignore|disregard|forget) (all |any |the )?(previous|above|earlier|prior) (instructions|rules|prompts?)|\b(system prompt|your instructions|your rules|developer mode|jailbreak|act as|pretend (to be|you are)|you are now)\b/i;
@@ -27,11 +31,24 @@ export function guard(question: string): GuardResult {
   if (INJECTION.test(q)) {
     return { blocked: true, reply: `I can't change how I work or share my instructions. ${SCOPE_NOTE}` };
   }
+  const passFor = q.match(/\bhow (?:do|does|can|could|should|will|would) ((?:APP|ROW)-[\w-]+) (?:pass|clear|qualify|get (?:approved|selected|through|a slot|good to go)|avoid (?:a )?hold|score higher)/i);
+  if (passFor && !CHEATING.test(q)) return { blocked: false, rewrite: `What would change ${passFor[1].toUpperCase()}?` };
   if (GAMING.test(q) && !/\bwhat would change\b/i.test(q)) {
+    const id = q.match(APP_OR_TER)?.[0];
+    if (!CHEATING.test(q) && id && /^APP|^ROW/i.test(id)) return { blocked: false, rewrite: `What would change ${id.toUpperCase()}?` };
+    if (!CHEATING.test(q)) {
+      return {
+        blocked: true,
+        reply: "Everyone goes through the same checks, shown on every applicant's page: the required details are filled in, the pin is valid and in a listed city and territory, a space is identified, and no store already sits on that pin. Those who pass are ranked by score within their territory. I won't suggest what to write to get through. For one applicant, ask 'What would change APP-004?'",
+      };
+    }
     return {
       blocked: true,
       reply: "I can't help anyone get around the checks or tell them what to enter to pass. Every applicant is assessed on what they actually have. For a specific applicant, I can tell you what would change their status, for example: 'What would change APP-004?'",
     };
+  }
+  if (RETURNS.test(q)) {
+    return { blocked: true, reply: "Profit, payback and returns are not in this file, and Go Colors has not published figures for them that I have, so I can't give a number. The engine does not use them in any score." };
   }
   if (PRICING.test(q)) {
     const note = GO_COLORS_FACTS.find((f) => f.topic === "franchise terms")!.fact;

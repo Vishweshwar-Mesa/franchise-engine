@@ -87,6 +87,8 @@ export interface TerritorySummary {
   goodToGo: string[];
   waitlist: string[];
   holds: string[];
+  /** Plain notes about how the row was read (blank slots, pins shared with another territory). */
+  notes: string[];
 }
 
 export interface ContestSummary {
@@ -141,6 +143,7 @@ function scoreApplicant(
   pops: { investment: number[]; experience: number[]; netWorth: number[]; portfolio: number[] },
   reviewer: ReviewerInput,
   relevance: Relevance | null,
+  relevanceOn: boolean,
 ): { factors: FactorScore[]; total: number; rescaled: boolean; financialProvided: boolean } {
   const w = p.weights;
   // Space
@@ -158,17 +161,22 @@ function scoreApplicant(
   ];
 
   // Money (relative to the other applicants in the file)
+  const alone = "Only one applicant has this, so there is nobody to compare with: placed in the middle";
   const moneyShare = app.investment !== null ? percentRank(app.investment, pops.investment) : 0;
   const moneyParts: ScorePart[] = [
-    { label: "Investment capacity", value: app.investment !== null ? `₹${app.investment} lakh (percent rank ${Math.round(moneyShare * 100)} among ${pops.investment.length})` : "missing", points: w.money * moneyShare, max: w.money },
+    { label: "Investment capacity", value: app.investment !== null ? `₹${app.investment} lakh (percent rank ${Math.round(moneyShare * 100)} among ${pops.investment.length})` : "missing", points: w.money * moneyShare, max: w.money, note: app.investment !== null && pops.investment.length === 1 ? alone : undefined },
   ];
 
-  // Experience: years (relative) + relevance of current/past business
+  // Experience: years (relative) + relevance of current/past business. Relevance counts only once
+  // every applicant with a business has a rating, so nobody gains or loses points while ratings load.
   const yearsShare = app.experience !== null ? percentRank(app.experience, pops.experience) : 0;
   const relShare = relevance ? p.relevanceRank[relevance] : 0;
+  const yearsMax = relevanceOn ? p.experienceSplit.years : p.experienceSplit.years + p.experienceSplit.relevance;
   const expParts: ScorePart[] = [
-    { label: "Retail experience", value: app.experience !== null ? `${app.experience} yrs (percent rank ${Math.round(yearsShare * 100)} among ${pops.experience.length})` : "missing", points: p.experienceSplit.years * yearsShare, max: p.experienceSplit.years },
-    { label: "Business relevance", value: relevance ?? "not rated yet", points: p.experienceSplit.relevance * relShare, max: p.experienceSplit.relevance, note: relevance ? undefined : "Counts as 0 until rated by AI or the reviewer" },
+    { label: "Retail experience", value: app.experience !== null ? `${app.experience} yrs (percent rank ${Math.round(yearsShare * 100)} among ${pops.experience.length})` : "missing", points: yearsMax * yearsShare, max: yearsMax, note: app.experience !== null && pops.experience.length === 1 ? alone : undefined },
+    relevanceOn
+      ? { label: "Business relevance", value: relevance ?? "no business described", points: p.experienceSplit.relevance * relShare, max: p.experienceSplit.relevance }
+      : { label: "Business relevance", value: relevance ?? "not rated yet", points: 0, max: 0, note: "Not counted yet: it counts once every applicant with a business has a rating, so everyone is compared the same way" },
   ];
 
   // Financial profile: typed by the reviewer
@@ -191,7 +199,15 @@ function scoreApplicant(
   ];
 
   const sum = (parts: ScorePart[]) => parts.reduce((a, b) => a + b.points, 0);
-  const rescaled = !financialProvided;
+  // Profile entered but nobody to compare it with: give it a neutral share (this applicant's own
+  // average on the other factors). The total comes out the same as a rescale, and the entry is kept.
+  const neutral = !financialProvided && (nw !== null || pf !== null);
+  if (neutral) {
+    const otherShare = (sum(spaceParts) + sum(moneyParts) + sum(expParts)) / (w.space + w.money + w.experience);
+    finParts.push({ label: "Neutral share", value: `${Math.round(otherShare * 100)}% (same as this applicant's other factors)`, points: w.financial * otherShare, max: w.financial, note: "Only one applicant has a financial profile so far; it is ranked once a second one is entered" });
+  }
+  const finOn = financialProvided || neutral;
+  const rescaled = !finOn;
   const scale = rescaled ? 100 / (100 - w.financial) : 1;
   const make = (key: FactorScore["key"], label: string, parts: ScorePart[], max: number, relative: boolean, provided = true): FactorScore => {
     const pts = sum(parts);
@@ -209,10 +225,10 @@ function scoreApplicant(
     make("space", "Space", spaceParts, w.space, false),
     make("money", "Money", moneyParts, w.money, true),
     make("experience", "Experience", expParts, w.experience, true),
-    make("financial", "Financial profile", finParts, w.financial, true, financialProvided),
+    make("financial", "Financial profile", finParts, w.financial, !neutral, finOn),
   ];
   const total = round1(factors.reduce((a, f) => a + f.points, 0));
-  return { factors, total, rescaled, financialProvided };
+  return { factors, total, rescaled, financialProvided: finOn };
 }
 
 /** What to ask the applicant: fixes for held applications, then site details not yet recorded. */
@@ -252,6 +268,8 @@ export function runEngine(input: EngineInput): EngineResult {
 
   const ledger: Record<string, LedgerEntry> = {};
   const territoryOf = new Map<string, Territory>();
+  const withBusiness = apps.filter((a) => a.business?.trim());
+  const relevanceOn = withBusiness.length > 0 && withBusiness.every((a) => reviewer[a.id]?.relevanceOverride || ai[a.id]?.relevance);
 
   for (const app of apps) {
     const r = reviewer[app.id] ?? {};
@@ -368,14 +386,15 @@ export function runEngine(input: EngineInput): EngineResult {
         : { rating: null, reason: app.business ? "Not rated yet." : "No business described.", by: "Not rated" };
 
     const profile = pickProfile(settings.profiles, { state: app.state, city: app.city });
-    const score = scoreApplicant(app, profile, settings, pops, r, relevance.rating);
+    const score = scoreApplicant(app, profile, settings, pops, r, relevance.rating, relevanceOn);
 
     const infoHold = fixes.length > 0;
-    const status: Status = store ? "Hold: pin occupied" : infoHold ? "Hold: info needed" : "Good to go";
-    const reason = store
-      ? `Pin ${app.pin} already has store ${store.id}. The profile may be good, but this pin is not recommended.`
-      : infoHold
-        ? `Information needed: ${fixes[0]}${fixes.length > 1 ? ` (+${fixes.length - 1} more)` : ""}`
+    // Missing or wrong data comes first: the pin question only matters once the row can be trusted.
+    const status: Status = infoHold ? "Hold: info needed" : store ? "Hold: pin occupied" : "Good to go";
+    const reason = infoHold
+      ? `Information needed: ${fixes[0]}${fixes.length > 1 ? ` (+${fixes.length - 1} more)` : ""}${store ? ` Pin ${app.pin} also has store ${store.id}, so a different pin will be needed too.` : ""}`
+      : store
+        ? `Pin ${app.pin} already has store ${store.id}. The profile may be good, but this pin is not recommended.`
         : "Meets every check.";
 
     ledger[app.id] = {
@@ -392,18 +411,26 @@ export function runEngine(input: EngineInput): EngineResult {
   // Traffic lights. Space is absolute (share of its points). Money, Experience and Financial are
   // relative, so their light is the applicant's rank among everyone who has that factor (thirds by default).
   for (const key of ["money", "experience", "financial"] as const) {
-    const pop = Object.values(ledger).map((e) => e.factors.find((f) => f.key === key)!).filter((f) => f.provided).map((f) => f.points);
+    const pop = Object.values(ledger).map((e) => e.factors.find((f) => f.key === key)!).filter((f) => f.provided && f.relative).map((f) => f.points);
     for (const e of Object.values(ledger)) {
       const f = e.factors.find((x) => x.key === key)!;
-      if (f.provided) f.light = lightFor(percentRank(f.points, pop), settings.lights);
+      if (f.provided && f.relative) f.light = lightFor(percentRank(f.points, pop), settings.lights);
     }
   }
 
   // Manual changes take applicants out of the automatic pool. A manual "Good to go" takes a slot
-  // first AND reserves its pin, so the same-pin case rule still holds.
-  const manualOf = (id: string) => ledger[id].manual?.status ?? null;
+  // first AND reserves its pin. It is not applied on a pin with an existing store or a pin another
+  // manual Good to go already holds: the one-store-per-pin case rule wins over a manual change.
   const manualPins = new Map<string, string>();
-  for (const a of apps) if (manualOf(a.id) === "Good to go" && !manualPins.has(a.pin)) manualPins.set(a.pin, a.id);
+  const blockedManual = new Map<string, string>();
+  for (const a of apps) {
+    if (ledger[a.id].manual?.status !== "Good to go") continue;
+    const store = storeByPin.get(a.pin);
+    if (store) blockedManual.set(a.id, `existing store ${store.id} is on pin ${a.pin}`);
+    else if (manualPins.has(a.pin)) blockedManual.set(a.id, `${manualPins.get(a.pin)} already holds pin ${a.pin}`);
+    else manualPins.set(a.pin, a.id);
+  }
+  const manualOf = (id: string) => (blockedManual.has(id) ? null : ledger[id].manual?.status ?? null);
   const pinTakenBy = new Map<string, string>();
   const qualified = apps.filter((a) => {
     if (ledger[a.id].engineStatus !== "Good to go" || manualOf(a.id) !== null) return false;
@@ -440,9 +467,14 @@ export function runEngine(input: EngineInput): EngineResult {
     const freePins = t.pins.filter((p) => !storeByPin.has(p) && !claimedPins.has(p));
     freePins.forEach((p) => claimedPins.add(p));
     const openSlots = Math.max(0, t.openSlots ?? 0);
+    const notes: string[] = [];
+    if (t.openSlots === null || t.openSlots === undefined) notes.push("Open slots is blank in the file, so it is read as 0 and everyone qualified here is waitlisted. Fill it in and re-upload.");
+    else if (openSlots === 0) notes.push("Open slots is 0, so everyone qualified here is waitlisted.");
+    const shared = t.pins.filter((p) => dataset.territories.some((o) => o.id !== t.id && o.pins.includes(p)));
+    if (shared.length) notes.push(`Pin${shared.length > 1 ? "s" : ""} ${shared.join(", ")} also listed in another territory; each pin counts once, for the first territory in the file.`);
     return {
       id: t.id, city: t.city, tier: t.tier, priority: t.priority, openSlots, pins: t.pins, freePins, occupied,
-      capacity: Math.min(openSlots, freePins.length), pendingContests: [], goodToGo: [], waitlist: [], holds: [],
+      capacity: Math.min(openSlots, freePins.length), pendingContests: [], goodToGo: [], waitlist: [], holds: [], notes,
     };
   });
   const terById = new Map(territories.map((t) => [t.id, t]));
@@ -485,7 +517,7 @@ export function runEngine(input: EngineInput): EngineResult {
         const e = ledger[id];
         const winner = losers.get(id)!;
         e.status = e.engineStatus = "Hold: pin occupied";
-        e.reason = `Reviewer's call gave pin ${e.pin} to ${winner}${ledger[winner].status === "Waitlist" ? ` (who is on the waitlist, so no store is assigned on this pin yet)` : ""}. This profile may still be good; another pin is an option.`;
+        e.reason = `Reviewer's call gave pin ${e.pin} to ${winner}${ledger[winner].status === "Waitlist" ? ` (who is on the waitlist, so no store is assigned on this pin yet; the pin stays kept for your pick until you change the call on Contested pins)` : ""}. This profile may still be good; another pin is an option.`;
       }
       if (pinTakenBy.has(id)) {
         const e = ledger[id];
@@ -502,15 +534,27 @@ export function runEngine(input: EngineInput): EngineResult {
 
   // Manual status changes are applied last; the engine's own answer stays in engineStatus.
   for (const e of Object.values(ledger)) {
-    if (e.manual) {
+    const blocked = blockedManual.get(e.id);
+    if (blocked) {
+      e.flags.push({ kind: "territory", text: `Your manual Good to go was not applied: ${blocked}, and the rule is one store per pin. Clear it or pick another status.` });
+      e.manual = null;
+    } else if (e.manual) {
       e.status = e.manual.status;
       const engineSaid = e.engineStatus === "Good to go" ? "engine checks: all passed; not allocated a slot automatically" : `engine said: ${e.engineStatus}`;
       e.reason = `Set manually by reviewer: ${e.manual.reason} (${engineSaid}).`;
-      if (e.manual.status === "Good to go") {
-        const store = storeByPin.get(e.pin);
-        if (store) e.flags.push({ kind: "territory", text: `Warning: existing store ${store.id} is on pin ${e.pin}. The case rule is one store per pin.` });
-        if (manualPins.get(e.pin) !== e.id) e.flags.push({ kind: "territory", text: `Warning: ${manualPins.get(e.pin)} was also set to Good to go on pin ${e.pin}. Only one store per pin; ${manualPins.get(e.pin)} keeps it.` });
-      }
+    }
+  }
+
+  // Others on the same pin who are not in a contest (held, waitlisted, set by hand): say so, because
+  // once a hold clears the pin may become contested.
+  const allByPin = new Map<string, string[]>();
+  for (const a of apps) if (/^\d{6}$/.test(a.pin) && !storeByPin.has(a.pin) && ledger[a.id]) allByPin.set(a.pin, [...new Set([...(allByPin.get(a.pin) ?? []), a.id])]);
+  for (const [pin, ids] of allByPin) {
+    if (ids.length < 2) continue;
+    for (const id of ids) {
+      const e = ledger[id];
+      const others = ids.filter((x) => x !== id && !e.contest?.with.includes(x));
+      if (others.length) e.flags.push({ kind: "territory", text: `Also on pin ${pin}: ${others.map((x) => `${x} (${ledger[x].status})`).join(", ")}. Only one store per pin, so this pin may need your call once holds clear.` });
     }
   }
 

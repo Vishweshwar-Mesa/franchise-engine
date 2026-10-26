@@ -111,7 +111,13 @@ export interface TimelineTask {
   done: boolean;
 }
 
-const posInt = (s: string) => (/^\d+$/.test(s.trim()) ? Number(s.trim()) : null);
+/** Days from "14", "14 days", "day 14", "2 weeks", "2w" or "10d". Anything else is null. */
+export function posInt(s: string): number | null {
+  const t = String(s ?? "").trim().toLowerCase();
+  const m = t.match(/^(?:day\s*)?(\d+)\s*(d|days?|w|wks?|weeks?)?$/);
+  if (!m) return null;
+  return /^w/.test(m[2] ?? "") ? Number(m[1]) * 7 : Number(m[1]);
+}
 
 /** Builds the Gantt rows. Phases run in order; a blank duration stops placement of later phases. */
 export function buildTimeline(o: Onboarding, checkinBase: "softLaunch" | "day0"): { day0: string | null; tasks: TimelineTask[] } {

@@ -3,6 +3,7 @@
 // Failures are silent: the browser copy always works on its own.
 import { runEngine } from "./engine";
 import { snapshot, useWorkspace, type WorkspaceData } from "@/store/workspace";
+import { useSaveHealth } from "./save-health";
 
 export async function pullFromServer(): Promise<boolean> {
   const s = useWorkspace.getState();
@@ -58,11 +59,23 @@ async function push(keepalive = false) {
     const r = runEngine({ dataset: data.dataset, settings: data.settings, reviewer: data.reviewer, ai: data.ai, contests: data.contests });
     ledger = Object.values(r.ledger).map((e) => ({ app_id: e.id, status: e.status, entry: e }));
   }
-  const body = JSON.stringify({ data, ledger });
+  // The host accepts about 4.5 MB per request. A very big file first drops the ledger copy (it is
+  // rebuilt from the data on load), then saved explanations; past that the save is skipped and the
+  // reviewer is told.
+  const LIMIT = 4_000_000;
+  let body = JSON.stringify({ data, ledger });
+  if (body.length > LIMIT) body = JSON.stringify({ data, ledger: [] });
+  if (body.length > LIMIT) body = JSON.stringify({ data: { ...data, explanations: {} }, ledger: [] });
+  if (body.length > LIMIT) {
+    useSaveHealth.setState({ server: "too-big" });
+    return;
+  }
   try {
     // keepalive requests are capped at 64 KB by browsers; larger flushes go as normal requests.
-    await fetch("/api/state", { method: "POST", headers: { "Content-Type": "application/json" }, body, keepalive: keepalive && body.length < 60000 });
+    const res = await fetch("/api/state", { method: "POST", headers: { "Content-Type": "application/json" }, body, keepalive: keepalive && body.length < 60000 });
+    const out = await res.json().catch(() => ({}));
+    useSaveHealth.setState({ server: out.enabled === false || out.ok ? "ok" : "failed" });
   } catch {
-    /* ignore */
+    /* offline: the browser copy keeps working */
   }
 }

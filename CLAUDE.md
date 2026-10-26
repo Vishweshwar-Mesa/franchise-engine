@@ -89,7 +89,7 @@ Flow: Excel -> `parseWorkbook` (browser) -> store -> `runEngine` -> **ledger** -
 | No automatic Reject / Approve; "Good to go" is a recommendation | Our choice | Prompt |
 | Required fields = Field guide's "Yes" columns | Our choice | Template |
 | Hold: info needed on: missing required field, text in number column, pin not 6 digits, pin prefix vs city mismatch, city not in Allowed values, no territory covers pin, no space yet, contradictions (no space + size/floor given, state vs city), AI-flagged note contradiction only after reviewer confirms | Our choice | Prompt 3.3; AI must not change status by itself |
-| Pin occupied takes precedence over info holds (other fixes still listed) | Our choice | The pin is the more fundamental block |
+| Info holds take precedence over pin occupied; the reason also names the store on the pin | Our choice | Fix the data first; changed 2026-10-26 after e2e (APP-304) |
 | Duplicate Application ID: first row kept, later rows skipped and reported | Our choice | Prompt: dedupe and flag |
 | Blank Application ID: row kept as `ROW-<n>` and held for info | Our choice | Never drop data silently |
 | Pin covered by 2 territories: first territory in the file, flagged | Our choice | Not specified |
@@ -97,11 +97,11 @@ Flow: Excel -> `parseWorkbook` (browser) -> store -> `runEngine` -> **ledger** -
 | Space 40 = tenure 10 + size 20 + floor 10; Owned 1.0 / Rented 0.75; small 0.25 / medium 0.6 / preferred 1.0; Ground 1, Mall 1, Upper 0.5, Not known 0.2 | Our choice (placeholder) | Prompt asks for an editable placeholder split; bands from Go Colors statements |
 | Experience 20 = years 14 (relative) + business relevance 6 (High 1 / Medium 0.5 / Low 0) | Our choice | Prompt: years + AI-rated relevance |
 | Unrated relevance (no AI, no override) scores 0 | Our choice | No guessing; reviewer can rate |
-| Financial 20 = net worth 10 + portfolio 10, relative among applicants who have them; a part is scored only when at least 2 applicants have it (otherwise the factor is rescaled away, or the other part takes its points) | Our choice | Entering data must never lower a score |
+| Financial 20 = net worth 10 + portfolio 10, relative among applicants who have them; a part is scored only when at least 2 applicants have it (otherwise the other part takes its points; if neither can be compared, the applicant gets a neutral share equal to their own average on the other factors, so the total is unchanged and no rescale banner) | Our choice | Entering data must never lower a score |
 | Relative factors use percent rank among applicants in the file; alone = 0.5 | Our choice | Prompt: "compared with the other applicants" |
 | Traffic lights: Money, Experience, Financial by rank among applicants (top third green, middle amber, bottom red; thresholds editable); Space by share of its points | Our choice | Prompt: thirds for relative factors |
 | Notes contradicting the fields: flagged by the AI or by a simple phrase check ("don't have a shop", "still searching" ...) when Space is Owned/Rented; becomes a hold only when the reviewer confirms | Our choice | Works without AI; AI/heuristics never change a status alone |
-| Template example row ("Row 3 is an example") skipped when real rows follow; kept if it is the only row | Our choice | Judges may leave it in |
+| Template example row ("Row 3 is an example") skipped only when it exactly matches the template example (APP-001 Ravi Kumar 570001; TER-01 Mysuru 570001/2/8) and real rows follow; a real row typed there is kept and noted | Our choice | Judges may leave it in |
 | Investment above 10,000 (lakh) flagged as "looks like rupees" | Our choice | Common entry mistake |
 | Site details (frontage ft, visibility, monthly rent if rented): asked of the applicant via a "Questions to ask" list, recorded by the reviewer, shown in ledger/export, never scored | User's choice | Not in the input file; no invented thresholds |
 | Paperwork gate locks once onboarding starts ("Reopen paperwork" moves the store back) | Our choice | Day 0 must not shift silently |
@@ -113,7 +113,7 @@ Flow: Excel -> `parseWorkbook` (browser) -> store -> `runEngine` -> **ledger** -
 | Territory priority and launch timing not scored; launch note only if a limit is set (blank default) | Our choice | Prompt |
 | Contested pin: only "qualified" applicants (no holds) contest a pin | Our choice | A held applicant can't take the pin anyway |
 | Reviewer's call: winner competes for a slot by score; others -> Hold: pin occupied ("reviewer gave this pin to X") | Our choice | One store per pin |
-| Manual status change: reason required, logged; takes the applicant out of the automatic pool; a manual Good to go takes a slot first AND reserves its pin (others on that pin -> Hold: pin occupied); warnings if it sits on an existing store's pin or over-fills the territory | Our choice | Reviewer can change any status, but the same-pin case rule must still hold |
+| Manual status change: reason required, logged; takes the applicant out of the automatic pool; a manual Good to go takes a slot first AND reserves its pin (others on that pin -> Hold: pin occupied); it is NOT applied (flag shown, form blocks it) on an existing store's pin or a pin another manual Good to go holds; warning if it over-fills the territory | Our choice | Reviewer can change any status, but the same-pin case rule must still hold |
 | Zones = MHA Zonal Councils | Our choice | Official grouping; only used to match profiles |
 | Profile specificity: country 1, zone 2, state 4, city 8; ties -> earlier profile | Our choice | "Most specific wins" |
 | Per-browser session id, data in localStorage, mirrored to Neon when configured | Our choice | No login; judges don't overwrite each other |
@@ -144,7 +144,7 @@ Go Colors facts allowed (from official filings/investor material): 802 EBOs at 3
 ## 5. Statuses and scoring (as implemented)
 
 Statuses: Good to go · Needs your decision · Hold: info needed · Hold: pin occupied · Waitlist · Not proceeding (manual only, reason required).
-Score: Space 40 / Money 20 / Experience 20 / Financial profile 20 (rescaled to 50/25/25 when financial profile is blank). All numbers live in `src/lib/settings.ts` `DEFAULT_PROFILE` and are editable on /settings. Checks that can be switched off: hold when no space, pin-prefix check, contradiction checks.
+Score: Space 40 / Money 20 / Experience 20 / Financial profile 20 (rescaled to 50/25/25 when no applicant has a financial profile entered). All numbers live in `src/lib/settings.ts` `DEFAULT_PROFILE` and are editable on /settings. Checks that can be switched off: hold when no space, pin-prefix check, contradiction checks.
 
 ## 6. Environment variables (names only)
 
@@ -187,6 +187,8 @@ Score: Space 40 / Money 20 / Experience 20 / Financial profile 20 (rescaled to 5
 ## 9. Change Log (newest first)
 
 `YYYY-MM-DD | who/which tool | what changed | why | files touched | follow-ups`
+
+- 2026-10-26 | Claude Code | Fixed the "where it breaks" list (map left out on request): manual Good to go blocked on occupied/reserved pins (engine + form); exact-match template example skip; AI relevance rated for all applicants in batches of 100 and counted only once everyone with a business is rated; chat takes the last pin and more phrasings (bagged/spot/downstairs), writes an assumed "rented" into notes; info hold before pin occupied; neutral financial share for a lone profile; same-pin flags for held applicants; territory notes for blank slots and shared pins; "alone" notes; parser reads renamed headers, finds sheets by header, scans 50 rows, city/space/floor spellings, crore, pin ranges, .csv; onboarding durations like "2 weeks"; guardrails answer payback as "not in the data", turn "how can APP-x pass" into "what would change", explain the checks for general pass questions; save warning banner when the browser cannot store or the database backup fails/too big (sync drops ledger copy above ~4 MB) | Judges could trip over these; e2e now 54 PASS, only area/map items open | engine.ts, parse.ts, explain.ts, guardrails.ts, onboarding.ts, sync.ts, save-health.ts, workspace.ts, ai-assess-runner.tsx, manual-status-form.tsx, territory-card.tsx, upload-panel.tsx, chat-panel.tsx, save-warning.tsx, layout.tsx, api/ai/assess (limit 20/min), breaking-cases.test.ts | Map and area snapshot need a Google key; Vercel Blob still not set up |
 
 - 2026-10-26 | Claude Code (Opus 5.5) | e2e runner clears deliverables/test-screens/ at the start of each run; removed 4 screenshots left over from a run with test-side bugs | Keep screenshots matching the report | tests/e2e/run.mjs, deliverables/test-screens/ | none
 

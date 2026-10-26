@@ -30,6 +30,7 @@ export function TerritoryCard({ t, r }: { t: TerritorySummary; r: EngineResult }
         Free pins: {t.freePins.join(", ") || "none"}.{" "}
         {t.occupied.length > 0 && <>Pins with an existing store: {t.occupied.map((o) => `${o.pin} (${o.storeId})`).join(", ")}.</>}
       </p>
+      {(t.notes ?? []).map((n) => <p key={n} className="text-xs text-[var(--tone-info)]">{n}</p>)}
       {t.pendingContests.length > 0 && (
         <p className="text-xs text-[var(--tone-decide)]">Contested pin(s) {t.pendingContests.join(", ")} each hold one slot until you decide on the <Link href="/contested" className="underline">Contested pins</Link> board.</p>
       )}
