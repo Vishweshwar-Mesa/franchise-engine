@@ -30,7 +30,7 @@ export function ApplicantsTable({ rows, showTotal }: { rows: LedgerEntry[]; show
             <TableCell>{e.name || <span className="text-muted-foreground">missing</span>}</TableCell>
             <TableCell>{e.city}</TableCell>
             <TableCell className="font-mono text-xs">{e.pin}</TableCell>
-            <TableCell>{e.territory?.id ?? "—"}</TableCell>
+            <TableCell>{e.territory?.id ?? "none"}</TableCell>
             <TableCell onClick={(ev) => ev.stopPropagation()}>
               <div className="flex items-center gap-2">
                 <StatusBadge status={e.status} />
@@ -40,7 +40,7 @@ export function ApplicantsTable({ rows, showTotal }: { rows: LedgerEntry[]; show
             </TableCell>
             <TableCell><FactorLights factors={e.factors} total={e.total} showTotal={showTotal} /></TableCell>
             <TableCell className="text-xs">
-              {e.rank ? `${e.rank}/${e.rankOf}` : "—"}
+              {e.rank ? `${e.rank}/${e.rankOf}` : "not ranked"}
               {e.waitlistPosition ? ` · WL #${e.waitlistPosition}` : ""}
             </TableCell>
           </TableRow>

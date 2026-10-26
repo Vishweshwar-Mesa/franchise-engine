@@ -70,7 +70,7 @@ export default function SettingsPage() {
         <div className="flex max-w-3xl flex-col gap-1.5">
           <h1 className="text-[26px] font-semibold tracking-tight md:text-3xl">Settings</h1>
           <p className="text-muted-foreground">
-            The rules the engine uses to check and score applicants. Locked items come from the case; everything else is a default we chose, and you can change it. Saving re-runs every applicant immediately.
+            These are the rules used to check and score applicants. The locked ones come from the case. The rest are our starting values, and you can change any of them. When you save, every applicant is checked again straight away.
             New to this? Read the <a href="/guide" className="text-brand hover:underline">Guide</a>.
           </p>
         </div>

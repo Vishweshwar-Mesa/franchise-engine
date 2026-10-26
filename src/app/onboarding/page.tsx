@@ -6,16 +6,16 @@ import { useResults } from "@/hooks/use-results";
 import { gateComplete, localDate, storeLabel } from "@/lib/onboarding";
 import { cn } from "@/lib/utils";
 import { PageHeader, Panel } from "@/components/app/page-header";
-import { BoardView, GanttView, useTasks, type StoreRow } from "@/components/app/onboarding-overview";
+import { BoardView, GanttView, STORE_COLORS, useTasks, type StoreRow } from "@/components/app/onboarding-overview";
 import { CountUp } from "@/components/app/motion";
 
 export default function OnboardingPage() {
   const onboarding = useWorkspace((s) => s.onboarding);
   const r = useResults();
   const [view, setView] = useState<"gantt" | "board">("gantt");
-  const rows: StoreRow[] = Object.entries(onboarding).map(([id, o]) => {
+  const rows: StoreRow[] = Object.entries(onboarding).map(([id, o], i) => {
     const e = r?.ledger[id];
-    return { id, o, store: storeLabel(o, e?.city ?? "", e?.pin ?? ""), franchisee: `${e?.name || id} (${id})` };
+    return { id, o, color: STORE_COLORS[i % STORE_COLORS.length], store: storeLabel(o, e?.city ?? "", e?.pin ?? ""), franchisee: `${e?.name || id} (${id})` };
   });
   const tasks = useTasks(rows);
   const stats: [number, string][] = [
@@ -29,7 +29,7 @@ export default function OnboardingPage() {
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Onboarding"
-        sub="Every new store from confirmation to opening. A store waits for its paperwork (agreement, GST, other registrations); once all three are done its timeline starts: stock arrival, POS set-up, training, soft launch, then check-ins at day 30, 60, 90 and 180."
+        sub="Every new store, from approval to opening day. First the paperwork: the signed agreement, GST and any other registrations. When those are done, the plan starts with stock, billing software and training, then a soft launch and check-ins after 30, 60, 90 and 180 days."
         actions={
           rows.length > 0 && (
             <div className="inline-flex rounded-[10px] border p-1" role="group" aria-label="View">
@@ -60,6 +60,14 @@ export default function OnboardingPage() {
         </Panel>
       ) : (
         <Panel title="Task board: all stores" aside={<span className="text-xs text-muted-foreground">Tick a card to move it to Done.</span>}>
+          <div className="flex flex-wrap gap-2">
+            {rows.map((s) => (
+              <Link key={s.id} href={`/onboarding/${encodeURIComponent(s.id)}`} className="flex items-center gap-2 rounded-full border py-1 pr-3 pl-1.5 text-xs font-medium hover:bg-muted">
+                <span className="size-3 rounded-full" style={{ background: s.color }} aria-hidden="true" />
+                {s.store} <span className="text-muted-foreground">· {s.franchisee}</span>
+              </Link>
+            ))}
+          </div>
           <BoardView tasks={tasks} />
         </Panel>
       )}

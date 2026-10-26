@@ -14,7 +14,12 @@ export interface StoreRow {
   store: string;
   franchisee: string;
   o: Onboarding;
+  /** Each store's own colour, so its tasks are recognisable everywhere. */
+  color: string;
 }
+
+/** Store colours: distinct from each other and from the status colours. */
+export const STORE_COLORS = ["#F04898", "#1878B8", "#E0A100", "#5FA22F", "#8B5CF6", "#0E9F9A", "#E8590C", "#64748B"];
 
 type Kind = "paperwork" | "stock" | "pos" | "training" | "softLaunch" | "payment" | "checkin";
 
@@ -22,6 +27,7 @@ export interface Task {
   key: string;
   appId: string;
   store: string;
+  color: string;
   franchisee: string;
   label: string;
   why: string;
@@ -57,8 +63,8 @@ export function useTasks(rows: StoreRow[]): Task[] {
   const checkinBase = useWorkspace((s) => s.settings.checkinBase);
   const today = localToday();
   const tasks: Task[] = [];
-  for (const { id, store, franchisee, o } of rows) {
-    const base = { appId: id, store, franchisee };
+  for (const { id, store, franchisee, o, color } of rows) {
+    const base = { appId: id, store, franchisee, color };
     for (const k of Object.keys(GATE_LABELS) as (keyof Onboarding["gate"])[]) {
       const g = o.gate[k];
       const done = g.done && !!g.date;
@@ -117,12 +123,13 @@ export function GanttView({ rows, tasks }: { rows: StoreRow[]; tasks: Task[] }) 
             const done = mine.filter((t) => t.done).length;
             return (
               <div key={r.id} className="border-b last:border-b-0">
-                <Link href={`/onboarding/${encodeURIComponent(r.id)}`} className="flex items-center gap-3 bg-card px-3 py-2.5 hover:bg-inset">
+                <Link href={`/onboarding/${encodeURIComponent(r.id)}`} className="flex items-center gap-3 border-l-4 bg-card px-3 py-2.5 hover:bg-inset" style={{ borderLeftColor: r.color }}>
+                  <span className="size-3 shrink-0 rounded-full" style={{ background: r.color }} aria-hidden="true" />
                   <span className="text-sm font-semibold">{r.store}</span>
                   <span className="text-xs text-muted-foreground">{r.franchisee} · {r.o.stage} · {done}/{mine.length} tasks done</span>
                 </Link>
                 {mine.map((t) => (
-                  <div key={t.key} className="flex items-center text-[13px]">
+                  <div key={t.key} className="flex items-center border-l-4 text-[13px]" style={{ borderLeftColor: `${r.color}80` }}>
                     <label className="flex w-64 shrink-0 items-center gap-2 py-1.5 pr-2 pl-6">
                       <Checkbox aria-label={`${t.label} (${r.store})`} checked={t.done} onCheckedChange={(v) => t.toggle(!!v)} />
                       <span className={cn("truncate", t.done && "text-muted-foreground line-through")} title={t.why}>{t.label}</span>
@@ -190,18 +197,21 @@ export function BoardView({ tasks }: { tasks: Task[] }) {
               </header>
               <p className="px-1 text-[11px] text-muted-foreground">{c.hint}</p>
               {list.map((t) => (
-                <article key={t.key} className={cn("tile flex flex-col gap-1.5 rounded-xl border bg-card p-3", t.done && "opacity-60")}>
+                <article key={t.key} className={cn("tile flex flex-col gap-1.5 rounded-xl border border-l-[6px] bg-card p-3", t.done && "opacity-60")} style={{ borderLeftColor: t.color }}>
                   <div className="flex items-start gap-2">
                     <Checkbox aria-label={`${t.label} (${t.store})`} className="mt-0.5" checked={t.done} onCheckedChange={(v) => t.toggle(!!v)} />
                     <span className={cn("text-[13px] leading-snug font-semibold", t.done && "line-through")}>{t.label}</span>
                   </div>
-                  <Link href={`/onboarding/${encodeURIComponent(t.appId)}`} className="text-xs font-medium hover:text-brand">{t.store}</Link>
+                  <Link href={`/onboarding/${encodeURIComponent(t.appId)}`} className="self-start rounded-md px-2 py-0.5 text-xs font-semibold text-white hover:opacity-90" style={{ background: t.color }}>{t.store}</Link>
                   <span className="text-[11px] text-muted-foreground">{t.franchisee}</span>
                   <div className="flex items-center justify-between gap-2">
                     <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground"><span className={cn("size-2 rounded-full", COLOR[t.kind])} />{KIND_LABEL[t.kind]}</span>
                     <span className="text-[11px] font-medium">{cardDate(t)}</span>
                   </div>
-                  <p className="text-[11px] leading-snug text-muted-foreground">Why: {t.why}</p>
+                  <details className="text-[11px] text-muted-foreground">
+                    <summary className="cursor-pointer select-none hover:text-foreground">Why this task?</summary>
+                    <p className="mt-1 leading-snug">{t.why}</p>
+                  </details>
                 </article>
               ))}
               {list.length === 0 && <p className="px-1 py-3 text-xs text-muted-foreground">Nothing here.</p>}

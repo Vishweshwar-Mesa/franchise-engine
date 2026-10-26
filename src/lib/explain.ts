@@ -47,7 +47,7 @@ const CITY_ALIASES: [RegExp, string][] = [
 
 /**
  * Reads new information or a what-if about one applicant, without AI. Examples:
- * "APP-012 has now found a ground-floor space", "APP-004 now has 700 sq ft",
+ * "APP-009 is now renting a 600 sq ft shop on the ground floor", "APP-004 now has 700 sq ft",
  * "APP-013 can invest 30 lakh", "What if APP-004 had a 700 sq ft space?".
  */
 export function parseUpdate(q: string, apps: Application[]): ParsedUpdate | null {

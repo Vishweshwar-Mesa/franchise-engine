@@ -38,7 +38,7 @@ export default function ApplicantPage() {
     <div className="flex flex-col gap-6">
       <Link href="/results" className="text-sm text-muted-foreground hover:text-foreground">← Applicants</Link>
       <header className="flex flex-col gap-3">
-        <span className="font-mono text-xs text-muted-foreground">{e.id} · {e.city || "city missing"} · pin {e.pin || "—"} · {e.territory?.id ?? "no territory"}</span>
+        <span className="font-mono text-xs text-muted-foreground">{e.id} · {e.city || "city missing"} · pin {e.pin || "missing"} · {e.territory?.id ?? "no territory"}</span>
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-3xl font-bold tracking-tight md:text-4xl">{e.name || "Name missing"}</h1>
           <StatusBadge status={e.status} />
@@ -79,7 +79,7 @@ export default function ApplicantPage() {
             <h3 className="mb-2 text-base font-semibold">Application (row {app.rowNumber})</h3>
             <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs">
               {fields.map(([k, v]) => (
-                <div key={k} className="contents"><dt className="text-muted-foreground">{columnLabel(k)}</dt><dd>{v === null || v === "" || v === undefined ? "—" : String(v)}</dd></div>
+                <div key={k} className="contents"><dt className="text-muted-foreground">{columnLabel(k)}</dt><dd>{v === null || v === "" || v === undefined ? "blank" : String(v)}</dd></div>
               ))}
             </dl>
           </div>

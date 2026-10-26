@@ -1,5 +1,5 @@
 "use client";
-// One workspace per browser (session id in localStorage), so judges don't overwrite each
+// One workspace per browser (session id in localStorage), so different visitors don't overwrite each
 // other. Saved locally always; mirrored to the database (Neon) when it is configured (see lib/sync.ts).
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";

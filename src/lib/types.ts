@@ -1,4 +1,4 @@
-// Shared data types. Raw input types mirror the judges' Excel format (data/template.xlsx).
+// Shared data types. Raw input types mirror the Excel template (data/template.xlsx).
 
 export const STATUSES = [
   "Good to go",

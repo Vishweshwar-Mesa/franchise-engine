@@ -39,7 +39,7 @@ export function ContestCard({ c, r }: { c: ContestSummary; r: EngineResult }) {
                 <StatusBadge status={e.status} />
                 <WhyButton entry={e} />
               </div>
-              <p>Total {e.total}/100 · rank {e.rank ?? "—"} of {e.rankOf ?? "—"} in {c.territoryId}</p>
+              <p>Total {e.total}/100 · {e.rank ? `rank ${e.rank} of ${e.rankOf}` : "not ranked"} in {c.territoryId}</p>
               <ul className="space-y-0.5 text-xs">
                 {e.factors.map((f) => (
                   <li key={f.key} className="flex items-center gap-2"><TrafficLight light={f.light} /> {f.label}: {f.provided ? `${f.points}/${f.max}` : "not provided"}</li>

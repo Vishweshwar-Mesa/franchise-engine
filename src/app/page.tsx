@@ -1,44 +1,43 @@
 "use client";
-// Home: the Go Colors welcome page (inspired by a "brand reveal" intro: glossy colour orbs burst
-// apart and the wordmark pops in). Uses the brand's accent colours from gocolors.com and a typeset
-// wordmark, not the company's logo file: this is a hackathon scenario, not an official product.
+// Home: the welcome page in Go Colors' own brand language, taken from gocolors.com:
+// off-white #FAF9F6, ink #1A1A1A, Montserrat, condensed uppercase italic headlines, hot-pink
+// #FC007E pill buttons, and the four-colour stripe of the logo's "!" (pink, blue, yellow, green),
+// which the brand also prints on its shopping bags. Hackathon case study; not an official page.
 import Link from "next/link";
 import { useEffect, useRef } from "react";
-import { Baloo_2 } from "next/font/google";
+import { Barlow_Condensed, Montserrat } from "next/font/google";
 import gsap from "gsap";
 
-const baloo = Baloo_2({ subsets: ["latin"], weight: ["700", "800"] });
+const montserrat = Montserrat({ subsets: ["latin"], weight: ["500", "600", "700"] });
+const condensed = Barlow_Condensed({ subsets: ["latin"], weight: ["700", "800"], style: ["italic", "normal"] });
 
-/** Accent colours used on gocolors.com. */
-const BRAND = [
-  { hex: "#DF2E84", name: "Magenta" },
-  { hex: "#FC007E", name: "Hot pink" },
-  { hex: "#FF156D", name: "Rose" },
-  { hex: "#FF5924", name: "Orange" },
-  { hex: "#FEA203", name: "Amber" },
-  { hex: "#F6CA41", name: "Sun" },
+/** The logo "!" colours, top to bottom, sampled from the brand's logo file. */
+const STRIPE = [
+  { hex: "#F04898", name: "Pink" },
+  { hex: "#1878B8", name: "Blue" },
+  { hex: "#FFC028", name: "Yellow" },
+  { hex: "#90C840", name: "Green" },
 ];
-const ORB_COLORS = ["#DF2E84", "#FC007E", "#FF156D", "#FF5924", "#FEA203", "#F6CA41", "#7C3AED", "#B91C1C"];
-
-// Fixed layout (so server and browser render the same): x/y in % of the viewport, size in px.
-const ORBS = Array.from({ length: 30 }, (_, i) => {
-  const a = (i * 137.5 * Math.PI) / 180;
-  const r = 18 + ((i * 53) % 34);
-  return {
-    x: 50 + Math.cos(a) * r * 1.25,
-    y: 50 + Math.sin(a) * r * 0.95,
-    size: 18 + ((i * 41) % 130),
-    color: ORB_COLORS[i % ORB_COLORS.length],
-    blur: i % 7 === 0,
-  };
-});
-
-const WORD = "go colors";
-const STEPS = [
-  ["Upload", "Drop in the applications and territories file. Every row is checked: missing data, wrong pins, contradictions."],
-  ["Review", "Each applicant gets a recommendation with the reasons: one store per pin, territory slots, a score you can read at a glance."],
-  ["Onboard", "Confirmed partners move through paperwork, a Gantt plan and training to opening day, with check-ins after."],
+const SITE = [
+  { hex: "#FC007E", name: "Button pink" },
+  { hex: "#1A1A1A", name: "Ink" },
+  { hex: "#4D4D4F", name: "Wordmark grey" },
+  { hex: "#FAF9F6", name: "Paper" },
 ];
+
+const TILES = [
+  { label: "Upload", text: "Add the applications and territories sheet. We check every row for missing details, wrong pin codes and answers that don't add up.", href: "/upload", color: STRIPE[0].hex },
+  { label: "Review", text: "Each applicant gets a recommendation with the reasons behind it. Only one store per pin code, and only as many stores as a territory has room for.", href: "/today", color: STRIPE[1].hex },
+  { label: "Onboard", text: "Once you approve a partner, track their paperwork, set-up and training on one plan, all the way to opening day.", href: "/onboarding", color: STRIPE[3].hex },
+];
+
+function Stripes({ className = "" }: { className?: string }) {
+  return (
+    <div className={`flex flex-col ${className}`} aria-hidden="true">
+      {STRIPE.map((s) => <span key={s.hex} className="stripe block flex-1" style={{ background: s.hex }} />)}
+    </div>
+  );
+}
 
 export default function HomePage() {
   const root = useRef<HTMLDivElement>(null);
@@ -46,108 +45,96 @@ export default function HomePage() {
   useEffect(() => {
     if (!root.current || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const ctx = gsap.context(() => {
-      const tl = gsap.timeline();
-      tl.from(".orb", {
-        left: "50%", top: "45%", scale: 0.2, opacity: 0,
-        duration: 1.6, ease: "expo.out", stagger: { each: 0.025, from: "random" },
-      })
-        .from(".wm-letter", { y: 60, scale: 0.4, opacity: 0, rotate: () => gsap.utils.random(-25, 25), duration: 0.9, ease: "elastic.out(1, 0.5)", stagger: 0.06 }, "-=1.1")
-        .from(".reveal", { y: 18, opacity: 0, duration: 0.6, ease: "power2.out", stagger: 0.08 }, "-=0.5");
-      gsap.utils.toArray<HTMLElement>(".orb").forEach((el, i) => {
-        gsap.to(el, { y: gsap.utils.random(-26, 26), x: gsap.utils.random(-18, 18), duration: gsap.utils.random(3, 6), ease: "sine.inOut", yoyo: true, repeat: -1, delay: 1.6 + i * 0.02 });
-      });
-      gsap.to(".wm-letter", { y: -6, duration: 1.8, ease: "sine.inOut", yoyo: true, repeat: -1, stagger: { each: 0.15, from: "start" }, delay: 2.4 });
+      gsap.timeline()
+        .from(".bag", { y: 40, rotate: -6, opacity: 0, duration: 0.9, ease: "power3.out" })
+        .from(".bag .stripe", { scaleX: 0, transformOrigin: "left center", duration: 0.5, ease: "power2.out", stagger: 0.08 }, "-=0.5")
+        .from(".rise", { y: 24, opacity: 0, duration: 0.6, ease: "power2.out", stagger: 0.08 }, "-=0.9");
+      gsap.to(".bag", { y: -8, duration: 2.6, ease: "sine.inOut", yoyo: true, repeat: -1, delay: 1.2 });
     }, root);
     return () => ctx.revert();
   }, []);
 
   return (
-    <div ref={root} className="fixed inset-0 z-30 overflow-x-hidden overflow-y-auto bg-[#141016] text-[#FAF9F6]">
-      <div aria-hidden="true" className="pointer-events-none fixed inset-0 overflow-hidden">
-        {ORBS.map((o, i) => (
-          <span
-            key={i}
-            className="orb absolute rounded-full"
-            style={{
-              left: `${o.x}%`, top: `${o.y}%`, width: o.size, height: o.size, marginLeft: -o.size / 2, marginTop: -o.size / 2,
-              background: `radial-gradient(circle at 32% 28%, rgba(255,255,255,0.9) 0%, ${o.color} 22%, ${o.color}cc 48%, #1a0b16 100%)`,
-              boxShadow: `0 0 ${o.size / 2}px ${o.color}55`,
-              filter: o.blur ? "blur(3px)" : undefined,
-              opacity: 0.9,
-            }}
-          />
-        ))}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(20,16,22,0.55)_55%,#141016_85%)]" />
-      </div>
+    <div ref={root} className={`${montserrat.className} fixed inset-0 z-30 overflow-x-hidden overflow-y-auto bg-[#FAF9F6] text-[#1A1A1A]`}>
+      <Stripes className="h-1.5 flex-row [&>span]:h-full" />
 
-      <main className="relative mx-auto flex min-h-screen max-w-6xl flex-col px-6 py-8">
-        <header className="reveal flex items-center justify-between gap-4 text-sm">
-          <span className="font-semibold tracking-wide text-white/80">Franchise Partner Engine</span>
-          <nav className="flex gap-1">
-            <Link href="/guide" className="rounded-full px-3 py-2 text-white/75 hover:text-white">How it works</Link>
-            <Link href="/upload" className="rounded-full px-3 py-2 text-white/75 hover:text-white">Upload</Link>
-          </nav>
-        </header>
+      <header className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-5 md:px-10">
+        <Link href="/" aria-label="Go Colors franchise partner engine, home" className="flex items-center gap-4">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/gocolors-logo.png" alt="Go Colors" className="h-8 w-auto md:h-9" />
+          <span className="hidden border-l border-[#1A1A1A]/15 pl-4 text-[13px] font-semibold tracking-[0.06em] text-[#1A1A1A]/70 uppercase sm:inline">Franchise Partner Engine</span>
+        </Link>
+        <nav className="flex items-center gap-1 text-sm font-medium">
+          <Link href="/guide" className="rounded-full px-3 py-2 text-[#1A1A1A]/75 hover:text-[#1A1A1A]">How it works</Link>
+          <Link href="/today" className="rounded-full bg-[#1A1A1A] px-4 py-2 text-white hover:bg-black">Review desk</Link>
+        </nav>
+      </header>
 
-        <section className="flex flex-1 flex-col items-center justify-center gap-6 py-16 text-center">
-          <h1 className={`${baloo.className} flex flex-wrap justify-center text-[clamp(4.5rem,15vw,11rem)] leading-[0.9] font-extrabold tracking-tight`} aria-label="go colors">
-            {WORD.split("").map((ch, i) =>
-              ch === " " ? (
-                <span key={i} className="w-[0.3em]" />
-              ) : (
-                <span
-                  key={i}
-                  aria-hidden="true"
-                  className="wm-letter inline-block"
-                  style={{
-                    color: BRAND[i % BRAND.length].hex,
-                    textShadow: `0 0.04em 0 rgba(0,0,0,0.25), 0 0 0.35em ${BRAND[i % BRAND.length].hex}66`,
-                  }}
-                >
-                  {ch}
-                </span>
-              ),
-            )}
+      <section className="mx-auto grid max-w-7xl items-center gap-10 px-6 pt-6 pb-14 md:grid-cols-[1.1fr_0.9fr] md:px-10 md:pt-12">
+        <div className="flex flex-col gap-6">
+          <p className="rise text-xs font-semibold tracking-[0.18em] text-[#FC007E] uppercase">Franchise expansion · Karnataka</p>
+          <h1 className={`${condensed.className} rise text-[clamp(3.2rem,8vw,6.5rem)] leading-[0.88] font-extrabold tracking-tight uppercase italic`}>
+            From application<br />to open store
           </h1>
-          <p className="reveal text-2xl font-semibold tracking-tight md:text-3xl">Franchise Partner Engine</p>
-          <p className="reveal max-w-xl text-base text-white/75 md:text-lg">
-            From a partner&apos;s first application to an open, trained store: checked, explained and tracked in one place.
+          <p className="rise max-w-lg text-[17px] leading-relaxed text-[#1A1A1A]/75">
+            Upload the applications and see who can move forward, who is on hold and why. Then follow each new partner through paperwork and training until the store opens.
           </p>
-          <div className="reveal flex flex-wrap justify-center gap-3 pt-2">
-            <Link href="/today" className="rounded-full bg-[#C9246F] px-7 py-3.5 text-base font-semibold text-white shadow-[0_10px_40px_-10px_#DF2E84] transition hover:-translate-y-0.5 hover:bg-[#DF2E84]">
-              Open the review desk →
+          <div className="rise flex flex-wrap gap-3">
+            <Link href="/today" className="rounded-full bg-[#FC007E] px-7 py-3.5 text-[15px] font-semibold text-white shadow-[0_8px_24px_-8px_#FC007E] transition hover:-translate-y-0.5 hover:bg-[#E0006F]">
+              Open the review desk
             </Link>
-            <Link href="/upload" className="rounded-full border border-white/25 px-7 py-3.5 text-base font-semibold text-white backdrop-blur transition hover:bg-white/10">
+            <Link href="/upload" className="rounded-full border border-[#1A1A1A] px-7 py-3.5 text-[15px] font-semibold transition hover:bg-[#1A1A1A] hover:text-white">
               Upload applications
             </Link>
           </div>
-        </section>
+        </div>
 
-        <section className="reveal grid gap-3 pb-8 md:grid-cols-3">
-          {STEPS.map(([title, text], i) => (
-            <div key={title} className="rounded-3xl border border-white/10 bg-white/[0.06] p-5 backdrop-blur-md">
-              <p className="text-sm font-semibold" style={{ color: BRAND[i * 2].hex }}>0{i + 1}</p>
-              <p className="mt-1 text-lg font-semibold">{title}</p>
-              <p className="mt-1 text-sm text-white/70">{text}</p>
+        <div className="relative mx-auto flex w-full max-w-sm justify-center md:max-w-md">
+          {/* The brand's striped shopping bag, drawn in CSS. */}
+          <div className="bag relative w-[78%] pt-14">
+            <div className="absolute top-0 left-1/2 h-20 w-[46%] -translate-x-1/2 rounded-t-full border-[10px] border-b-0 border-[#1A1A1A]" aria-hidden="true" />
+            <div className="relative overflow-hidden rounded-[6px] shadow-[0_30px_60px_-24px_rgba(26,26,26,0.45)]">
+              <Stripes className="aspect-[4/4.6]" />
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-gradient-to-b from-transparent via-transparent to-black/10">
+                <span className="rounded-sm bg-white px-4 py-2 shadow-sm">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/brand/gocolors-logo.png" alt="" className="h-7 w-auto" />
+                </span>
+              </div>
             </div>
-          ))}
-        </section>
-
-        <footer className="reveal flex flex-col gap-4 border-t border-white/10 pt-6 pb-2 text-xs text-white/60 md:flex-row md:items-center md:justify-between">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="mr-1">Brand colours</span>
-            {BRAND.map((c) => (
-              <span key={c.hex} className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 py-1 pr-2.5 pl-1">
-                <span className="size-4 rounded-full" style={{ background: c.hex }} />
-                <span className="font-mono">{c.hex}</span>
-              </span>
-            ))}
           </div>
-          <p className="max-w-md md:text-right">
-            MESA Ops Hackathon, Case 1 · Namratha Reddy &amp; Vishweshwar. A scenario of Go Colors (Go Fashion (India) Ltd) scaling through franchise partners; not affiliated with or endorsed by the company.
+        </div>
+      </section>
+
+      <section className="mx-auto grid max-w-7xl gap-4 px-6 pb-14 md:grid-cols-3 md:px-10">
+        {TILES.map((t, i) => (
+          <Link key={t.label} href={t.href} className="rise group relative flex min-h-56 flex-col justify-between overflow-hidden rounded-[4px] p-6 text-white transition hover:-translate-y-1" style={{ background: t.color }}>
+            <span className={`${condensed.className} text-4xl font-extrabold tracking-wide uppercase`}>{t.label}</span>
+            <p className="max-w-xs text-[15px] leading-snug font-medium text-white/95">{t.text}</p>
+            <span className="absolute top-6 right-6 text-sm font-semibold opacity-80 group-hover:opacity-100">0{i + 1} →</span>
+          </Link>
+        ))}
+      </section>
+
+      <footer className="border-t border-[#1A1A1A]/10">
+        <div className="mx-auto flex max-w-7xl flex-col gap-6 px-6 py-8 text-xs text-[#1A1A1A]/65 md:flex-row md:items-start md:justify-between md:px-10">
+          <div className="flex flex-col gap-3">
+            <span className="font-semibold tracking-[0.12em] text-[#1A1A1A] uppercase">Brand palette</span>
+            <div className="flex flex-wrap gap-2">
+              {[...STRIPE, ...SITE].map((c) => (
+                <span key={c.hex} className="flex items-center gap-2 rounded-full border border-[#1A1A1A]/10 bg-white py-1 pr-3 pl-1">
+                  <span className="size-5 rounded-full border border-[#1A1A1A]/10" style={{ background: c.hex }} />
+                  <span className="font-medium text-[#1A1A1A]">{c.name}</span>
+                  <span className="font-mono">{c.hex}</span>
+                </span>
+              ))}
+            </div>
+          </div>
+          <p className="max-w-md leading-relaxed md:text-right">
+            MESA Ops Hackathon, Case 1 · Namratha Reddy &amp; Vishweshwar. A case study of Go Colors (Go Fashion (India) Ltd) scaling through franchise partners. Not affiliated with or endorsed by Go Fashion (India) Ltd; brand marks belong to their owner.
           </p>
-        </footer>
-      </main>
+        </div>
+      </footer>
     </div>
   );
 }

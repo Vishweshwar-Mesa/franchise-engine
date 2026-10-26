@@ -154,7 +154,7 @@ function examples(r: NonNullable<ReturnType<typeof useResults>>): string[] {
   const wait = all.find((e) => e.status === "Waitlist");
   return [
     hold && `Why is ${hold.id} on hold?`,
-    noSpace && `${noSpace.id} has now found a ground-floor space`,
+    noSpace && `${noSpace.id} is now renting a 600 sq ft shop on the ground floor`,
     wait && `What if ${wait.id} had a 700 sq ft space?`,
     "Who is on the waitlist?",
     "Which territory has the most applicants?",

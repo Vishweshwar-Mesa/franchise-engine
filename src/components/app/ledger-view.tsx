@@ -35,7 +35,7 @@ export function LedgerView({ entry: e, compact = false }: { entry: LedgerEntry; 
             <tr className="border-t align-top">
               <td className="py-1 pr-2">Territory capacity = min(open slots, free pins)</td>
               <td className="pr-2">{e.territory?.id ?? "no territory"}</td>
-              <td className="pr-2">{e.slot ? `slot ${e.slot.position} of ${e.slot.capacity}` : e.waitlistPosition ? `waitlist #${e.waitlistPosition}` : "—"}</td>
+              <td className="pr-2">{e.slot ? `slot ${e.slot.position} of ${e.slot.capacity}` : e.waitlistPosition ? `waitlist #${e.waitlistPosition}` : "no slot"}</td>
               <td><SourceTag source="Case rule" /></td>
             </tr>
           </tbody>

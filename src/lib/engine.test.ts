@@ -151,7 +151,7 @@ describe("manual status changes", () => {
 });
 
 describe("parsing dirty files", () => {
-  it("reads the judges' template", () => {
+  it("reads the case template", () => {
     const d = parseWorkbook(readFile("data/template.xlsx"), "template.xlsx");
     expect(d.report.fatal).toBeUndefined();
     expect(d.applications.map((a) => a.id)).toEqual(["APP-001"]);
@@ -302,8 +302,8 @@ describe("site details (asked, not scored)", () => {
 
 describe("chat: new information and what-ifs without AI", () => {
   const apps = [app("APP-012", { spaceAvailable: "Not yet identified", spaceSize: null, floor: "Not known" }), app("APP-004")];
-  it("applies 'has now found a ground-floor space' as new information, assuming rented", () => {
-    const u = parseUpdate("APP-012 has now found a ground-floor space", apps)!;
+  it("applies 'found a shop on the ground floor' as an update, assuming rented", () => {
+    const u = parseUpdate("APP-012 found a shop on the ground floor", apps)!;
     expect(u.hypothetical).toBe(false);
     expect(u.changes).toMatchObject({ floor: "Ground", spaceAvailable: "Rented" });
     expect(u.assumptions[0]).toMatch(/rented/);
@@ -328,5 +328,13 @@ describe("chat: questions are not updates", () => {
   it("does not read a why-question with a pin as new information", () => {
     expect(parseUpdate("Why is APP-004 not allowed in 570002?", [app("APP-004")])).toBeNull();
     expect(parseUpdate("Is APP-004 on the waitlist because of 350 sq ft?", [app("APP-004")])).toBeNull();
+  });
+});
+
+describe("chat: guide examples parse", () => {
+  it("handles the examples shown on the Guide page", () => {
+    const apps = [app("APP-009", { spaceAvailable: "Not yet identified", spaceSize: null }), app("APP-013")];
+    expect(parseUpdate("APP-009 is now renting a 600 sq ft shop on the ground floor", apps)!.changes).toMatchObject({ spaceAvailable: "Rented", spaceSize: 600, floor: "Ground" });
+    expect(parseUpdate("APP-013's investment is 30 lakh", apps)!.changes.investment).toBe(30);
   });
 });

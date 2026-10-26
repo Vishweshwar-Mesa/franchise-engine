@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { db, isSessionId } from "@/lib/server/db";
 
-// Records a franchisee account in Neon. There is no login system: judges and reviewers
+// Records a franchisee account in Neon. There is no login system: reviewers
 // use "Preview as franchisee", which needs no login. No email is sent.
 const Input = z.object({ email: z.string().email().max(200), appId: z.string().max(40), name: z.string().max(200), session: z.string() });
 

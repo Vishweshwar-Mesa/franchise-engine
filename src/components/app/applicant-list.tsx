@@ -17,7 +17,7 @@ export function ApplicantList({ rows, showTotal }: { rows: LedgerEntry[]; showTo
           <Link href={`/applicant/${encodeURIComponent(e.id)}`} className="flex min-w-56 flex-1 flex-col gap-0.5 outline-none lg:min-w-0">
             <span className="text-base font-bold group-hover:underline">{e.name || "Name missing"}</span>
             <span className="text-[13px] text-muted-foreground">
-              <span className="font-mono">{e.id}</span> · {e.city || "city missing"} · pin <span className="font-mono">{e.pin || "—"}</span> · <span className="whitespace-nowrap">{e.territory?.id ?? "no territory"}</span>
+              <span className="font-mono">{e.id}</span> · {e.city || "city missing"} · pin <span className="font-mono">{e.pin || "missing"}</span> · <span className="whitespace-nowrap">{e.territory?.id ?? "no territory"}</span>
               {e.rank ? <span className="whitespace-nowrap"> · rank {e.rank}/{e.rankOf}</span> : null}
             </span>
           </Link>

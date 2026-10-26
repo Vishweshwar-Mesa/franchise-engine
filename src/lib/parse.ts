@@ -1,4 +1,4 @@
-// Reads the judges' Excel file. Headers are found by name, not position, and a bad
+// Reads the applications Excel file (template format). Headers are found by name, not position, and a bad
 // row never throws: it is recorded in the validation report instead.
 import * as XLSX from "xlsx";
 import type { AllowedCity, Application, Dataset, Problem, Store, Territory } from "./types";

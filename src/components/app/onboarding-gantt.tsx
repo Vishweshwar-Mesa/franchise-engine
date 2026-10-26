@@ -62,7 +62,7 @@ export function OnboardingGantt({ id, o, readOnly = false }: { id: string; o: On
             <div className="relative h-5 rounded bg-muted">
               {t.start !== null && t.length !== null ? (
                 <div
-                  title={`Day ${t.start}${t.length > 1 ? `–${t.start + t.length}` : ""}: ${addDays(day0, t.start)}`}
+                  title={`Day ${t.start}${t.length > 1 ? ` to ${t.start + t.length}` : ""}: ${addDays(day0, t.start)}`}
                   className={cn("absolute top-0 h-5 rounded", BAR[t.kind], t.done && "opacity-40")}
                   style={{ left: `${(t.start / span) * 100}%`, width: `${Math.max(0.8, ((t.length || 1) / span) * 100)}%` }}
                 />

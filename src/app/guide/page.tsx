@@ -83,7 +83,7 @@ const GLOSSARY: [string, string][] = [
   ["Traffic light", "A coloured dot per factor: green = strong (about the top third), amber = middle, red = weak, hollow = not provided. Lets you read a profile at a glance."],
   ["Waitlist order", "The order in which waitlisted applicants would get a slot: highest score first. You confirm it on Territories."],
   ["What-if", "Ask the chat (Ask / What-if button) something like \"What if APP-004 had a 700 sq ft space?\". It re-runs the engine on a copy and shows before and after; nothing changes unless you apply it."],
-  ["New information (chat)", "Tell the chat a fact, e.g. \"APP-012 has now found a ground-floor space\" or \"APP-013 can invest 30 lakh\". It updates that applicant, re-runs every decision, shows before and after (and anyone else affected), states anything it had to assume, and offers Undo. Logged in Activity."],
+  ["Updates (chat)", "When something about an applicant changes, tell the chat in a sentence, such as \"APP-009 is now renting a 600 sq ft shop on the ground floor\" or \"APP-013's investment is 30 lakh\". The applicant is updated, every decision is re-run, and you see the status before and after, anyone else affected, and anything the tool had to assume. Undo is one click, and the change is logged in Activity."],
 ];
 
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -99,7 +99,7 @@ export default function GuidePage() {
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Guide"
-        sub="What this website does, how it decides, where to find things, and what every term means."
+        sub="What this tool does, how it reaches a decision, where things are, and what the terms mean."
       />
       <nav aria-label="On this page" className="flex flex-wrap gap-2 text-sm">
         {[["what", "What it does"], ["how", "How a decision is made"], ["where", "Where to find what"], ["statuses", "Statuses"], ["scores", "Scores and traffic lights"], ["onboarding", "Onboarding"], ["glossary", "Glossary"]].map(([id, l]) => (
@@ -110,11 +110,11 @@ export default function GuidePage() {
       <Panel title="What it does" className="scroll-mt-6">
         <div id="what" className="flex max-w-3xl flex-col gap-2 text-[15px] leading-relaxed">
           <p>
-            This is a review desk for choosing franchise partners. The scenario is Go Colors (Go Fashion (India) Ltd) opening new stores through franchisees in Karnataka.
-            You upload an Excel file of applications; the site checks every applicant, scores them, matches them to territories by pin code, and recommends a status for each one, with the reasons.
+            This is a review desk for choosing franchise partners. The example we use is Go Colors (Go Fashion (India) Ltd) opening new franchise stores across Karnataka.
+            You upload the applications in Excel. The tool checks each applicant, scores them, finds their territory from the pin code and suggests what should happen next, with the reasons.
           </p>
           <p>
-            It never approves or rejects anyone on its own. You confirm, change or overrule every recommendation, and every action is logged. Once you confirm someone, the site helps you run their onboarding: paperwork, deal terms, and a timeline to opening.
+            It never approves or turns anyone down by itself. You make the final call on every applicant, and everything you change is recorded. Once you approve someone, the tool helps you manage their paperwork, deal terms and the plan up to opening day.
           </p>
         </div>
       </Panel>
