@@ -14,6 +14,7 @@ const SHOTS = path.resolve("deliverables/test-screens");
 const OUT = path.resolve("tests/e2e/out");
 const STORE_PINS = ["560001", "560034", "560038", "560066", "560076", "570009", "570017", "575001", "580020", "590001"];
 const BLOCK_TEXT = /\b(log ?in to continue|sign in to|enter (your )?password|subscribe to|paywall|rate limit|too many requests|upgrade your plan)\b/i;
+fs.rmSync(SHOTS, { recursive: true, force: true });
 fs.mkdirSync(SHOTS, { recursive: true });
 
 // ---------- helpers ----------
