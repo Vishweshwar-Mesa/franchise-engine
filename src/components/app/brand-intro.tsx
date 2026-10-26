@@ -1,7 +1,7 @@
 "use client";
 // Opening animation on the welcome page: soft glass orbs, each a gradient of two of the four
-// Go Colors "!" colours, swirl and drift apart to reveal the logo, then the page shows. Once per browser session; any
-// click or key skips it; skipped entirely for people who prefer reduced motion.
+// Go Colors "!" colours, swirl and drift apart to reveal the logo, then the page shows. Plays on every
+// load of the welcome page; any click or key skips it; skipped for people who prefer reduced motion.
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 
@@ -21,14 +21,11 @@ const ORBS = Array.from({ length: 16 }, (_, i) => {
     pair: PAIRS[i % PAIRS.length],
   };
 });
-const KEY = "gc-intro-seen";
-
 function shouldPlay() {
   try {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return false;
-    return sessionStorage.getItem(KEY) !== "1";
+    return !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   } catch {
-    return false;
+    return true;
   }
 }
 
@@ -39,11 +36,6 @@ export function BrandIntro() {
 
   useEffect(() => {
     if (!show || !root.current) return;
-    try {
-      sessionStorage.setItem(KEY, "1");
-    } catch {
-      /* ignore */
-    }
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({ onComplete: () => setShow(false) });
       tl.from(".io-orb", { scale: 0, opacity: 0, duration: 0.5, ease: "back.out(2)", stagger: { each: 0.015, from: "center" } })

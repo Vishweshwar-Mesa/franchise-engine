@@ -73,7 +73,7 @@ Flow: Excel -> `parseWorkbook` (browser) -> store -> `runEngine` -> **ledger** -
 - Taken from gocolors.com (their site; no public brand book exists): paper #FAF9F6, ink #1A1A1A, Montserrat for text, condensed uppercase italic headlines (Barlow Condensed as the closest web font), hot-pink pill buttons (#FC007E on their site; #E0006F here so white text passes contrast), the Go Colors logo (public/brand/gocolors-logo.png, taken from their site) and the four colours of the logo's "!": pink #F04898, blue #1878B8, yellow #FFC028, green #90C840 (also printed as stripes on their shopping bags). The stripe runs across the top of every page.
 - Tokens in `src/app/globals.css` (light `:root`, `.dark`): status tones `--tone-*`, bars `--bar-*`, lights `--light-*`, `--stripe-*`, `--inset`, `--glow`. Borders are deliberately darker (#CDC9C1 light, #3A3A42 dark). Never hardcode Tailwind colour classes in components.
 - App name everywhere: **Go Colors Franchise Engine** (`src/lib/brand.ts`). Top bar: logo + "Franchise Engine", nav, pink "Upload file" pill, theme icon.
-- `/` = welcome page (striped bag, "From application to open store", Upload/Review/Onboard tiles, only a "not affiliated with or endorsed by Go Colors (Go Fashion (India) Ltd)" footer). Before it, `components/app/brand-intro.tsx` plays once per browser session: soft glass orbs, each a gradient of two of the four "!" colours, at three depths (far ones blurred), swirl and drift apart (GSAP) to reveal the logo; click/key/Skip ends it; skipped under reduced motion. Inspired by the Dribbble shot "Cloud Brand - Basic Brand Kit Project" (Chioma Gordon).
+- `/` = welcome page (striped bag, "From application to open store", Upload/Review/Onboard tiles, only a "not affiliated with or endorsed by Go Colors (Go Fashion (India) Ltd)" footer). Before it, `components/app/brand-intro.tsx` plays on every load of `/`: soft glass orbs, each a gradient of two of the four "!" colours, at three depths (far ones blurred), swirl and drift apart (GSAP) to reveal the logo; click/key/Skip ends it; skipped under reduced motion. Inspired by the Dribbble shot "Cloud Brand - Basic Brand Kit Project" (Chioma Gordon).
 - Page titles: `font-display` (condensed, extrabold, uppercase, italic). Buttons are pills. Tiles have a soft shadow and lift on hover.
 - Design exploration (8 versions) is in a private claude.ai canvas: https://claude.ai/artifact/T7nkLboonRceQfV22z4CGF
 
@@ -185,6 +185,8 @@ Score: Space 40 / Money 20 / Experience 20 / Financial profile 20 (rescaled to 5
 ## 9. Change Log (newest first)
 
 `YYYY-MM-DD | who/which tool | what changed | why | files touched | follow-ups`
+
+- 2026-10-26 | Claude Code (Opus 5.5) | Intro now plays on every load of the welcome page (was once per session) | User request | src/components/app/brand-intro.tsx, CLAUDE.md | none
 
 - 2026-10-26 | Claude Code (Opus 5.5) | Intro orbs restyled: two-colour brand gradients, soft glass shading, fewer and larger, three depths with blur (the solid glossy balls looked like sweets) | User feedback | src/components/app/brand-intro.tsx, CLAUDE.md | none
 
