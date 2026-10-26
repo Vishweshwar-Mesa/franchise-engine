@@ -20,7 +20,8 @@ const STEPS: [string, string][] = [
 ];
 
 const PAGES: [string, string, string][] = [
-  ["/", "Today", "Start here. What needs your attention now: how many are ready to confirm, contested pins, holds, territory capacity, onboarding. Every tile opens the details."],
+  ["/", "Home", "The Go Colors welcome page: what this tool is, and the way in."],
+  ["/today", "Today", "Start here. What needs your attention now: how many are ready to confirm, contested pins, holds, territory capacity, onboarding. Every tile opens the details."],
   ["/results", "Applicants", "Everyone in the file with their status, one-line reason and score dots. Filter by status, territory or city; search by name, ID or pin. Export to CSV or Excel."],
   ["/applicant/APP-004", "Applicant page", "Opened by clicking any applicant. The full reason ledger, scores, plain-language explanation, training plan, and where you type a financial profile, rate their business, change their status or confirm them."],
   ["/territories", "Territories", "Each territory's open slots, free pins, capacity, who got a slot and who is waiting. Confirm the waitlist order here."],

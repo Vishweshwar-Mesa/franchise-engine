@@ -56,7 +56,7 @@ src/lib/sync.ts                    Browser <-> Neon mirror via /api/state (silen
 src/store/workspace.ts             Zustand store, persisted to localStorage, one per browser session id
 src/hooks/use-results.ts           Runs the engine over the store (memoised)
 src/app/api/*                      status, state, ai/assess, ai/explain, ai/chat, ai/email, ai/research, upload, franchisee-account, email/send, area
-src/app/*/page.tsx                 Screens: / (Today bento), /upload, /results, /applicant/[id], /territories, /contested, /onboarding, /onboarding/[id], /franchisee/[id] (no-login preview), /settings, /activity
+src/app/*/page.tsx                 Screens: / (Go Colors welcome), /today (bento), /upload, /results, /applicant/[id], /territories, /contested, /onboarding, /onboarding/[id], /franchisee/[id] (no-login preview), /settings, /activity
 src/components/app/*               Small presentational components (designer can restyle)
 src/components/ui/*                shadcn/ui (Base UI flavour)
 ```
@@ -71,7 +71,8 @@ Flow: Excel -> `parseWorkbook` (browser) -> store -> `runEngine` -> **ledger** -
 - Colours: neutral near-black #0B0B0D (dark) / #F6F6F6 (light), cards #141417 / #FFFFFF, with the Go Colors brand magenta from gocolors.com (#DF2E84; buttons #C9246F so white text passes contrast; magenta text #F05A9E dark, #B81E66 light).
 - Tokens in `src/app/globals.css`: status tones `--tone-<good|decide|info|pin|wait|stop>` (+ `-bg`), solid bar colours `--bar-*`, traffic lights `--light-*`, `--inset`, `--glow`. Never hardcode Tailwind colour classes in components.
 - Type: Geist (UI) and Geist Mono (IDs, pins, file names), via `next/font`.
-- Layout: top navigation bar (`components/app/nav.tsx`) with Upload and the theme toggle on the right; home `/` is **Today**, a bento grid of tiles (`components/app/bento.tsx` `Tile`) built only from engine results, onboarding records and the action log; Upload lives at `/upload`; `/results` (Applicants) accepts `?status=` from the tiles.
+- Home `/` is the **Go Colors welcome page** (`src/app/page.tsx`): dark, glossy brand-colour orbs burst apart (GSAP) and a multicoloured typeset "go colors" wordmark pops in (Baloo 2), tagline, Upload/Review/Onboard steps, brand colour swatches, "Open the review desk" -> /today. Inspired by the Dribbble shot "Cloud Brand - Basic Brand Kit Project" (Chioma Gordon). It uses the brand's site accent colours (#DF2E84, #FC007E, #FF156D, #FF5924, #FEA203, #F6CA41) and NOT the company's logo file, plus a "not affiliated" line. Nav, chat, demo banner and footer are hidden on `/` and `/franchisee`.
+- Layout: top navigation bar (`components/app/nav.tsx`) with Upload and the theme toggle on the right; **Today** (`/today`) is a bento grid of tiles (`components/app/bento.tsx` `Tile`) built only from engine results, onboarding records and the action log; Upload lives at `/upload`; `/results` (Applicants) accepts `?status=` from the tiles.
 - Motion: `.tile` glow follows the pointer (CSS vars set on pointer move); GSAP count-up on numbers and staggered fade-in (`components/app/motion.tsx`); all off under prefers-reduced-motion.
 - Design exploration (8 versions, 2 rounds) is in a private claude.ai canvas: https://claude.ai/artifact/T7nkLboonRceQfV22z4CGF
 
@@ -182,6 +183,8 @@ Score: Space 40 / Money 20 / Experience 20 / Financial profile 20 (rescaled to 5
 ## 9. Change Log (newest first)
 
 `YYYY-MM-DD | who/which tool | what changed | why | files touched | follow-ups`
+
+- 2026-10-26 | Claude Code (Opus 5.5) | New Go Colors welcome page at / (orb burst + wordmark reveal, brand colours, steps, CTA); Today moved to /today; app chrome hidden on the welcome page; site footer as a component | User wants a branded first page like the Dribbble 'Cloud Brand' intro | src/app/page.tsx (new), src/app/today/page.tsx (moved), nav.tsx, chat-panel.tsx, demo-banner.tsx, site-footer.tsx (new), layout.tsx, empty-state.tsx, guide/page.tsx | none
 
 - 2026-10-26 | Claude Code (Opus 5.5) | AI switched to Gemini as primary provider (GEMINI_API_KEYS rotated, GEMINI_MODEL=gemini-3.8-flash, thinking level low, JSON mode, Google Search grounding for research); OpenRouter kept as backup; env vars set in Vercel | OpenRouter guardrails blocked every model; user supplied Gemini keys | src/lib/server/openrouter.ts, .env.example, CLAUDE.md | Rotate the keys after the hackathon
 

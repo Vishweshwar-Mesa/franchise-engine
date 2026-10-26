@@ -7,7 +7,7 @@ import { useWorkspace } from "@/store/workspace";
 import { ThemeToggle } from "./theme-toggle";
 
 const LINKS = [
-  ["/", "Today"],
+  ["/today", "Today"],
   ["/results", "Applicants"],
   ["/territories", "Territories"],
   ["/contested", "Contested"],
@@ -22,7 +22,7 @@ export function Nav() {
   const path = usePathname();
   const r = useResults();
   const onboarding = useWorkspace((s) => Object.keys(s.onboarding).length);
-  if (path.startsWith("/franchisee")) return null;
+  if (path === "/" || path.startsWith("/franchisee")) return null;
   const counts: Record<string, number | undefined> = {
     "/results": r?.order.length,
     "/contested": r?.contests.filter((c) => !c.decision?.winnerId).length || undefined,
@@ -37,8 +37,7 @@ export function Nav() {
       <nav className="flex flex-wrap gap-0.5">
         {LINKS.map(([href, label]) => {
           const active =
-            href === "/" ? path === "/"
-            : href === "/results" ? path.startsWith("/results") || path.startsWith("/applicant")
+            href === "/results" ? path.startsWith("/results") || path.startsWith("/applicant")
             : href === "/onboarding" ? path.startsWith("/onboarding") || path.startsWith("/franchisee")
             : path.startsWith(href);
           return (

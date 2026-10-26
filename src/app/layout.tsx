@@ -5,6 +5,7 @@ import { Providers } from "@/components/app/providers";
 import { Nav } from "@/components/app/nav";
 import { ChatPanel } from "@/components/app/chat-panel";
 import { DemoBanner } from "@/components/app/demo-banner";
+import { SiteFooter } from "@/components/app/site-footer";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
 const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" });
@@ -32,11 +33,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               {children}
             </div>
           </main>
-          <footer className="px-4 pb-8 text-xs text-muted-foreground md:px-8">
-            <p className="mx-auto max-w-7xl">
-              Scenario: Go Colors (Go Fashion (India) Ltd) scaling through franchise partners. Go Colors has not published India franchise terms. Every status is a recommendation; a human confirms.
-            </p>
-          </footer>
+          <SiteFooter />
           <ChatPanel />
         </Providers>
       </body>

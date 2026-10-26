@@ -30,7 +30,7 @@ export function ChatPanel() {
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [q, setQ] = useState("");
   const [busy, setBusy] = useState(false);
-  const hidden = path.startsWith("/franchisee");
+  const hidden = path === "/" || path.startsWith("/franchisee");
   const focusId = path.startsWith("/applicant/") ? decodeURIComponent(path.split("/")[2] ?? "") : undefined;
 
   function whatIf(id: string, changes: Record<string, unknown>): WhatIfOutcome | null {
