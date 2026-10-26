@@ -188,6 +188,8 @@ Score: Space 40 / Money 20 / Experience 20 / Financial profile 20 (rescaled to 5
 
 `YYYY-MM-DD | who/which tool | what changed | why | files touched | follow-ups`
 
+- 2026-10-26 | Claude Code (Opus 5.5) | e2e runner clears deliverables/test-screens/ at the start of each run; removed 4 screenshots left over from a run with test-side bugs | Keep screenshots matching the report | tests/e2e/run.mjs, deliverables/test-screens/ | none
+
 - 2026-10-26 | Claude Code (Opus 5.5) | Added an end-to-end test suite (tests/e2e: 3 parallel cases in fresh Playwright contexts, 90 s cap each, generated workbooks, AI blocked by request interception in case 3) and deliverables/TEST_REPORT.md. Result on the live site: 52 PASS, 3 MISMATCH (single financial profile keeps the rescale; pin-occupied takes precedence over a prefix mismatch; no Google key for the area snapshot), 1 NOT BUILT (map); 75 unit tests pass; run takes about 7 s. Report only, no app changes. playwright added as a dev dependency | Requested test run before fixes | tests/e2e/*, deliverables/TEST_REPORT.md, deliverables/test-screens/*, package.json, .gitignore | Decide on the 3 mismatches
 
 - 2026-10-26 | Claude Code (Opus 5.5) | Added deliverables/: FACTS_FOR_DECK.md (factual brief from a live check in fresh browser sessions: feature status, sample-data run, hard-rule check, worked examples from the live ledger, scoring, AI with keys removed, tests, changes, gaps, timings), 23 live screenshots in deliverables/screens/, and evidence files (live-run.json, sample-run.json, export-sample.csv, export-demo.csv, ledger-examples.json). No code changes | Needed for the hackathon deck | deliverables/* | none
