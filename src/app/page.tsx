@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { Barlow_Condensed, Montserrat } from "next/font/google";
 import gsap from "gsap";
+import { BrandIntro } from "@/components/app/brand-intro";
 
 const montserrat = Montserrat({ subsets: ["latin"], weight: ["500", "600", "700"] });
 const condensed = Barlow_Condensed({ subsets: ["latin"], weight: ["700", "800"], style: ["italic", "normal"] });
@@ -17,12 +18,6 @@ const STRIPE = [
   { hex: "#1878B8", name: "Blue" },
   { hex: "#FFC028", name: "Yellow" },
   { hex: "#90C840", name: "Green" },
-];
-const SITE = [
-  { hex: "#FC007E", name: "Button pink" },
-  { hex: "#1A1A1A", name: "Ink" },
-  { hex: "#4D4D4F", name: "Wordmark grey" },
-  { hex: "#FAF9F6", name: "Paper" },
 ];
 
 const TILES = [
@@ -55,35 +50,37 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div ref={root} className={`${montserrat.className} fixed inset-0 z-30 overflow-x-hidden overflow-y-auto bg-[#FAF9F6] text-[#1A1A1A]`}>
+    <>
+    <BrandIntro />
+    <div ref={root} className={`${montserrat.className} fixed inset-0 z-30 overflow-x-hidden overflow-y-auto bg-background text-foreground`}>
       <Stripes className="h-1.5 flex-row [&>span]:h-full" />
 
       <header className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-5 md:px-10">
-        <Link href="/" aria-label="Go Colors franchise partner engine, home" className="flex items-center gap-4">
+        <Link href="/" aria-label="Go Colors Franchise Engine, home" className="flex items-center gap-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand/gocolors-logo.png" alt="Go Colors" className="h-8 w-auto md:h-9" />
-          <span className="hidden border-l border-[#1A1A1A]/15 pl-4 text-[13px] font-semibold tracking-[0.06em] text-[#1A1A1A]/70 uppercase sm:inline">Franchise Partner Engine</span>
+          <img src="/brand/gocolors-logo.png" alt="Go Colors" className="h-8 w-auto md:h-9 dark:brightness-0 dark:invert" />
+          <span className="hidden border-l border-foreground/15 pl-4 text-[13px] font-semibold tracking-[0.06em] text-foreground/70 uppercase sm:inline">Franchise Engine</span>
         </Link>
         <nav className="flex items-center gap-1 text-sm font-medium">
-          <Link href="/guide" className="rounded-full px-3 py-2 text-[#1A1A1A]/75 hover:text-[#1A1A1A]">How it works</Link>
-          <Link href="/today" className="rounded-full bg-[#1A1A1A] px-4 py-2 text-white hover:bg-black">Review desk</Link>
+          <Link href="/guide" className="rounded-full px-3 py-2 text-foreground/75 hover:text-foreground">How it works</Link>
+          <Link href="/today" className="rounded-full bg-foreground px-4 py-2 text-background hover:opacity-90">Review desk</Link>
         </nav>
       </header>
 
       <section className="mx-auto grid max-w-7xl items-center gap-10 px-6 pt-6 pb-14 md:grid-cols-[1.1fr_0.9fr] md:px-10 md:pt-12">
         <div className="flex flex-col gap-6">
-          <p className="rise text-xs font-semibold tracking-[0.18em] text-[#FC007E] uppercase">Franchise expansion · Karnataka</p>
+          <p className="rise text-xs font-semibold tracking-[0.18em] text-[#FC007E] uppercase">Franchise expansion</p>
           <h1 className={`${condensed.className} rise text-[clamp(3.2rem,8vw,6.5rem)] leading-[0.88] font-extrabold tracking-tight uppercase italic`}>
             From application<br />to open store
           </h1>
-          <p className="rise max-w-lg text-[17px] leading-relaxed text-[#1A1A1A]/75">
+          <p className="rise max-w-lg text-[17px] leading-relaxed text-foreground/75">
             Upload the applications and see who can move forward, who is on hold and why. Then follow each new partner through paperwork and training until the store opens.
           </p>
           <div className="rise flex flex-wrap gap-3">
-            <Link href="/today" className="rounded-full bg-[#FC007E] px-7 py-3.5 text-[15px] font-semibold text-white shadow-[0_8px_24px_-8px_#FC007E] transition hover:-translate-y-0.5 hover:bg-[#E0006F]">
+            <Link href="/today" className="rounded-full bg-[#E0006F] px-7 py-3.5 text-[15px] font-semibold text-white shadow-[0_8px_24px_-8px_#FC007E] transition hover:-translate-y-0.5 hover:bg-[#C2005F]">
               Open the review desk
             </Link>
-            <Link href="/upload" className="rounded-full border border-[#1A1A1A] px-7 py-3.5 text-[15px] font-semibold transition hover:bg-[#1A1A1A] hover:text-white">
+            <Link href="/upload" className="rounded-full border border-foreground px-7 py-3.5 text-[15px] font-semibold transition hover:bg-foreground hover:text-background">
               Upload applications
             </Link>
           </div>
@@ -92,7 +89,7 @@ export default function HomePage() {
         <div className="relative mx-auto flex w-full max-w-sm justify-center md:max-w-md">
           {/* The brand's striped shopping bag, drawn in CSS. */}
           <div className="bag relative w-[78%] pt-14">
-            <div className="absolute top-0 left-1/2 h-20 w-[46%] -translate-x-1/2 rounded-t-full border-[10px] border-b-0 border-[#1A1A1A]" aria-hidden="true" />
+            <div className="absolute top-0 left-1/2 h-20 w-[46%] -translate-x-1/2 rounded-t-full border-[10px] border-b-0 border-foreground" aria-hidden="true" />
             <div className="relative overflow-hidden rounded-[6px] shadow-[0_30px_60px_-24px_rgba(26,26,26,0.45)]">
               <Stripes className="aspect-[4/4.6]" />
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-gradient-to-b from-transparent via-transparent to-black/10">
@@ -116,25 +113,12 @@ export default function HomePage() {
         ))}
       </section>
 
-      <footer className="border-t border-[#1A1A1A]/10">
-        <div className="mx-auto flex max-w-7xl flex-col gap-6 px-6 py-8 text-xs text-[#1A1A1A]/65 md:flex-row md:items-start md:justify-between md:px-10">
-          <div className="flex flex-col gap-3">
-            <span className="font-semibold tracking-[0.12em] text-[#1A1A1A] uppercase">Brand palette</span>
-            <div className="flex flex-wrap gap-2">
-              {[...STRIPE, ...SITE].map((c) => (
-                <span key={c.hex} className="flex items-center gap-2 rounded-full border border-[#1A1A1A]/10 bg-white py-1 pr-3 pl-1">
-                  <span className="size-5 rounded-full border border-[#1A1A1A]/10" style={{ background: c.hex }} />
-                  <span className="font-medium text-[#1A1A1A]">{c.name}</span>
-                  <span className="font-mono">{c.hex}</span>
-                </span>
-              ))}
-            </div>
-          </div>
-          <p className="max-w-md leading-relaxed md:text-right">
-            MESA Ops Hackathon, Case 1 · Namratha Reddy &amp; Vishweshwar. A case study of Go Colors (Go Fashion (India) Ltd) scaling through franchise partners. Not affiliated with or endorsed by Go Fashion (India) Ltd; brand marks belong to their owner.
-          </p>
-        </div>
+      <footer className="border-t border-foreground/10">
+        <p className="mx-auto max-w-7xl px-6 py-6 text-xs text-foreground/60 md:px-10">
+          Not affiliated with or endorsed by Go Colors (Go Fashion (India) Ltd). Brand marks belong to their owner.
+        </p>
       </footer>
     </div>
+    </>
   );
 }

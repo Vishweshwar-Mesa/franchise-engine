@@ -6,7 +6,7 @@ export default function ActivityPage() {
   const sessionId = useWorkspace((s) => s.sessionId);
   return (
     <div className="space-y-3">
-      <h1 className="text-[26px] font-semibold tracking-tight md:text-3xl">Activity log</h1>
+      <h1 className="font-display text-4xl leading-none font-extrabold tracking-tight uppercase italic md:text-5xl">Activity log</h1>
       <p className="text-xs text-muted-foreground">Every reviewer action in this browser session ({sessionId.slice(0, 8)}…), newest first.</p>
       {log.length === 0 && <p className="text-sm">Nothing yet.</p>}
       <ul className="space-y-1 text-sm">

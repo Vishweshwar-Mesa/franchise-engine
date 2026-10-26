@@ -24,7 +24,7 @@ export default function OnboardingPage() {
     <div className="space-y-4">
       <Link href="/onboarding" className="text-sm text-muted-foreground hover:text-foreground">← Onboarding</Link>
       <div className="flex flex-wrap items-center gap-3">
-        <div className="flex flex-col"><h1 className="text-[26px] font-semibold tracking-tight md:text-3xl">{storeLabel(o, e.city, e.pin)}</h1><span className="text-sm text-muted-foreground">Franchisee: {e.name} ({id}) · name the store in Deal terms</span></div>
+        <div className="flex flex-col"><h1 className="font-display text-4xl leading-none font-extrabold tracking-tight uppercase italic md:text-5xl">{storeLabel(o, e.city, e.pin)}</h1><span className="text-sm text-muted-foreground">Franchisee: {e.name} ({id}) · name the store in Deal terms</span></div>
         <span className="rounded-md border px-2 py-0.5 text-xs font-medium">Stage: {o.stage}</span>
         <StatusBadge status={e.status} /><WhyButton entry={e} />
       </div>

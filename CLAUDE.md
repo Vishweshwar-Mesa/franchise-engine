@@ -43,6 +43,8 @@ src/lib/engine.ts                  THE decision engine (deterministic) -> reason
 src/lib/engine.test.ts             Vitest unit tests (engine, parser, demo file, audit regressions, site details)
 src/lib/onboarding.test.ts         Onboarding gate/timeline tests
 src/lib/demo-onboarding.test.ts    Demo onboarding cases (statuses, no money terms)
+src/lib/brand.ts                   Go Colors facts the app may state (filings + gocolors.com) and the app name
+src/lib/guardrails.ts              Chat guardrails (off-topic, gaming the checks, pricing, prompt injection) + brand answers from verified facts
 src/lib/server/limit.ts            Per-visitor rate limit for the paid AI routes (over the limit -> template fallback)
 src/components/app/row-issues.tsx  Row-level validation report on /upload (held applicants and their fixes)
 src/lib/explain.ts                 Template explanations/training plan/chat answers/what-if parser (AI fallbacks)
@@ -65,16 +67,15 @@ Flow: Excel -> `parseWorkbook` (browser) -> store -> `runEngine` -> **ledger** -
 
 `AGENTS.md` starts with a pointer to this file; below it Next.js keeps its own managed block (re-added by `next dev`).
 
-## 3b. Design (V5 "Bento Command Center", chosen 2026-10-25; replaced V2 Warm Editorial)
+## 3b. Design (Go Colors brand, chosen 2026-10-26; replaced V5 dark bento)
 
-- Dark theme by default, light theme via the button in the top bar (saved in localStorage `fe-theme`; an inline script in `layout.tsx` applies it before paint).
-- Colours: neutral near-black #0B0B0D (dark) / #F6F6F6 (light), cards #141417 / #FFFFFF, with the Go Colors brand magenta from gocolors.com (#DF2E84; buttons #C9246F so white text passes contrast; magenta text #F05A9E dark, #B81E66 light).
-- Tokens in `src/app/globals.css`: status tones `--tone-<good|decide|info|pin|wait|stop>` (+ `-bg`), solid bar colours `--bar-*`, traffic lights `--light-*`, `--inset`, `--glow`. Never hardcode Tailwind colour classes in components.
-- Type: Geist (UI) and Geist Mono (IDs, pins, file names), via `next/font`.
-- Home `/` is the **Go Colors welcome page** (`src/app/page.tsx`) in the brand's own language, taken from gocolors.com: off-white #FAF9F6, ink #1A1A1A, Montserrat, condensed uppercase italic headlines (Barlow Condensed), hot-pink #FC007E pill buttons, the Go Colors logo (public/brand/gocolors-logo.png, from their site) and the four-colour stripe of the logo's "!" (pink #F04898, blue #1878B8, yellow #FFC028, green #90C840) drawn as their striped shopping bag. Upload/Review/Onboard tiles, palette swatches, and a "case study, not affiliated with Go Fashion (India) Ltd" line. Nav, chat, demo banner and footer are hidden on `/` and `/franchisee`.
-- Layout: top navigation bar (`components/app/nav.tsx`) with Upload and the theme toggle on the right; **Today** (`/today`) is a bento grid of tiles (`components/app/bento.tsx` `Tile`) built only from engine results, onboarding records and the action log; Upload lives at `/upload`; `/results` (Applicants) accepts `?status=` from the tiles.
-- Motion: `.tile` glow follows the pointer (CSS vars set on pointer move); GSAP count-up on numbers and staggered fade-in (`components/app/motion.tsx`); all off under prefers-reduced-motion.
-- Design exploration (8 versions, 2 rounds) is in a private claude.ai canvas: https://claude.ai/artifact/T7nkLboonRceQfV22z4CGF
+- **Light is the base** (the Go Colors brand is light); dark mode is an icon toggle in the top bar (saved in localStorage `fe-theme`, applied before paint).
+- Taken from gocolors.com (their site; no public brand book exists): paper #FAF9F6, ink #1A1A1A, Montserrat for text, condensed uppercase italic headlines (Barlow Condensed as the closest web font), hot-pink pill buttons (#FC007E on their site; #E0006F here so white text passes contrast), the Go Colors logo (public/brand/gocolors-logo.png, taken from their site) and the four colours of the logo's "!": pink #F04898, blue #1878B8, yellow #FFC028, green #90C840 (also printed as stripes on their shopping bags). The stripe runs across the top of every page.
+- Tokens in `src/app/globals.css` (light `:root`, `.dark`): status tones `--tone-*`, bars `--bar-*`, lights `--light-*`, `--stripe-*`, `--inset`, `--glow`. Borders are deliberately darker (#CDC9C1 light, #3A3A42 dark). Never hardcode Tailwind colour classes in components.
+- App name everywhere: **Go Colors Franchise Engine** (`src/lib/brand.ts`). Top bar: logo + "Franchise Engine", nav, pink "Upload file" pill, theme icon.
+- `/` = welcome page (striped bag, "From application to open store", Upload/Review/Onboard tiles, only a "not affiliated with or endorsed by Go Colors (Go Fashion (India) Ltd)" footer). Before it, `components/app/brand-intro.tsx` plays once per browser session: glossy orbs in the four "!" colours swirl and burst (GSAP) to reveal the logo; click/key/Skip ends it; skipped under reduced motion. Inspired by the Dribbble shot "Cloud Brand - Basic Brand Kit Project" (Chioma Gordon).
+- Page titles: `font-display` (condensed, extrabold, uppercase, italic). Buttons are pills. Tiles have a soft shadow and lift on hover.
+- Design exploration (8 versions) is in a private claude.ai canvas: https://claude.ai/artifact/T7nkLboonRceQfV22z4CGF
 
 ## 4. Decisions and why
 
@@ -103,6 +104,7 @@ Flow: Excel -> `parseWorkbook` (browser) -> store -> `runEngine` -> **ledger** -
 | Investment above 10,000 (lakh) flagged as "looks like rupees" | Our choice | Common entry mistake |
 | Site details (frontage ft, visibility, monthly rent if rented): asked of the applicant via a "Questions to ask" list, recorded by the reviewer, shown in ledger/export, never scored | User's choice | Not in the input file; no invented thresholds |
 | Paperwork gate locks once onboarding starts ("Reopen paperwork" moves the store back) | Our choice | Day 0 must not shift silently |
+| Chat guardrails (browser and server): refuses off-topic questions, attempts to game the checks ("what should I enter to pass"), pricing/fees/royalty/deposit (not published; never estimated), and prompt-injection; answers Go Colors questions only from `src/lib/brand.ts` with sources; AI prompt carries the same rules and the brand facts | User's choice | The chat must stay on task and never invent or leak |
 | AI routes rate-limited per visitor (assess 6/min, chat 20, explain 40, email 10, research 5); over the limit -> template fallback | Our choice | Bounded cost without blocking the site |
 | Financial blank -> rescale others to 100 (50/25/25) with banner | Our choice | Prompt |
 | Liabilities = flag only | Our choice | Prompt |
@@ -183,6 +185,8 @@ Score: Space 40 / Money 20 / Experience 20 / Financial profile 20 (rescaled to 5
 ## 9. Change Log (newest first)
 
 `YYYY-MM-DD | who/which tool | what changed | why | files touched | follow-ups`
+
+- 2026-10-26 | Claude Code (Opus 5.5) | Whole app rebranded to Go Colors (light base, dark toggle, Montserrat + condensed italic titles, pink pills, logo top bar, four-colour stripe, darker borders); renamed to Go Colors Franchise Engine; welcome page footer trimmed to the not-affiliated line, 'Franchise expansion' (no Karnataka); brand intro animation (orbs in the logo colours burst to reveal the logo, once per session); chat guardrails + Go Colors facts (brand.ts, guardrails.ts, 20 tests); AI prompt includes brand facts and rules | User feedback on branding and chat safety | globals.css, layout.tsx, nav.tsx, theme-toggle.tsx, brand-stripe.tsx, brand-intro.tsx, page.tsx, page-header.tsx, button.tsx, page titles, brand.ts, guardrails.ts (+test), chat-panel.tsx, api/ai/chat, openrouter.ts | none
 
 - 2026-10-26 | Claude Code (Opus 5.5) | Welcome page redone in Go Colors branding (logo, stripe palette, Montserrat, condensed italic headlines, pink pills; the orb version was rejected); store colours on the onboarding Gantt and task board (+ store legend, collapsible 'Why this task?'); removed wording taken from the case brief and 'judges' mentions from the site and code comments; no em dashes on the site (placeholders now words); plainer copy on home, Today, Onboarding, demo note, Guide and Settings | User: on-brand first page, stores distinguishable, site must not read as generated from the brief or by AI | src/app/page.tsx, public/brand/gocolors-logo.png, onboarding-overview.tsx, onboarding/page.tsx, guide/page.tsx, chat-panel.tsx, explain.ts, demo-banner.tsx, settings/page.tsx, today/page.tsx, several components | Deck and 1-minute video still to make
 

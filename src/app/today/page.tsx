@@ -64,7 +64,7 @@ export default function TodayPage() {
     <div className="flex flex-col gap-5">
       <div className="flex flex-wrap items-baseline justify-between gap-2 pt-2">
         <div className="flex flex-col gap-1">
-          <h1 className="text-[26px] font-semibold tracking-tight">Today</h1>
+          <h1 className="font-display text-4xl leading-none font-extrabold tracking-tight uppercase italic md:text-5xl">Today</h1>
           <p className="text-sm text-muted-foreground">Here is what needs your attention. Click a tile to see more. First time here? <Link href="/guide" className="text-brand hover:underline">Read the Guide</Link>.</p>
         </div>
         <span className="font-mono text-xs text-muted-foreground">

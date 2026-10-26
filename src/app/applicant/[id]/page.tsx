@@ -40,7 +40,7 @@ export default function ApplicantPage() {
       <header className="flex flex-col gap-3">
         <span className="font-mono text-xs text-muted-foreground">{e.id} · {e.city || "city missing"} · pin {e.pin || "missing"} · {e.territory?.id ?? "no territory"}</span>
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-3xl font-bold tracking-tight md:text-4xl">{e.name || "Name missing"}</h1>
+          <h1 className="font-display text-4xl leading-none font-extrabold tracking-tight uppercase italic md:text-5xl">{e.name || "Name missing"}</h1>
           <StatusBadge status={e.status} />
           <WhyButton entry={e} />
         </div>

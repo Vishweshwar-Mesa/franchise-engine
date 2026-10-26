@@ -7,13 +7,14 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist);
-  --font-serif: var(--font-geist);
+  --font-sans: var(--font-montserrat);
+  --font-display: var(--font-condensed);
+  --font-serif: var(--font-montserrat);
   --color-brand: var(--brand-text);
   --color-note: var(--note);
   --color-inset: var(--inset);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-geist);
+  --font-heading: var(--font-condensed);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -53,43 +54,46 @@
 }
 
 :root {
-  /* V5 Bento Command Center, light. Brand accent from gocolors.com (#DF2E84), deepened for contrast. */
-  --background: #F6F6F6;
-  --foreground: #121212;
+  /* Go Colors brand, light (default). From gocolors.com: paper #FAF9F6, ink #1A1A1A, Montserrat,
+     hot-pink buttons (#FC007E, deepened to #E0006F so white text passes contrast), and the logo's
+     four-colour "!" stripe (#F04898, #1878B8, #FFC028, #90C840). */
+  --background: #FAF9F6;
+  --foreground: #1A1A1A;
   --card: #FFFFFF;
-  --card-foreground: #121212;
+  --card-foreground: #1A1A1A;
   --popover: #FFFFFF;
-  --popover-foreground: #121212;
-  --primary: #C9246F;
+  --popover-foreground: #1A1A1A;
+  --primary: #E0006F;
   --primary-foreground: #FFFFFF;
-  --secondary: #F1F1F3;
-  --secondary-foreground: #121212;
-  --muted: #F1F1F3;
-  --muted-foreground: #5C5F69;
-  --accent: #F1F1F3;
-  --accent-foreground: #121212;
+  --secondary: #F1EFEA;
+  --secondary-foreground: #1A1A1A;
+  --muted: #F1EFEA;
+  --muted-foreground: #55555A;
+  --accent: #F1EFEA;
+  --accent-foreground: #1A1A1A;
   --destructive: #B42318;
-  --border: #E4E4E7;
-  --input: #DCDCE0;
-  --ring: #C9246F;
-  --chart-1: #C9246F;
-  --chart-2: #5C5F69;
-  --chart-3: #9A9AA3;
-  --chart-4: #C8C8CE;
-  --chart-5: #E4E4E7;
-  --radius: 0.75rem;
+  --border: #CDC9C1;
+  --input: #BDB8AF;
+  --ring: #E0006F;
+  --chart-1: #F04898;
+  --chart-2: #1878B8;
+  --chart-3: #FFC028;
+  --chart-4: #90C840;
+  --chart-5: #4D4D4F;
+  --radius: 0.625rem;
   --sidebar: #FFFFFF;
-  --sidebar-foreground: #121212;
-  --sidebar-primary: #121212;
+  --sidebar-foreground: #1A1A1A;
+  --sidebar-primary: #1A1A1A;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #F1F1F3;
-  --sidebar-accent-foreground: #121212;
-  --sidebar-border: #E4E4E7;
-  --sidebar-ring: #C9246F;
-  --brand-text: #B81E66;
-  --note: #FCE7F1;
-  --inset: #F1F1F3;
-  --glow: rgba(201, 36, 111, 0.16);
+  --sidebar-accent: #F1EFEA;
+  --sidebar-accent-foreground: #1A1A1A;
+  --sidebar-border: #CDC9C1;
+  --sidebar-ring: #E0006F;
+  --brand-text: #C2005F;
+  --note: #FDE7F1;
+  --inset: #F1EFEA;
+  --glow: rgba(224, 0, 111, 0.12);
+  --stripe-pink: #F04898; --stripe-blue: #1878B8; --stripe-yellow: #FFC028; --stripe-green: #90C840;
   /* Status tones: [text, tint]. Lightness differs, not hue alone. */
   --tone-good: #166534;      --tone-good-bg: #DCFCE7;
   --tone-decide: #5B21B6;    --tone-decide-bg: #EDE9FE;
@@ -97,7 +101,6 @@
   --tone-pin: #9A3412;       --tone-pin-bg: #FFEDD5;
   --tone-wait: #075985;      --tone-wait-bg: #E0F2FE;
   --tone-stop: #3F3F46;      --tone-stop-bg: #E4E4E7;
-  /* Solid status colours for bars and dots. */
   --bar-good: #16A34A; --bar-decide: #8B5CF6; --bar-info: #D97706; --bar-pin: #EA580C; --bar-wait: #0284C7; --bar-stop: #71717A;
   --light-green: #16A34A;
   --light-amber: #D97706;
@@ -105,6 +108,7 @@
 }
 
 .dark {
+  --stripe-pink: #F04898; --stripe-blue: #1878B8; --stripe-yellow: #FFC028; --stripe-green: #90C840;
   --background: #0B0B0D;
   --foreground: #F4F4F5;
   --card: #141417;
@@ -120,8 +124,8 @@
   --accent: #1D1D22;
   --accent-foreground: #F4F4F5;
   --destructive: #F87171;
-  --border: #26262C;
-  --input: #2E2E35;
+  --border: #3A3A42;
+  --input: #45454D;
   --ring: #F05A9E;
   --chart-1: #F05A9E;
   --chart-2: #A1A1AA;
@@ -185,3 +189,8 @@
 }
 .tile:hover { border-color: color-mix(in oklab, var(--primary) 55%, var(--border)); }
 .tile:hover::before { opacity: 1; }
+
+/* Tiles and cards: a clear edge and a soft lift on hover. */
+.tile { box-shadow: 0 1px 2px rgba(26, 26, 26, 0.06); }
+.tile:hover { box-shadow: 0 10px 28px -12px rgba(26, 26, 26, 0.28); transform: translateY(-2px); }
+.tile { transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease; }

@@ -10,7 +10,7 @@ export default function TerritoriesPage() {
   return (
     <div className="space-y-4">
       <div className="flex max-w-3xl flex-col gap-1.5">
-        <h1 className="text-[26px] font-semibold tracking-tight md:text-3xl">Territories</h1>
+        <h1 className="font-display text-4xl leading-none font-extrabold tracking-tight uppercase italic md:text-5xl">Territories</h1>
         <p className="text-sm text-muted-foreground">
           A territory is a group of pin codes where the brand wants new stores. Its capacity is the smaller of its open slots and its free pins (pins with no existing store), a rule from the case.
           The highest scorers get the slots; the rest wait in score order. Priority is shown for context only and is not scored.

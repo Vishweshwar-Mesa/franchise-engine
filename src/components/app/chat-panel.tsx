@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useResults } from "@/hooks/use-results";
 import { fetchServices } from "@/hooks/use-services";
 import { chatContext, localAnswer, parseUpdate } from "@/lib/explain";
+import { brandAnswer, guard } from "@/lib/guardrails";
 import { runWhatIf, sanitizeChanges, type WhatIfOutcome } from "@/lib/whatif";
 import { columnLabel } from "@/lib/parse";
 import { useWorkspace } from "@/store/workspace";
@@ -49,6 +50,16 @@ export function ChatPanel() {
     setMsgs(next);
     if (!r) {
       setMsgs([...next, { role: "assistant", content: "Load a file first (Upload page).", by: "Ledger template" }]);
+      return;
+    }
+    const g = guard(question);
+    if (g.blocked) {
+      setMsgs([...next, { role: "assistant", content: g.reply, by: "Ledger template" }]);
+      return;
+    }
+    const brand = brandAnswer(question);
+    if (brand) {
+      setMsgs([...next, { role: "assistant", content: brand, by: "Ledger template" }]);
       return;
     }
     const apps = useWorkspace.getState().dataset?.applications ?? [];
