@@ -27,6 +27,7 @@
 
 ```
 data/template.xlsx                 Judges' input format (Case1_Franchise_Test_Data_Format.xlsx)
+deliverables/                      Facts for the deck (FACTS_FOR_DECK.md), live screenshots, export and ledger evidence (not used by the app)
 public/samples/                    template.xlsx copy + demo-messy.xlsx (synthetic, 30 applicants with traps)
 src/lib/load-demo.ts               Loads demo-messy.xlsx as demo data (+ demo onboarding); Providers auto-loads it on a first visit with no saved data
 src/lib/demo-onboarding.ts         3 demo onboarding records (APP-025, APP-030 running; APP-005 awaiting paperwork); money terms blank
@@ -185,6 +186,8 @@ Score: Space 40 / Money 20 / Experience 20 / Financial profile 20 (rescaled to 5
 ## 9. Change Log (newest first)
 
 `YYYY-MM-DD | who/which tool | what changed | why | files touched | follow-ups`
+
+- 2026-10-26 | Claude Code (Opus 5.5) | Added deliverables/: FACTS_FOR_DECK.md (factual brief from a live check in fresh browser sessions: feature status, sample-data run, hard-rule check, worked examples from the live ledger, scoring, AI with keys removed, tests, changes, gaps, timings), 23 live screenshots in deliverables/screens/, and evidence files (live-run.json, sample-run.json, export-sample.csv, export-demo.csv, ledger-examples.json). No code changes | Needed for the hackathon deck | deliverables/* | none
 
 - 2026-10-26 | Claude Code (Opus 5.5) | Intro now plays on every load of the welcome page (was once per session) | User request | src/components/app/brand-intro.tsx, CLAUDE.md | none
 

@@ -1,0 +1,1037 @@
+{
+ "APP-001": {
+  "id": "APP-001",
+  "pin": "570001",
+  "city": "Mysuru",
+  "name": "Ravi Kumar",
+  "rank": 3,
+  "slot": null,
+  "fixes": [],
+  "flags": [],
+  "total": 65.9,
+  "checks": [
+   {
+    "key": "required",
+    "input": "all present",
+    "label": "Required fields present",
+    "detail": "All required columns have a value.",
+    "result": "pass",
+    "source": "Our choice"
+   },
+   {
+    "key": "pin-format",
+    "input": "570001",
+    "label": "Pin code has 6 digits",
+    "detail": "Valid 6-digit pin.",
+    "result": "pass",
+    "source": "Our choice"
+   },
+   {
+    "key": "pin-prefix",
+    "input": "570001 vs Mysuru (570…)",
+    "label": "Pin matches the city's prefix",
+    "detail": "Pin starts with 570, as expected for Mysuru.",
+    "result": "pass",
+    "source": "Our choice"
+   },
+   {
+    "key": "territory",
+    "input": "570001",
+    "label": "A territory covers this pin",
+    "detail": "Pin 570001 is in TER-01 (Mysuru).",
+    "result": "pass",
+    "source": "Our choice"
+   },
+   {
+    "key": "space-identified",
+    "input": "Rented",
+    "label": "A space is identified",
+    "detail": "Space is rented.",
+    "result": "pass",
+    "source": "Our choice"
+   },
+   {
+    "key": "site-details",
+    "input": "not asked yet",
+    "label": "Site details (asked; not scored)",
+    "detail": "Frontage, visibility and rent have not been recorded yet. See 'Questions to ask'.",
+    "result": "info",
+    "source": "Our choice"
+   },
+   {
+    "key": "same-pin-store",
+    "input": "570001",
+    "label": "No existing store on this pin",
+    "detail": "No existing store on this pin.",
+    "result": "pass",
+    "source": "Case rule"
+   }
+  ],
+  "manual": null,
+  "rankOf": 3,
+  "reason": "Pin 570001 is wanted by 2 qualified applicants (APP-001, APP-002). Only one store per pin: you decide.",
+  "status": "Needs your decision",
+  "contest": {
+   "pin": "570001",
+   "with": [
+    "APP-002"
+   ],
+   "decidedWinner": null
+  },
+  "factors": [
+   {
+    "key": "space",
+    "max": 50,
+    "label": "Space",
+    "light": "green",
+    "parts": [
+     {
+      "max": 12.5,
+      "label": "Tenure",
+      "value": "Rented",
+      "points": 9.4
+     },
+     {
+      "max": 25,
+      "label": "Size",
+      "value": "450 sq ft (400-699 sq ft: medium)",
+      "points": 15
+     },
+     {
+      "max": 12.5,
+      "label": "Floor",
+      "value": "Ground",
+      "points": 12.5
+     }
+    ],
+    "share": 0.7375,
+    "points": 36.9,
+    "provided": true,
+    "relative": false
+   },
+   {
+    "key": "money",
+    "max": 25,
+    "label": "Money",
+    "light": "amber",
+    "parts": [
+     {
+      "max": 25,
+      "label": "Investment capacity",
+      "value": "₹25 lakh (percent rank 54 among 29)",
+      "points": 13.4
+     }
+    ],
+    "share": 0.5357142857142857,
+    "points": 13.4,
+    "provided": true,
+    "relative": true
+   },
+   {
+    "key": "experience",
+    "max": 25,
+    "label": "Experience",
+    "light": "amber",
+    "parts": [
+     {
+      "max": 17.5,
+      "label": "Retail experience",
+      "value": "4 yrs (percent rank 46 among 29)",
+      "points": 8.1
+     },
+     {
+      "max": 7.5,
+      "label": "Business relevance",
+      "value": "High",
+      "points": 7.5
+     }
+    ],
+    "share": 0.625,
+    "points": 15.6,
+    "provided": true,
+    "relative": true
+   },
+   {
+    "key": "financial",
+    "max": 0,
+    "label": "Financial profile",
+    "light": "none",
+    "parts": [
+     {
+      "max": 0,
+      "label": "Net worth",
+      "value": "not provided",
+      "points": 0
+     },
+     {
+      "max": 0,
+      "label": "Portfolio",
+      "value": "not provided",
+      "points": 0
+     }
+    ],
+    "share": 0,
+    "points": 0,
+    "provided": false,
+    "relative": true
+   }
+  ],
+  "profile": {
+   "id": "default-karnataka",
+   "name": "Default (Karnataka)"
+  },
+  "language": "Kannada",
+  "rescaled": true,
+  "nextSteps": [
+   "Compare the applicants side by side and record a Reviewer's call with notes."
+  ],
+  "questions": [
+   "How wide is the shop front facing the street (frontage, in feet)?",
+   "How visible is the shop: does it face a main road, sit on a side street, or is it inside a mall?",
+   "What is the monthly rent for the space (₹)?"
+  ],
+  "relevance": {
+   "by": "AI",
+   "rating": "High",
+   "reason": "Currently \"Runs a footwear store\", which is footwear retail."
+  },
+  "territory": {
+   "id": "TER-01",
+   "city": "Mysuru",
+   "tier": "Tier 2",
+   "priority": "High"
+  },
+  "engineStatus": "Needs your decision",
+  "whatWouldChange": [
+   "Your call on pin 570001 on the Contested pins board."
+  ],
+  "waitlistPosition": null,
+  "financialProvided": false
+ },
+ "APP-002": {
+  "id": "APP-002",
+  "pin": "570001",
+  "city": "Mysuru",
+  "name": "Lakshmi Narayan",
+  "rank": 2,
+  "slot": null,
+  "fixes": [],
+  "flags": [],
+  "total": 80.1,
+  "checks": [
+   {
+    "key": "required",
+    "input": "all present",
+    "label": "Required fields present",
+    "detail": "All required columns have a value.",
+    "result": "pass",
+    "source": "Our choice"
+   },
+   {
+    "key": "pin-format",
+    "input": "570001",
+    "label": "Pin code has 6 digits",
+    "detail": "Valid 6-digit pin.",
+    "result": "pass",
+    "source": "Our choice"
+   },
+   {
+    "key": "pin-prefix",
+    "input": "570001 vs Mysuru (570…)",
+    "label": "Pin matches the city's prefix",
+    "detail": "Pin starts with 570, as expected for Mysuru.",
+    "result": "pass",
+    "source": "Our choice"
+   },
+   {
+    "key": "territory",
+    "input": "570001",
+    "label": "A territory covers this pin",
+    "detail": "Pin 570001 is in TER-01 (Mysuru).",
+    "result": "pass",
+    "source": "Our choice"
+   },
+   {
+    "key": "space-identified",
+    "input": "Owned",
+    "label": "A space is identified",
+    "detail": "Space is owned.",
+    "result": "pass",
+    "source": "Our choice"
+   },
+   {
+    "key": "site-details",
+    "input": "not asked yet",
+    "label": "Site details (asked; not scored)",
+    "detail": "Frontage, visibility and rent have not been recorded yet. See 'Questions to ask'.",
+    "result": "info",
+    "source": "Our choice"
+   },
+   {
+    "key": "same-pin-store",
+    "input": "570001",
+    "label": "No existing store on this pin",
+    "detail": "No existing store on this pin.",
+    "result": "pass",
+    "source": "Case rule"
+   }
+  ],
+  "manual": null,
+  "rankOf": 3,
+  "reason": "Pin 570001 is wanted by 2 qualified applicants (APP-001, APP-002). Only one store per pin: you decide.",
+  "status": "Needs your decision",
+  "contest": {
+   "pin": "570001",
+   "with": [
+    "APP-001"
+   ],
+   "decidedWinner": null
+  },
+  "factors": [
+   {
+    "key": "space",
+    "max": 50,
+    "label": "Space",
+    "light": "green",
+    "parts": [
+     {
+      "max": 12.5,
+      "label": "Tenure",
+      "value": "Owned",
+      "points": 12.5
+     },
+     {
+      "max": 25,
+      "label": "Size",
+      "value": "650 sq ft (400-699 sq ft: medium)",
+      "points": 15
+     },
+     {
+      "max": 12.5,
+      "label": "Floor",
+      "value": "Ground",
+      "points": 12.5
+     }
+    ],
+    "share": 0.8,
+    "points": 40,
+    "provided": true,
+    "relative": false
+   },
+   {
+    "key": "money",
+    "max": 25,
+    "label": "Money",
+    "light": "green",
+    "parts": [
+     {
+      "max": 25,
+      "label": "Investment capacity",
+      "value": "₹30 lakh (percent rank 77 among 29)",
+      "points": 19.2
+     }
+    ],
+    "share": 0.7678571428571429,
+    "points": 19.2,
+    "provided": true,
+    "relative": true
+   },
+   {
+    "key": "experience",
+    "max": 25,
+    "label": "Experience",
+    "light": "green",
+    "parts": [
+     {
+      "max": 17.5,
+      "label": "Retail experience",
+      "value": "6 yrs (percent rank 77 among 29)",
+      "points": 13.4
+     },
+     {
+      "max": 7.5,
+      "label": "Business relevance",
+      "value": "High",
+      "points": 7.5
+     }
+    ],
+    "share": 0.8375,
+    "points": 20.9,
+    "provided": true,
+    "relative": true
+   },
+   {
+    "key": "financial",
+    "max": 0,
+    "label": "Financial profile",
+    "light": "none",
+    "parts": [
+     {
+      "max": 0,
+      "label": "Net worth",
+      "value": "not provided",
+      "points": 0
+     },
+     {
+      "max": 0,
+      "label": "Portfolio",
+      "value": "not provided",
+      "points": 0
+     }
+    ],
+    "share": 0,
+    "points": 0,
+    "provided": false,
+    "relative": true
+   }
+  ],
+  "profile": {
+   "id": "default-karnataka",
+   "name": "Default (Karnataka)"
+  },
+  "language": "Kannada",
+  "rescaled": true,
+  "nextSteps": [
+   "Compare the applicants side by side and record a Reviewer's call with notes."
+  ],
+  "questions": [
+   "How wide is the shop front facing the street (frontage, in feet)?",
+   "How visible is the shop: does it face a main road, sit on a side street, or is it inside a mall?"
+  ],
+  "relevance": {
+   "by": "AI",
+   "rating": "High",
+   "reason": "Currently \"Runs a saree showroom\", which is apparel/fashion retail."
+  },
+  "territory": {
+   "id": "TER-01",
+   "city": "Mysuru",
+   "tier": "Tier 2",
+   "priority": "High"
+  },
+  "engineStatus": "Needs your decision",
+  "whatWouldChange": [
+   "Your call on pin 570001 on the Contested pins board."
+  ],
+  "waitlistPosition": null,
+  "financialProvided": false
+ },
+ "APP-003": {
+  "id": "APP-003",
+  "pin": "560034",
+  "city": "Bengaluru",
+  "name": "Arjun Shetty",
+  "rank": null,
+  "slot": null,
+  "fixes": [],
+  "flags": [],
+  "total": 94.8,
+  "checks": [
+   {
+    "key": "required",
+    "input": "all present",
+    "label": "Required fields present",
+    "detail": "All required columns have a value.",
+    "result": "pass",
+    "source": "Our choice"
+   },
+   {
+    "key": "pin-format",
+    "input": "560034",
+    "label": "Pin code has 6 digits",
+    "detail": "Valid 6-digit pin.",
+    "result": "pass",
+    "source": "Our choice"
+   },
+   {
+    "key": "pin-prefix",
+    "input": "560034 vs Bengaluru (560…)",
+    "label": "Pin matches the city's prefix",
+    "detail": "Pin starts with 560, as expected for Bengaluru.",
+    "result": "pass",
+    "source": "Our choice"
+   },
+   {
+    "key": "territory",
+    "input": "560034",
+    "label": "A territory covers this pin",
+    "detail": "Pin 560034 is in TER-02 (Bengaluru).",
+    "result": "pass",
+    "source": "Our choice"
+   },
+   {
+    "key": "space-identified",
+    "input": "Rented",
+    "label": "A space is identified",
+    "detail": "Space is rented.",
+    "result": "pass",
+    "source": "Our choice"
+   },
+   {
+    "key": "site-details",
+    "input": "not asked yet",
+    "label": "Site details (asked; not scored)",
+    "detail": "Frontage, visibility and rent have not been recorded yet. See 'Questions to ask'.",
+    "result": "info",
+    "source": "Our choice"
+   },
+   {
+    "key": "same-pin-store",
+    "input": "560034",
+    "label": "No existing store on this pin",
+    "detail": "Existing store ST-02 (opened 2020) is already on pin 560034. The brand never opens two stores in the same pin code.",
+    "result": "info",
+    "source": "Case rule"
+   }
+  ],
+  "manual": null,
+  "rankOf": null,
+  "reason": "Pin 560034 already has store ST-02. The profile may be good, but this pin is not recommended.",
+  "status": "Hold: pin occupied",
+  "contest": null,
+  "factors": [
+   {
+    "key": "space",
+    "max": 50,
+    "label": "Space",
+    "light": "green",
+    "parts": [
+     {
+      "max": 12.5,
+      "label": "Tenure",
+      "value": "Rented",
+      "points": 9.4
+     },
+     {
+      "max": 25,
+      "label": "Size",
+      "value": "750 sq ft (700+ sq ft: preferred)",
+      "points": 25
+     },
+     {
+      "max": 12.5,
+      "label": "Floor",
+      "value": "Ground",
+      "points": 12.5
+     }
+    ],
+    "share": 0.9375,
+    "points": 46.9,
+    "provided": true,
+    "relative": false
+   },
+   {
+    "key": "money",
+    "max": 25,
+    "label": "Money",
+    "light": "green",
+    "parts": [
+     {
+      "max": 25,
+      "label": "Investment capacity",
+      "value": "₹40 lakh (percent rank 96 among 29)",
+      "points": 24.1
+     }
+    ],
+    "share": 0.9642857142857142,
+    "points": 24.1,
+    "provided": true,
+    "relative": true
+   },
+   {
+    "key": "experience",
+    "max": 25,
+    "label": "Experience",
+    "light": "green",
+    "parts": [
+     {
+      "max": 17.5,
+      "label": "Retail experience",
+      "value": "8 yrs (percent rank 93 among 29)",
+      "points": 16.3
+     },
+     {
+      "max": 7.5,
+      "label": "Business relevance",
+      "value": "High",
+      "points": 7.5
+     }
+    ],
+    "share": 0.95,
+    "points": 23.8,
+    "provided": true,
+    "relative": true
+   },
+   {
+    "key": "financial",
+    "max": 0,
+    "label": "Financial profile",
+    "light": "none",
+    "parts": [
+     {
+      "max": 0,
+      "label": "Net worth",
+      "value": "not provided",
+      "points": 0
+     },
+     {
+      "max": 0,
+      "label": "Portfolio",
+      "value": "not provided",
+      "points": 0
+     }
+    ],
+    "share": 0,
+    "points": 0,
+    "provided": false,
+    "relative": true
+   }
+  ],
+  "profile": {
+   "id": "default-karnataka",
+   "name": "Default (Karnataka)"
+  },
+  "language": "English",
+  "rescaled": true,
+  "nextSteps": [
+   "Discuss another pin or a possible takeover with the applicant. This is not a rejection."
+  ],
+  "questions": [
+   "How wide is the shop front facing the street (frontage, in feet)?",
+   "How visible is the shop: does it face a main road, sit on a side street, or is it inside a mall?",
+   "What is the monthly rent for the space (₹)?"
+  ],
+  "relevance": {
+   "by": "AI",
+   "rating": "High",
+   "reason": "\"Manages a kidswear store\", which is apparel retail management."
+  },
+  "territory": {
+   "id": "TER-02",
+   "city": "Bengaluru",
+   "tier": "Tier 1",
+   "priority": "High"
+  },
+  "engineStatus": "Hold: pin occupied",
+  "whatWouldChange": [
+   "A different pin with no store. Free pins in TER-02: 560011, 560025, 560041.",
+   "A takeover of the existing store on this pin (an option for a human to consider)."
+  ],
+  "waitlistPosition": null,
+  "financialProvided": false
+ },
+ "APP-004": {
+  "id": "APP-004",
+  "pin": "560011",
+  "city": "Bengaluru",
+  "name": "Meena Rao",
+  "rank": 2,
+  "slot": {
+   "capacity": 2,
+   "position": 2
+  },
+  "fixes": [],
+  "flags": [],
+  "total": 43.2,
+  "checks": [
+   {
+    "key": "required",
+    "input": "all present",
+    "label": "Required fields present",
+    "detail": "All required columns have a value.",
+    "result": "pass",
+    "source": "Our choice"
+   },
+   {
+    "key": "pin-format",
+    "input": "560011",
+    "label": "Pin code has 6 digits",
+    "detail": "Valid 6-digit pin.",
+    "result": "pass",
+    "source": "Our choice"
+   },
+   {
+    "key": "pin-prefix",
+    "input": "560011 vs Bengaluru (560…)",
+    "label": "Pin matches the city's prefix",
+    "detail": "Pin starts with 560, as expected for Bengaluru.",
+    "result": "pass",
+    "source": "Our choice"
+   },
+   {
+    "key": "territory",
+    "input": "560011",
+    "label": "A territory covers this pin",
+    "detail": "Pin 560011 is in TER-02 (Bengaluru).",
+    "result": "pass",
+    "source": "Our choice"
+   },
+   {
+    "key": "space-identified",
+    "input": "Owned",
+    "label": "A space is identified",
+    "detail": "Space is owned.",
+    "result": "pass",
+    "source": "Our choice"
+   },
+   {
+    "key": "site-details",
+    "input": "not asked yet",
+    "label": "Site details (asked; not scored)",
+    "detail": "Frontage, visibility and rent have not been recorded yet. See 'Questions to ask'.",
+    "result": "info",
+    "source": "Our choice"
+   },
+   {
+    "key": "same-pin-store",
+    "input": "560011",
+    "label": "No existing store on this pin",
+    "detail": "No existing store on this pin.",
+    "result": "pass",
+    "source": "Case rule"
+   }
+  ],
+  "manual": null,
+  "rankOf": 3,
+  "reason": "Meets every check; ranked 2 of 3 in TER-02, slot 2 of 2.",
+  "status": "Good to go",
+  "contest": null,
+  "factors": [
+   {
+    "key": "space",
+    "max": 50,
+    "label": "Space",
+    "light": "amber",
+    "parts": [
+     {
+      "max": 12.5,
+      "label": "Tenure",
+      "value": "Owned",
+      "points": 12.5
+     },
+     {
+      "max": 25,
+      "label": "Size",
+      "value": "350 sq ft (under 400 sq ft: small-space risk)",
+      "points": 6.3
+     },
+     {
+      "max": 12.5,
+      "label": "Floor",
+      "value": "Upper",
+      "points": 6.3
+     }
+    ],
+    "share": 0.5,
+    "points": 25,
+    "provided": true,
+    "relative": false
+   },
+   {
+    "key": "money",
+    "max": 25,
+    "label": "Money",
+    "light": "amber",
+    "parts": [
+     {
+      "max": 25,
+      "label": "Investment capacity",
+      "value": "₹22 lakh (percent rank 38 among 29)",
+      "points": 9.4
+     }
+    ],
+    "share": 0.375,
+    "points": 9.4,
+    "provided": true,
+    "relative": true
+   },
+   {
+    "key": "experience",
+    "max": 25,
+    "label": "Experience",
+    "light": "red",
+    "parts": [
+     {
+      "max": 17.5,
+      "label": "Retail experience",
+      "value": "3 yrs (percent rank 29 among 29)",
+      "points": 5
+     },
+     {
+      "max": 7.5,
+      "label": "Business relevance",
+      "value": "Medium",
+      "points": 3.8
+     }
+    ],
+    "share": 0.35,
+    "points": 8.8,
+    "provided": true,
+    "relative": true
+   },
+   {
+    "key": "financial",
+    "max": 0,
+    "label": "Financial profile",
+    "light": "none",
+    "parts": [
+     {
+      "max": 0,
+      "label": "Net worth",
+      "value": "not provided",
+      "points": 0
+     },
+     {
+      "max": 0,
+      "label": "Portfolio",
+      "value": "not provided",
+      "points": 0
+     }
+    ],
+    "share": 0,
+    "points": 0,
+    "provided": false,
+    "relative": true
+   }
+  ],
+  "profile": {
+   "id": "default-karnataka",
+   "name": "Default (Karnataka)"
+  },
+  "language": "English",
+  "rescaled": true,
+  "nextSteps": [
+   "Review the ledger and confirm. Confirming moves the applicant to 'Awaiting paperwork'.",
+   "Ask the applicant the open site questions (frontage, visibility, rent) before confirming."
+  ],
+  "questions": [
+   "How wide is the shop front facing the street (frontage, in feet)?",
+   "How visible is the shop: does it face a main road, sit on a side street, or is it inside a mall?"
+  ],
+  "relevance": {
+   "by": "AI",
+   "rating": "Medium",
+   "reason": "Currently \"Runs a mobile accessories shop\", which is other retail."
+  },
+  "territory": {
+   "id": "TER-02",
+   "city": "Bengaluru",
+   "tier": "Tier 1",
+   "priority": "High"
+  },
+  "engineStatus": "Good to go",
+  "whatWouldChange": [
+   "A higher-scoring applicant in the same territory, or fewer open slots, would move this to Waitlist.",
+   "Entering the financial profile re-scores everyone who has one."
+  ],
+  "waitlistPosition": null,
+  "financialProvided": false
+ },
+ "APP-025": {
+  "id": "APP-025",
+  "pin": "560095",
+  "city": "Bengaluru",
+  "name": "Rahul Menon",
+  "rank": 1,
+  "slot": {
+   "capacity": 1,
+   "position": 1
+  },
+  "fixes": [],
+  "flags": [],
+  "total": 100,
+  "checks": [
+   {
+    "key": "required",
+    "input": "all present",
+    "label": "Required fields present",
+    "detail": "All required columns have a value.",
+    "result": "pass",
+    "source": "Our choice"
+   },
+   {
+    "key": "pin-format",
+    "input": "560095",
+    "label": "Pin code has 6 digits",
+    "detail": "Valid 6-digit pin.",
+    "result": "pass",
+    "source": "Our choice"
+   },
+   {
+    "key": "pin-prefix",
+    "input": "560095 vs Bengaluru (560…)",
+    "label": "Pin matches the city's prefix",
+    "detail": "Pin starts with 560, as expected for Bengaluru.",
+    "result": "pass",
+    "source": "Our choice"
+   },
+   {
+    "key": "territory",
+    "input": "560095",
+    "label": "A territory covers this pin",
+    "detail": "Pin 560095 is in TER-03 (Bengaluru).",
+    "result": "pass",
+    "source": "Our choice"
+   },
+   {
+    "key": "space-identified",
+    "input": "Owned",
+    "label": "A space is identified",
+    "detail": "Space is owned.",
+    "result": "pass",
+    "source": "Our choice"
+   },
+   {
+    "key": "site-details",
+    "input": "not asked yet",
+    "label": "Site details (asked; not scored)",
+    "detail": "Frontage, visibility and rent have not been recorded yet. See 'Questions to ask'.",
+    "result": "info",
+    "source": "Our choice"
+   },
+   {
+    "key": "same-pin-store",
+    "input": "560095",
+    "label": "No existing store on this pin",
+    "detail": "No existing store on this pin.",
+    "result": "pass",
+    "source": "Case rule"
+   }
+  ],
+  "manual": null,
+  "rankOf": 3,
+  "reason": "Meets every check; ranked 1 of 3 in TER-03, slot 1 of 1.",
+  "status": "Good to go",
+  "contest": null,
+  "factors": [
+   {
+    "key": "space",
+    "max": 50,
+    "label": "Space",
+    "light": "green",
+    "parts": [
+     {
+      "max": 12.5,
+      "label": "Tenure",
+      "value": "Owned",
+      "points": 12.5
+     },
+     {
+      "max": 25,
+      "label": "Size",
+      "value": "1200 sq ft (700+ sq ft: preferred)",
+      "points": 25
+     },
+     {
+      "max": 12.5,
+      "label": "Floor",
+      "value": "Ground",
+      "points": 12.5
+     }
+    ],
+    "share": 1,
+    "points": 50,
+    "provided": true,
+    "relative": false
+   },
+   {
+    "key": "money",
+    "max": 25,
+    "label": "Money",
+    "light": "green",
+    "parts": [
+     {
+      "max": 25,
+      "label": "Investment capacity",
+      "value": "₹55 lakh (percent rank 100 among 29)",
+      "points": 25
+     }
+    ],
+    "share": 1,
+    "points": 25,
+    "provided": true,
+    "relative": true
+   },
+   {
+    "key": "experience",
+    "max": 25,
+    "label": "Experience",
+    "light": "green",
+    "parts": [
+     {
+      "max": 17.5,
+      "label": "Retail experience",
+      "value": "12 yrs (percent rank 100 among 29)",
+      "points": 17.5
+     },
+     {
+      "max": 7.5,
+      "label": "Business relevance",
+      "value": "High",
+      "points": 7.5
+     }
+    ],
+    "share": 1,
+    "points": 25,
+    "provided": true,
+    "relative": true
+   },
+   {
+    "key": "financial",
+    "max": 0,
+    "label": "Financial profile",
+    "light": "none",
+    "parts": [
+     {
+      "max": 0,
+      "label": "Net worth",
+      "value": "not provided",
+      "points": 0
+     },
+     {
+      "max": 0,
+      "label": "Portfolio",
+      "value": "not provided",
+      "points": 0
+     }
+    ],
+    "share": 0,
+    "points": 0,
+    "provided": false,
+    "relative": true
+   }
+  ],
+  "profile": {
+   "id": "default-karnataka",
+   "name": "Default (Karnataka)"
+  },
+  "language": "English",
+  "rescaled": true,
+  "nextSteps": [
+   "Review the ledger and confirm. Confirming moves the applicant to 'Awaiting paperwork'.",
+   "Ask the applicant the open site questions (frontage, visibility, rent) before confirming."
+  ],
+  "questions": [
+   "How wide is the shop front facing the street (frontage, in feet)?",
+   "How visible is the shop: does it face a main road, sit on a side street, or is it inside a mall?"
+  ],
+  "relevance": {
+   "by": "AI",
+   "rating": "High",
+   "reason": "\"Franchisee of a footwear brand\", which is footwear retail."
+  },
+  "territory": {
+   "id": "TER-03",
+   "city": "Bengaluru",
+   "tier": "Tier 1",
+   "priority": "Medium"
+  },
+  "engineStatus": "Good to go",
+  "whatWouldChange": [
+   "A higher-scoring applicant in the same territory, or fewer open slots, would move this to Waitlist.",
+   "Entering the financial profile re-scores everyone who has one."
+  ],
+  "waitlistPosition": null,
+  "financialProvided": false
+ }
+}

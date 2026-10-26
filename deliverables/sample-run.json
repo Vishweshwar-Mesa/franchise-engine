@@ -1,0 +1,10 @@
+{
+ "errors": [],
+ "sampleMs": 400,
+ "sampleReport": "Validation report: template.xlsx (case sample) | Read 1 applicants, 1 territories, 10 existing stores. Sheets: Applications, Territories, Existing stores, Allowed values, Field guide, Glossary. | No file-level problems. Row-level problems are listed below.",
+ "sampleCards": 1,
+ "sampleTerritories": "TERRITORIES | A territory is a group of pin codes where the brand wants new stores. Its capacity is the smaller of its open slots and its free pins (pins with no existing store), a rule from the case. The highest scorers get the slots; the rest wait in score order. Priority is shown for context only and is not scored. | TER-01 · Mysuru (Tier 2, priority High) | Capacity = min(3 open slots, 3 free pins) = | 3 | CASE RULE | Free pins: 570001, 570002, 570008. | Assigned (Good to go): 1 | APP-001 | Ravi Kumar | 570001 | score 65.7 | Good to go | Why? | Waitlist, recommended order: 0",
+ "sampleApplicant": "FRANCHISE ENGINE | Today | Applicants | 1 | Territories | Contested | Onboarding | Settings | Activity | Guide | Upload file",
+ "upload30Ms": 63,
+ "upload30Cards": 30
+}

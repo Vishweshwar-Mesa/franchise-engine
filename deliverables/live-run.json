@@ -1,0 +1,71 @@
+{
+ "checks": {
+  "load": {
+   "http": 200,
+   "blocked": false
+  },
+  "home": {
+   "blocked": false,
+   "msToUsable": 4377
+  },
+  "results": {
+   "cards": 30,
+   "blocked": false
+  },
+  "resultsTableRows": 30,
+  "export": {
+   "file": "franchise-results.csv"
+  },
+  "applicant": {
+   "hasLedger": true,
+   "explanationBy": "Template from the ledger (English) · AI version loading…"
+  },
+  "area": "Area data: not available (Google Maps key not configured)",
+  "research": "Nothing found.",
+  "contested": {
+   "pins": 0
+  },
+  "territories": {
+   "cards": 8
+  },
+  "settings": {
+   "saveBtn": true
+  },
+  "gate": {
+   "startDisabled": true,
+   "timelineMsg": true,
+   "dealTerms": true
+  },
+  "franchisee": {
+   "login": false
+  }
+ },
+ "chat": [
+  {
+   "q": "Why is APP-007 on hold?",
+   "a": "APP-007 is on \"Hold: info needed\" because: \"Information needed: Pin 575002 does not start with 570, the prefix for Mysuru. Check the city or the pin.\" | Answered by: AI"
+  },
+  {
+   "q": "What if APP-004 had a 700 sq ft space?",
+   "a": "What-if for APP-004, re-run on a copy (nothing changed yet): | Answered by: Ledger template | Change (copy only): Space size (sq ft) = 700 | Before | Good to go Why? | Score 43.2/100 | Meets every check; ranked 2 of 3 in TER-02, slot 2 of 2. | After | Good to go Why? (after) | Score 62/100 | Meets every check; ranked 2 of 3 in TER-02, slot 2 of 2. | Apply to real data"
+  },
+  {
+   "q": "APP-009 is now renting a 600 sq ft shop on the ground floor",
+   "a": "Updated APP-009: Space size (sq ft) = 600, Space available = Rented, Floor = Ground. Status: 'Hold: info needed' → 'Good to go'. Meets every check; ranked 1 of 3 in TER-08, slot 1 of 3. | Answered by: Ledger template | Change applied: Space size (sq ft) = 600, Space available = Rented, Floor = Ground | Before | Hold: info needed Why? | Score 36.1/100 | Information needed: No space yet. Ask the applicant to identify a space (tenure, size, floor) before this can move forward. | After | Good to go Why? (after) | Score 73/100 | Meets every check; ranked 1 of 3 in TER-08, slot 1 of 3. | Saved to th"
+  },
+  {
+   "q": "What is the franchise fee?",
+   "a": "Go Colors has not published its franchise fee, royalty, security deposit or onboarding steps. I won't guess figures. Any terms you agree are typed into the deal terms on the store's onboarding page. | Answered by: Ledger template"
+  },
+  {
+   "q": "What should an applicant enter to get approved?",
+   "a": "I can't help anyone get around the checks or tell them what to enter to pass. Every applicant is assessed on what they actually have. For a specific applicant, I can tell you what would change their status, for example: 'What would change APP-004?' | Answered by: Ledger template"
+  },
+  {
+   "q": "Write me a poem",
+   "a": "That's outside what I can help with here. I can explain decisions on these applications, take updates about an applicant, run what-ifs, and share verified facts about Go Colors. | Answered by: Ledger template"
+  }
+ ],
+ "errors": [],
+ "session": "591eba27-e5af-4524-af2a-34bde7d0de37"
+}
