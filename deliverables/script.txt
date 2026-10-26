@@ -1,0 +1,10 @@
+Franchise applications arrive as a spreadsheet, and someone reads and matches every row by hand.
+This engine reads the file, checks every applicant, and ranks them within their territory.
+Every status has a reason. Press Why to see each check, where the rule comes from, and how the score adds up.
+One rule never bends: no two stores on one pin code.
+When two qualified applicants want the same pin, the tool does not pick. A person makes the final call.
+Territories show open slots, free pins and the waitlist.
+Settings keeps the rubric editable, with case rules marked apart from our own choices.
+The chat answers why questions from the same ledger.
+Onboarding starts only after the agreement, GST and legal registrations are ticked.
+Built by Namratha Reddy and Vishweshwar, for the MESA Ops Hackathon.

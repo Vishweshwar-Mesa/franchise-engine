@@ -1,0 +1,65 @@
+{
+  "video": "/Users/vishu/Desktop/Franchise Bot/deliverables/video_work/page@a57789a6fe0ea35f53f9ce3405709644.webm",
+  "segs": [
+    {
+      "i": 0,
+      "start": 5.464,
+      "end": 12.247,
+      "overrun": 0
+    },
+    {
+      "i": 1,
+      "start": 12.247,
+      "end": 18.303,
+      "overrun": 0
+    },
+    {
+      "i": 2,
+      "start": 18.303,
+      "end": 27.049,
+      "overrun": 1.2239590000000007
+    },
+    {
+      "i": 3,
+      "start": 27.049,
+      "end": 31.076,
+      "overrun": 0
+    },
+    {
+      "i": 4,
+      "start": 31.076,
+      "end": 38.212,
+      "overrun": 0
+    },
+    {
+      "i": 5,
+      "start": 38.212,
+      "end": 42.419,
+      "overrun": 0
+    },
+    {
+      "i": 6,
+      "start": 42.419,
+      "end": 48.534,
+      "overrun": 0
+    },
+    {
+      "i": 7,
+      "start": 48.534,
+      "end": 52.93,
+      "overrun": 0
+    },
+    {
+      "i": 8,
+      "start": 52.93,
+      "end": 59.318,
+      "overrun": 0
+    },
+    {
+      "i": 9,
+      "start": 59.327,
+      "end": 64.733,
+      "overrun": 0
+    }
+  ]
+}

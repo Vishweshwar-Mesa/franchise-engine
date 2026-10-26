@@ -1,0 +1,110 @@
+[
+ {
+  "section": 0,
+  "text": "Franchise applications arrive as a spreadsheet, and someone reads and matches every row by hand.",
+  "file": "c1_1.aiff",
+  "dur": 6.380408,
+  "start": 0.1,
+  "end": 6.480408,
+  "png": "/Users/vishu/Desktop/Franchise Bot/deliverables/video_work/sub1.png"
+ },
+ {
+  "section": 1,
+  "text": "This engine reads the file, checks every applicant, and ranks them within their territory.",
+  "file": "c2_1.aiff",
+  "dur": 5.651837,
+  "start": 6.882999999999999,
+  "end": 12.534837,
+  "png": "/Users/vishu/Desktop/Franchise Bot/deliverables/video_work/sub2.png"
+ },
+ {
+  "section": 2,
+  "text": "Every status has a reason.",
+  "file": "c3_1.aiff",
+  "dur": 1.809161,
+  "start": 12.939,
+  "end": 14.748161,
+  "png": "/Users/vishu/Desktop/Franchise Bot/deliverables/video_work/sub3.png"
+ },
+ {
+  "section": 2,
+  "text": "Press Why to see each check, where the rule comes from, and how the score adds up.",
+  "file": "c3_2.aiff",
+  "dur": 5.177959,
+  "start": 14.898161,
+  "end": 20.07612,
+  "png": "/Users/vishu/Desktop/Franchise Bot/deliverables/video_work/sub4.png"
+ },
+ {
+  "section": 3,
+  "text": "One rule never bends: no two stores on one pin code.",
+  "file": "c4_1.aiff",
+  "dur": 3.726395,
+  "start": 21.685000000000002,
+  "end": 25.411395000000002,
+  "png": "/Users/vishu/Desktop/Franchise Bot/deliverables/video_work/sub5.png"
+ },
+ {
+  "section": 4,
+  "text": "When two qualified applicants want the same pin, the tool does not pick.",
+  "file": "c5_1.aiff",
+  "dur": 4.620907,
+  "start": 25.712000000000003,
+  "end": 30.332907000000002,
+  "png": "/Users/vishu/Desktop/Franchise Bot/deliverables/video_work/sub6.png"
+ },
+ {
+  "section": 4,
+  "text": "A person makes the final call.",
+  "file": "c5_2.aiff",
+  "dur": 1.994966,
+  "start": 30.482907,
+  "end": 32.477873,
+  "png": "/Users/vishu/Desktop/Franchise Bot/deliverables/video_work/sub7.png"
+ },
+ {
+  "section": 5,
+  "text": "Territories show open slots, free pins and the waitlist.",
+  "file": "c6_1.aiff",
+  "dur": 3.800635,
+  "start": 32.848000000000006,
+  "end": 36.648635000000006,
+  "png": "/Users/vishu/Desktop/Franchise Bot/deliverables/video_work/sub8.png"
+ },
+ {
+  "section": 6,
+  "text": "Settings keeps the rubric editable, with case rules marked apart from our own choices.",
+  "file": "c7_1.aiff",
+  "dur": 5.70839,
+  "start": 37.055,
+  "end": 42.76339,
+  "png": "/Users/vishu/Desktop/Franchise Bot/deliverables/video_work/sub9.png"
+ },
+ {
+  "section": 7,
+  "text": "The chat answers why questions from the same ledger.",
+  "file": "c8_1.aiff",
+  "dur": 2.992834,
+  "start": 43.17,
+  "end": 46.162834000000004,
+  "png": "/Users/vishu/Desktop/Franchise Bot/deliverables/video_work/sub10.png"
+ },
+ {
+  "section": 8,
+  "text": "Onboarding starts only after the agreement, GST and legal registrations are ticked.",
+  "file": "c9_1.aiff",
+  "dur": 5.980907,
+  "start": 47.566,
+  "end": 53.546907000000004,
+  "png": "/Users/vishu/Desktop/Franchise Bot/deliverables/video_work/sub11.png"
+ },
+ {
+  "section": 9,
+  "text": "Built by Namratha Reddy and Vishweshwar, for the MESA Ops Hackathon.",
+  "file": "c10_1.aiff",
+  "dur": 4.803946,
+  "start": 53.963,
+  "end": 58.766946000000004,
+  "png": "/Users/vishu/Desktop/Franchise Bot/deliverables/video_work/sub12.png"
+ }
+]

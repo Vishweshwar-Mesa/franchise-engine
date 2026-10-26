@@ -1,0 +1,47 @@
+1
+00:00:00,100 --> 00:00:06,480
+Franchise applications arrive as a spreadsheet, and someone reads and matches every row by hand.
+
+2
+00:00:06,883 --> 00:00:12,535
+This engine reads the file, checks every applicant, and ranks them within their territory.
+
+3
+00:00:12,939 --> 00:00:14,748
+Every status has a reason.
+
+4
+00:00:14,898 --> 00:00:20,076
+Press Why to see each check, where the rule comes from, and how the score adds up.
+
+5
+00:00:21,685 --> 00:00:25,411
+One rule never bends: no two stores on one pin code.
+
+6
+00:00:25,712 --> 00:00:30,333
+When two qualified applicants want the same pin, the tool does not pick.
+
+7
+00:00:30,483 --> 00:00:32,478
+A person makes the final call.
+
+8
+00:00:32,848 --> 00:00:36,649
+Territories show open slots, free pins and the waitlist.
+
+9
+00:00:37,055 --> 00:00:42,763
+Settings keeps the rubric editable, with case rules marked apart from our own choices.
+
+10
+00:00:43,170 --> 00:00:46,163
+The chat answers why questions from the same ledger.
+
+11
+00:00:47,566 --> 00:00:53,547
+Onboarding starts only after the agreement, GST and legal registrations are ticked.
+
+12
+00:00:53,963 --> 00:00:58,767
+Built by Namratha Reddy and Vishweshwar, for the MESA Ops Hackathon.
