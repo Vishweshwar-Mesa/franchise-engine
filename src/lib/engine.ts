@@ -367,7 +367,7 @@ export function runEngine(input: EngineInput): EngineResult {
         ? { rating: a.relevance, reason: a.reason, by: "AI" }
         : { rating: null, reason: app.business ? "Not rated yet." : "No business described.", by: "Not rated" };
 
-    const profile = pickProfile(settings.profiles, { state: app.state, city: app.city, areaType: r.areaType ?? null });
+    const profile = pickProfile(settings.profiles, { state: app.state, city: app.city });
     const score = scoreApplicant(app, profile, settings, pops, r, relevance.rating);
 
     const infoHold = fixes.length > 0;

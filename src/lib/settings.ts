@@ -1,13 +1,11 @@
 // Scoring settings and regional rubric profiles. Every number here is "Our choice"
 // (a placeholder the reviewer can edit in Settings) unless marked "Case rule".
-import type { AreaType } from "./types";
 
 export interface ProfileMatch {
   country: string | null;
   zone: string | null;
   state: string | null;
   city: string | null;
-  areaType: AreaType | null;
 }
 
 export interface ScoringProfile {
@@ -50,7 +48,7 @@ export interface Settings {
 export const DEFAULT_PROFILE: ScoringProfile = {
   id: "default-karnataka",
   name: "Default (Karnataka)",
-  match: { country: "India", zone: "Southern", state: "Karnataka", city: null, areaType: null },
+  match: { country: "India", zone: "Southern", state: "Karnataka", city: null },
   weights: { space: 40, money: 20, experience: 20, financial: 20 },
   spaceSplit: { tenure: 10, size: 20, floor: 10 },
   tenureRank: { Owned: 1, Rented: 0.75 },
@@ -96,7 +94,7 @@ export function zoneOf(state: string): string | null {
 /** Most specific matching profile wins; ties go to the earlier profile in the list. */
 export function pickProfile(
   profiles: ScoringProfile[],
-  where: { state: string; city: string; areaType: AreaType | null },
+  where: { state: string; city: string },
 ): ScoringProfile {
   const eq = (a: string | null, b: string | null) =>
     a === null || (b !== null && a.toLowerCase() === b.toLowerCase());
@@ -109,11 +107,10 @@ export function pickProfile(
       eq(m.country, "India") &&
       eq(m.zone, zone) &&
       eq(m.state, where.state) &&
-      eq(m.city, where.city) &&
-      eq(m.areaType, where.areaType);
+      eq(m.city, where.city);
     if (!ok) continue;
     const score =
-      (m.country ? 1 : 0) + (m.zone ? 2 : 0) + (m.state ? 4 : 0) + (m.city ? 8 : 0) + (m.areaType ? 16 : 0);
+      (m.country ? 1 : 0) + (m.zone ? 2 : 0) + (m.state ? 4 : 0) + (m.city ? 8 : 0);
     if (score > bestScore) {
       best = p;
       bestScore = score;

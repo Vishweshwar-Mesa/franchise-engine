@@ -8,7 +8,6 @@ import { NativeSelect } from "@/components/app/native-select";
 import { SourceTag } from "@/components/app/source-tag";
 import { CASE_ALLOWED_CITIES } from "@/lib/parse";
 import { DEFAULT_PROFILE, DEFAULT_SETTINGS, STATE_ZONE, profileProblems, type ScoringProfile, type Settings } from "@/lib/settings";
-import { AREA_TYPES } from "@/lib/types";
 import { useWorkspace } from "@/store/workspace";
 
 type Path = (string | number)[];
@@ -169,16 +168,15 @@ export default function SettingsPage() {
           A profile is a set of scoring numbers for a region. Each applicant is scored with the profile that matches them most closely, so different regions can use different numbers.
         </p>
         <p className="text-xs text-muted-foreground">
-          The most specific matching profile wins (Country → Zone → State → City → Area type), and every explanation names the profile used.
+          The most specific matching profile wins (Country → Zone → State → City), and every explanation names the profile used.
           Only &quot;Default (Karnataka)&quot; ships; other regions have no numbers until you add them. Zones follow the MHA Zonal Councils.
         </p>
-        <div className="grid gap-3 md:grid-cols-6">
+        <div className="grid gap-3 md:grid-cols-5">
           <div className="md:col-span-1"><Label className="text-xs" htmlFor="profile-name">Name</Label><Input id="profile-name" value={p.name} onChange={(e) => setDraft(setAt(draft, ["profiles", pi, "name"], e.target.value))} /></div>
           {matchSelect("country", "Country", ["India"])}
           {matchSelect("zone", "Zone", [...new Set(Object.values(STATE_ZONE))])}
           {matchSelect("state", "State", Object.keys(STATE_ZONE))}
           {matchSelect("city", "City", cities.map((c) => c.city))}
-          {matchSelect("areaType", "Area type", [...AREA_TYPES])}
         </div>
         <div className="grid gap-3 md:grid-cols-4">
           <h3 className="font-medium md:col-span-4">Factor weights: how many of the 100 points each factor is worth</h3>

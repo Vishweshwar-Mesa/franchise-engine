@@ -45,7 +45,6 @@ const GLOSSARY: [string, string][] = [
   ["AI", "Optional. When switched on it reads the free-text business and notes fields, rewrites explanations in the applicant's language and answers chat questions. It never changes a check, score or status. Without it the site uses written templates and works the same."],
   ["Applicant / Application ID", "One row in the Applications sheet, identified by its Application ID (e.g. APP-004)."],
   ["Area snapshot", "Counts of nearby schools, colleges, stores, clothing stores and restaurants around the applicant's pin, from Google Maps. Reference only; never used in decisions."],
-  ["Area type", "A tag you can set on an applicant (Commercial, Residential, Mixed). It only chooses which scoring profile applies."],
   ["Business relevance", "How relevant the applicant's current or past business is to running an apparel store: High, Medium or Low. Rated by AI when it is on; you can always override it. Part of the Experience score."],
   ["Capacity", "How many new stores a territory can take: the smaller of its open slots and its free pins. A rule from the case."],
   ["Case rule", "A rule written in the case file (the same-pin rule and the capacity limits). It cannot be changed."],

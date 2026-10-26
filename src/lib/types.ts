@@ -12,8 +12,6 @@ export type Status = (typeof STATUSES)[number];
 
 export const SPACE_VALUES = ["Owned", "Rented", "Not yet identified"] as const;
 export const FLOOR_VALUES = ["Ground", "Upper", "Mall unit", "Not known"] as const;
-export const AREA_TYPES = ["Commercial", "Residential", "Mixed"] as const;
-export type AreaType = (typeof AREA_TYPES)[number];
 export const RELEVANCE = ["High", "Medium", "Low"] as const;
 export type Relevance = (typeof RELEVANCE)[number];
 
@@ -102,7 +100,6 @@ export interface ReviewerInput {
   portfolio?: number | null;
   liabilities?: string;
   relevanceOverride?: Relevance | null;
-  areaType?: AreaType | null;
   /** Reviewer's verdict on an AI-flagged contradiction in the notes. */
   aiContradiction?: "confirmed" | "dismissed" | null;
   /** Site details asked of the applicant (not in the Excel file). Shown, never scored. */

@@ -6,7 +6,7 @@ import { useWorkspace } from "@/store/workspace";
 import { ExplanationCard } from "@/components/app/explanation-card";
 import { LedgerView } from "@/components/app/ledger-view";
 import { ManualStatusForm } from "@/components/app/manual-status-form";
-import { AreaTypeSelect, FinancialProfileForm, QuestionsCard, RelevanceCard, SiteDetailsForm } from "@/components/app/reviewer-inputs";
+import { FinancialProfileForm, QuestionsCard, RelevanceCard, SiteDetailsForm } from "@/components/app/reviewer-inputs";
 import { StatusBadge } from "@/components/app/status-badge";
 import { WhyButton } from "@/components/app/why-button";
 import { FactorBar } from "@/components/app/traffic-light";
@@ -73,7 +73,6 @@ export default function ApplicantPage() {
             <SiteDetailsForm key={JSON.stringify(input.site ?? {})} id={id} input={input} rented={app.spaceAvailable === "Rented"} />
           )}
           <RelevanceCard entry={e} input={input} />
-          <div className="rounded-[20px] border bg-card p-5"><AreaTypeSelect id={id} value={input.areaType} /></div>
           <AreaSnapshot pin={app.pin} city={app.city} />
           <PeopleResearch name={app.name} city={app.city} business={app.business} />
           <div className="rounded-[20px] border bg-card p-5 text-sm">

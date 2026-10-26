@@ -1,8 +1,8 @@
 "use client";
-// Reviewer-typed inputs: financial profile, liabilities, business relevance override, area type.
+// Reviewer-typed inputs: financial profile, liabilities, business relevance override, site details.
 import { useState } from "react";
 import type { LedgerEntry } from "@/lib/engine";
-import { AREA_TYPES, RELEVANCE, VISIBILITY, type AreaType, type Relevance, type ReviewerInput, type SiteDetails } from "@/lib/types";
+import { RELEVANCE, VISIBILITY, type Relevance, type ReviewerInput, type SiteDetails } from "@/lib/types";
 import { useWorkspace } from "@/store/workspace";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -74,18 +74,6 @@ export function RelevanceCard({ entry, input }: { entry: LedgerEntry; input: Rev
   );
 }
 
-export function AreaTypeSelect({ id, value }: { id: string; value: AreaType | null | undefined }) {
-  const set = useWorkspace((s) => s.setReviewer);
-  return (
-    <div className="flex items-center gap-2 text-sm">
-      <Label htmlFor={`area-${id}`}>Area type (manual tag, picks the rubric profile)</Label>
-      <NativeSelect id={`area-${id}`} value={value ?? ""} onChange={(e) => set(id, { areaType: (e.target.value || null) as AreaType | null }, `Area type set to ${e.target.value || "blank"}.`)}>
-        <option value="">Not set</option>
-        {AREA_TYPES.map((a) => <option key={a}>{a}</option>)}
-      </NativeSelect>
-    </div>
-  );
-}
 
 /** Site details asked of the applicant. Shown in the ledger; never scored. */
 export function SiteDetailsForm({ id, input, rented }: { id: string; input: ReviewerInput; rented: boolean }) {
