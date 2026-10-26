@@ -8,7 +8,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Textarea } from "@/components/ui/textarea";
 import { useResults } from "@/hooks/use-results";
 import { fetchServices } from "@/hooks/use-services";
-import { chatContext, localAnswer, parseWhatIf } from "@/lib/explain";
+import { chatContext, localAnswer, parseUpdate } from "@/lib/explain";
 import { runWhatIf, sanitizeChanges, type WhatIfOutcome } from "@/lib/whatif";
 import { columnLabel } from "@/lib/parse";
 import { useWorkspace } from "@/store/workspace";
@@ -20,6 +20,8 @@ interface Msg {
   content: string;
   by?: "AI" | "Ledger template";
   whatIf?: WhatIfOutcome;
+  /** True when the change was new information and has been applied to the real data. */
+  applied?: { previous: Record<string, unknown>; assumptions: string[] };
 }
 
 export function ChatPanel() {
@@ -50,11 +52,25 @@ export function ChatPanel() {
       return;
     }
     const apps = useWorkspace.getState().dataset?.applications ?? [];
-    const local = parseWhatIf(question, apps);
+    const local = parseUpdate(question, apps);
     if (local) {
       const w = whatIf(local.id, local.changes as Record<string, unknown>);
       if (w) {
-        setMsgs([...next, { role: "assistant", content: `What-if for ${w.id}, re-run on a copy:`, by: "Ledger template", whatIf: w }]);
+        const desc = describe(w.changes);
+        if (local.hypothetical) {
+          setMsgs([...next, { role: "assistant", content: `What-if for ${w.id}, re-run on a copy (nothing changed yet):${local.assumptions.length ? `\nAssumed: ${local.assumptions.join(" ")}` : ""}`, by: "Ledger template", whatIf: w }]);
+        } else {
+          // New information: apply it to the real data (logged, with Undo), and show how the decision moved.
+          const app = apps.find((a) => a.id === w.id)!;
+          const previous = Object.fromEntries(Object.keys(w.changes).map((k) => [k, app[k as keyof typeof app] ?? null]));
+          useWorkspace.getState().updateApplication(w.id, w.changes as Record<string, unknown>, `New information via chat: ${desc}.${local.assumptions.length ? ` Assumed: ${local.assumptions.join(" ")}` : ""}`);
+          const a = w.after.ledger[w.id];
+          setMsgs([...next, {
+            role: "assistant",
+            content: `Updated ${w.id}: ${desc}. ${a.status === w.before.ledger[w.id].status ? `Status stays '${a.status}'.` : `Status: '${w.before.ledger[w.id].status}' → '${a.status}'.`} ${a.reason}${local.assumptions.length ? `\nAssumed: ${local.assumptions.join(" ")}` : ""}`,
+            by: "Ledger template", whatIf: w, applied: { previous, assumptions: local.assumptions },
+          }]);
+        }
         return;
       }
     }
@@ -90,15 +106,22 @@ export function ChatPanel() {
         <SheetHeader>
           <SheetTitle className="text-xl font-semibold">Ask about the results</SheetTitle>
           <p className="text-xs text-muted-foreground">
-            Answers come only from the reason ledger. Try &quot;Why is APP-004 on hold?&quot; or &quot;What if APP-004 had a 700 sq ft space?&quot;
+            Answers come only from the reason ledger. Ask why, ask &quot;what if&quot; (a preview), or give new information (it updates the applicant; you can undo).
           </p>
         </SheetHeader>
+        {msgs.length === 0 && r && (
+          <div className="flex flex-wrap gap-1.5 px-4">
+            {examples(r).map((ex) => (
+              <button key={ex} type="button" onClick={() => setQ(ex)} className="rounded-full border px-3 py-1.5 text-left text-xs hover:bg-muted">{ex}</button>
+            ))}
+          </div>
+        )}
         <div className="flex-1 space-y-3 overflow-y-auto px-4">
           {msgs.map((m, i) => (
             <div key={i} className={m.role === "user" ? "ml-8 rounded-2xl bg-muted px-3 py-2 text-sm" : "mr-4 text-sm"}>
               <p className="whitespace-pre-wrap">{m.content}</p>
               {m.by && <p className="mt-1 text-[10px] text-muted-foreground">Answered by: {m.by}</p>}
-              {m.whatIf && <WhatIfCard w={m.whatIf} />}
+              {m.whatIf && <WhatIfCard w={m.whatIf} applied={m.applied} />}
             </div>
           ))}
           {busy && <p className="text-xs text-muted-foreground">Thinking…</p>}
@@ -119,14 +142,33 @@ export function ChatPanel() {
   );
 }
 
-function WhatIfCard({ w }: { w: WhatIfOutcome }) {
-  const [applied, setApplied] = useState(false);
+function describe(changes: Record<string, unknown>): string {
+  return Object.entries(changes).map(([k, v]) => `${columnLabel(k)} = ${v ?? "blank"}`).join(", ");
+}
+
+/** Example questions built from the loaded data, so they always work. */
+function examples(r: NonNullable<ReturnType<typeof useResults>>): string[] {
+  const all = r.order.map((id) => r.ledger[id]);
+  const hold = all.find((e) => e.status === "Hold: info needed");
+  const noSpace = all.find((e) => e.checks.some((c) => c.key === "space-identified" && c.result === "fail"));
+  const wait = all.find((e) => e.status === "Waitlist");
+  return [
+    hold && `Why is ${hold.id} on hold?`,
+    noSpace && `${noSpace.id} has now found a ground-floor space`,
+    wait && `What if ${wait.id} had a 700 sq ft space?`,
+    "Who is on the waitlist?",
+    "Which territory has the most applicants?",
+  ].filter((x): x is string => !!x);
+}
+
+function WhatIfCard({ w, applied }: { w: WhatIfOutcome; applied?: Msg["applied"] }) {
+  const [state, setState] = useState<"preview" | "applied" | "undone">(applied ? "applied" : "preview");
   const b = w.before.ledger[w.id];
   const a = w.after.ledger[w.id];
-  const desc = Object.entries(w.changes).map(([k, v]) => `${columnLabel(k)} = ${v ?? "blank"}`).join(", ");
+  const desc = describe(w.changes);
   return (
     <div className="mt-2 space-y-2 rounded-lg border p-2 text-xs">
-      <p><b>Change (copy only):</b> {desc}</p>
+      <p><b>{applied ? "Change applied:" : "Change (copy only):"}</b> {desc}</p>
       <div className="grid grid-cols-2 gap-2">
         <div><p className="font-medium">Before</p><StatusBadge status={b.status} /> <WhyButton entry={b} /><p>Score {b.total}/100</p><p className="text-muted-foreground">{b.reason}</p></div>
         <div><p className="font-medium">After</p><StatusBadge status={a.status} /> <WhyButton entry={a} label="Why? (after)" /><p>Score {a.total}/100</p><p className="text-muted-foreground">{a.reason}</p></div>
@@ -134,13 +176,23 @@ function WhatIfCard({ w }: { w: WhatIfOutcome }) {
       {w.knockOn.length > 0 && (
         <p><b>Also changes:</b> {w.knockOn.map((k) => `${k.id}: ${k.from} → ${k.to}`).join("; ")}</p>
       )}
-      {applied ? (
-        <p className="text-[var(--tone-good)]">Applied to the real data and logged.</p>
-      ) : (
+      {state === "applied" && (
+        <div className="flex items-center gap-2">
+          <p className="text-[var(--tone-good)]">Saved to the real data and logged.</p>
+          {applied && (
+            <Button size="xs" variant="outline" onClick={() => {
+              useWorkspace.getState().updateApplication(w.id, applied.previous, `Undid chat update to ${w.id}.`);
+              setState("undone");
+            }}>Undo</Button>
+          )}
+        </div>
+      )}
+      {state === "undone" && <p className="text-muted-foreground">Undone. The applicant is back to how it was.</p>}
+      {state === "preview" && (
         <Button size="xs" variant="outline" onClick={() => {
           if (!window.confirm(`Apply this change to ${w.id} in the real data?`)) return;
           useWorkspace.getState().updateApplication(w.id, w.changes as Record<string, unknown>, `What-if applied by reviewer: ${desc}.`);
-          setApplied(true);
+          setState("applied");
         }}>Apply to real data</Button>
       )}
     </div>

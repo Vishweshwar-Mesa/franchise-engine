@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import * as fs from "fs";
 import * as XLSX from "xlsx";
 import { runEngine, percentRank, type EngineInput } from "./engine";
+import { parseUpdate } from "./explain";
 import { parseWorkbook, toNumber, CASE_ALLOWED_CITIES, CASE_EXISTING_STORES, CASE_LANGUAGES } from "./parse";
 import { DEFAULT_SETTINGS, type Settings } from "./settings";
 import type { Application, Dataset, Territory } from "./types";
@@ -296,5 +297,36 @@ describe("site details (asked, not scored)", () => {
     expect(filled.total).toBe(base.total);
     expect(filled.checks.find((c) => c.key === "site-details")?.input).toMatch(/frontage 20 ft/);
     expect(run([app("A", { spaceAvailable: "Owned" })], [ter("T1", ["570001"])]).ledger.A.questions.some((q) => /rent/.test(q))).toBe(false);
+  });
+});
+
+describe("chat: new information and what-ifs without AI", () => {
+  const apps = [app("APP-012", { spaceAvailable: "Not yet identified", spaceSize: null, floor: "Not known" }), app("APP-004")];
+  it("applies 'has now found a ground-floor space' as new information, assuming rented", () => {
+    const u = parseUpdate("APP-012 has now found a ground-floor space", apps)!;
+    expect(u.hypothetical).toBe(false);
+    expect(u.changes).toMatchObject({ floor: "Ground", spaceAvailable: "Rented" });
+    expect(u.assumptions[0]).toMatch(/rented/);
+  });
+  it("reads size, investment, experience, pin, city and tenure", () => {
+    expect(parseUpdate("APP-004 now has 700 sq ft", apps)!.changes.spaceSize).toBe(700);
+    expect(parseUpdate("APP-004 can invest 30 lakh", apps)!.changes.investment).toBe(30);
+    expect(parseUpdate("APP-004 has 6 years of retail experience", apps)!.changes.experience).toBe(6);
+    expect(parseUpdate("APP-004's pin is actually 570002", apps)!.changes.pin).toBe("570002");
+    expect(parseUpdate("APP-004 wants to open in Mysore instead", apps)!.changes.city).toBe("Mysuru");
+    expect(parseUpdate("APP-012 bought a 650 sq ft shop on the first floor", apps)!.changes).toMatchObject({ spaceAvailable: "Owned", spaceSize: 650, floor: "Upper" });
+  });
+  it("treats 'what if' as a preview", () => {
+    expect(parseUpdate("What if APP-004 had a 700 sq ft space?", apps)!.hypothetical).toBe(true);
+  });
+  it("ignores questions with no change", () => {
+    expect(parseUpdate("Why is APP-004 on hold?", apps)).toBeNull();
+  });
+});
+
+describe("chat: questions are not updates", () => {
+  it("does not read a why-question with a pin as new information", () => {
+    expect(parseUpdate("Why is APP-004 not allowed in 570002?", [app("APP-004")])).toBeNull();
+    expect(parseUpdate("Is APP-004 on the waitlist because of 350 sq ft?", [app("APP-004")])).toBeNull();
   });
 });

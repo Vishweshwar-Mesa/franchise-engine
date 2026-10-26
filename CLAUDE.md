@@ -6,7 +6,7 @@
 
 - **What:** Franchise partner acquisition, geo-selection and onboarding engine. MESA "Ops Hackathon", Case 1.
 - **Team:** Namratha Reddy, Vishweshwar.
-- **Deadline:** 2026-10-26, 11:59 PM IST (submission). The live link must keep working after it.
+- **Deadline:** 2026-10-26, 11:59 PM IST (submission: 1-minute demo video, MVP link, 8-slide deck). The MVP link must stay live and working until 2026-10-28 end of day IST, with no login, paywall, rate limit or expired session.
 - **Demo brand:** Go Colors (Go Fashion (India) Ltd), presented as *a scenario of Go Colors scaling through franchise partners*, never as published Go Colors franchise terms.
 - **Live URL:** https://franchise-engine-psi.vercel.app (public production alias; the `*-vishu-mesa.vercel.app` URLs are behind Vercel auth).
 - **GitHub:** https://github.com/Vishweshwar-Mesa/franchise-engine
@@ -115,7 +115,8 @@ Flow: Excel -> `parseWorkbook` (browser) -> store -> `runEngine` -> **ledger** -
 | Per-browser session id, data in localStorage, mirrored to Neon when configured | Our choice | No login; judges don't overwrite each other |
 | AI assessment runs once per loaded file in the background, max 100 applicants, 25 per call | Our choice | Bounded cost, never blocks the table |
 | Explanations: template shown at once; AI rewrite (applicant's language) cached per ledger-entry hash | Our choice | Works without AI; AI only rewrites |
-| Chat: local what-if parser first (no AI needed), then AI, then ledger template answers | Our choice | Always works |
+| Chat: local parser first (no AI needed): statements of fact ("APP-012 has now found a ground-floor space") are applied to the real data with before/after, stated assumptions and Undo; "what if" questions are previews on a copy; questions (why/how/who...) are answered from the ledger; then AI, then ledger templates | Our choice | Judges' Part 2 test gives new information and checks the decision changes; must work without AI |
+| Space found but owned/rented not stated -> treated as rented, said so, and asked to confirm | Our choice | Lets the decision move on new info without hiding the assumption |
 | xlsx from SheetJS CDN 0.20.3 (not npm 0.18.5) | Our choice | npm version has known advisories |
 | `cacheComponents` turned off in next.config | Our choice | All screens are per-browser client pages |
 | First visit with no saved data auto-loads the synthetic 30-applicant demo file (demo-messy.xlsx) plus 3 demo onboarding stores (demo durations/due days; money terms blank), with a small "Demo data" flag and no button to load it; any upload replaces it | User's choice | The empty app was too blank to review; judges still upload their own file. A 10-applicant pre-filled demo workspace was tried and removed the same day at the user's request |
@@ -179,6 +180,8 @@ Score: Space 40 / Money 20 / Experience 20 / Financial profile 20 (rescaled to 5
 ## 9. Change Log (newest first)
 
 `YYYY-MM-DD | who/which tool | what changed | why | files touched | follow-ups`
+
+- 2026-10-26 | Claude Code (Opus 5.5) | Checked against the official hackathon guidelines + Case 1 brief PDFs. Chat now handles the judges' Part 2 test without AI: new information is parsed (space found, floor, tenure, size, investment, years, pin, city, language, months) and applied with before/after + Undo; what-ifs stay previews; overview questions (who is on the waitlist, which territory has most applicants); example question chips | Official test: "APP-012 has now found a ground-floor space" must change the decision | src/lib/explain.ts, chat-panel.tsx, guide/page.tsx, engine.test.ts | Deck (8 slides) and 1-minute video still to make
 
 - 2026-10-26 | Claude Code (Opus 5.5) | Removed area type everywhere (applicant tag, profile matching, Settings dropdown, Guide); recorded the deadline (2026-10-26 23:59 IST) in Project | User request | types.ts, settings.ts, engine.ts, settings/page.tsx, reviewer-inputs.tsx, applicant/[id]/page.tsx, guide/page.tsx, CLAUDE.md | none
 

@@ -29,31 +29,70 @@ export function templateTraining(e: LedgerEntry): Explanation["training"] {
 
 const APP_ID = /\b([A-Z]{2,5}-\d{1,5}|ROW-\d+)\b/i;
 
-/** Parses simple what-if questions without AI, e.g. "what if APP-004 had a 700 sq ft space?" */
-export function parseWhatIf(q: string, apps: Application[]): { id: string; changes: Partial<Application> } | null {
-  if (!/\bif\b/i.test(q)) return null;
+export interface ParsedUpdate {
+  id: string;
+  changes: Partial<Application>;
+  /** "What if ..." questions are previewed on a copy; statements of fact are applied. */
+  hypothetical: boolean;
+  /** Anything the parser had to assume, shown to the reviewer. */
+  assumptions: string[];
+}
+
+const HYPOTHETICAL = /\b(what if|if|suppose|supposing|would|imagine|hypothetically)\b/i;
+const CITY_ALIASES: [RegExp, string][] = [
+  [/\b(bengaluru|bangalore)\b/i, "Bengaluru"], [/\b(mysuru|mysore)\b/i, "Mysuru"], [/\b(mangaluru|mangalore)\b/i, "Mangaluru"],
+  [/\b(hubballi|hubli|dharwad)\b/i, "Hubballi-Dharwad"], [/\b(belagavi|belgaum)\b/i, "Belagavi"], [/\b(tumakuru|tumkur)\b/i, "Tumakuru"],
+  [/\b(davanagere|davangere)\b/i, "Davanagere"],
+];
+
+/**
+ * Reads new information or a what-if about one applicant, without AI. Examples:
+ * "APP-012 has now found a ground-floor space", "APP-004 now has 700 sq ft",
+ * "APP-013 can invest 30 lakh", "What if APP-004 had a 700 sq ft space?".
+ */
+export function parseUpdate(q: string, apps: Application[]): ParsedUpdate | null {
+  // Questions ("Why is APP-015 not in 570002?") are answered, never read as updates.
+  if (!HYPOTHETICAL.test(q) && /^\s*(why|how|who|which|explain|tell me|what(?!\s+if)|is|are|does|did|can you|should)\b/i.test(q)) return null;
   const m = q.match(APP_ID);
   if (!m) return null;
   const app = apps.find((a) => a.id.toLowerCase() === m[1].toLowerCase());
   if (!app) return null;
   const rest = q.replace(m[0], " ");
   const changes: Partial<Application> = {};
-  const size = rest.match(/(\d[\d,]*)\s*(sq\.?\s*ft|sqft|square\s*feet)/i);
+  const assumptions: string[] = [];
+
+  const size = rest.match(/(\d[\d,]*(?:\.\d+)?)\s*(sq\.?\s*ft\.?|sqft|sft|square\s*feet)/i);
   if (size) changes.spaceSize = Number(size[1].replace(/,/g, ""));
-  const inv = rest.match(/(?:₹\s*)?(\d+(?:\.\d+)?)\s*lakh/i) ?? rest.match(/invest\w*\D{0,20}(\d+(?:\.\d+)?)/i);
+  const inv = rest.match(/(?:₹\s*)?(\d+(?:\.\d+)?)\s*(lakhs?|lacs?|l)\b/i) ?? rest.match(/invest\w*\D{0,20}(\d+(?:\.\d+)?)/i);
   if (inv) changes.investment = Number(inv[1]);
   const yrs = rest.match(/(\d+(?:\.\d+)?)\s*(?:years?|yrs?)/i);
   if (yrs) changes.experience = Number(yrs[1]);
+  const months = rest.match(/(\d+)\s*months?/i);
+  if (months) changes.targetLaunch = Number(months[1]);
   const pin = rest.match(/\b(\d{6})\b/);
-  if (pin && !size) changes.pin = pin[1];
-  if (/not yet identified|no space/i.test(rest)) changes.spaceAvailable = "Not yet identified";
-  else if (/\bown(ed|s)?\b/i.test(rest)) changes.spaceAvailable = "Owned";
-  else if (/\brent(ed|s)?\b/i.test(rest)) changes.spaceAvailable = "Rented";
-  if (/mall/i.test(rest)) changes.floor = "Mall unit";
+  if (pin) changes.pin = pin[1];
+  for (const [re, city] of CITY_ALIASES) if (re.test(rest)) { changes.city = city; break; }
+  const lang = rest.match(/\b(kannada|english|hindi)\b/i);
+  if (lang) changes.language = lang[1][0].toUpperCase() + lang[1].slice(1).toLowerCase();
+
+  if (/not yet identified|no space|no shop|lost (the|their|his|her) (shop|space)/i.test(rest)) changes.spaceAvailable = "Not yet identified";
+  else if (/\b(own|owns|owned|bought|purchased)\b/i.test(rest)) changes.spaceAvailable = "Owned";
+  else if (/\b(rent|rents|rented|lease|leased|renting)\b/i.test(rest)) changes.spaceAvailable = "Rented";
+
+  if (/\bmall\b/i.test(rest)) changes.floor = "Mall unit";
   else if (/ground/i.test(rest)) changes.floor = "Ground";
-  else if (/upper|first floor|second floor/i.test(rest)) changes.floor = "Upper";
-  if (changes.spaceSize && !changes.spaceAvailable && app.spaceAvailable === "Not yet identified") changes.spaceAvailable = "Rented";
-  return Object.keys(changes).length ? { id: app.id, changes } : null;
+  else if (/\b(upper|first|1st|second|2nd|third|3rd)[\s-]*floor\b|\bupper\b/i.test(rest)) changes.floor = "Upper";
+
+  const foundSpace = /\b(found|identified|got|secured|located|finali[sz]ed|has|have)\b[^.]*\b(space|shop|unit|store|premises|location)\b/i.test(rest);
+  const spaceNow = changes.spaceAvailable ?? app.spaceAvailable;
+  if ((foundSpace || changes.spaceSize || changes.floor) && spaceNow === "Not yet identified" && changes.spaceAvailable !== "Not yet identified") {
+    changes.spaceAvailable = "Rented";
+    assumptions.push("Owned or rented was not stated, so it is treated as rented. Ask the applicant to confirm.");
+  }
+  if (changes.spaceAvailable && changes.spaceAvailable !== "Not yet identified" && !changes.floor && app.floor === "") changes.floor = "Not known";
+
+  if (!Object.keys(changes).length) return null;
+  return { id: app.id, changes, hypothetical: HYPOTHETICAL.test(q), assumptions };
 }
 
 /** Answers chat questions from the ledger without AI. */
@@ -77,6 +116,19 @@ export function localAnswer(q: string, r: EngineResult): string {
     if (e.nextSteps.length) lines.push(`Next steps: ${e.nextSteps.join(" ")}`);
     lines.push(`Score ${e.total}/100 (${e.factors.filter((f) => f.provided).map((f) => `${f.label} ${f.points}/${f.max}`).join(", ")}).`);
     return lines.join("\n");
+  }
+  const all = Object.values(r.ledger);
+  if (/territor/i.test(q) && /\b(most|least|busiest|which)\b/i.test(q)) {
+    const rows = r.territories.map((t) => ({ t, n: all.filter((e) => e.territory?.id === t.id).length })).sort((a, b) => b.n - a.n);
+    return rows.map(({ t, n }) => `${t.id} (${t.city}): ${n} applicants, capacity ${t.capacity}, ${t.goodToGo.length} Good to go, ${t.waitlist.length} waiting`).join("\n");
+  }
+  const listFor: [RegExp, string][] = [[/waitlist/i, "Waitlist"], [/contested|decision|decide/i, "Needs your decision"], [/occupied|existing store/i, "Hold: pin occupied"], [/\bhold|info needed|missing/i, "Hold: info needed"], [/good to go|ready|qualified|approved/i, "Good to go"], [/not proceeding|rejected/i, "Not proceeding"]];
+  if (/\b(who|which|list|show|all)\b/i.test(q)) {
+    const hit = listFor.find(([re]) => re.test(q));
+    if (hit) {
+      const list = all.filter((e) => e.status === hit[1]);
+      return list.length ? `${hit[1]} (${list.length}):\n${list.map((e) => `${e.id} ${e.name}: ${e.reason}`).join("\n")}` : `Nobody is '${hit[1]}'.`;
+    }
   }
   if (/how many|count|summary|overview/i.test(q)) {
     return Object.entries(r.counts).map(([s, n]) => `${s}: ${n}`).join("\n");

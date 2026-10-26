@@ -82,6 +82,7 @@ const GLOSSARY: [string, string][] = [
   ["Traffic light", "A coloured dot per factor: green = strong (about the top third), amber = middle, red = weak, hollow = not provided. Lets you read a profile at a glance."],
   ["Waitlist order", "The order in which waitlisted applicants would get a slot: highest score first. You confirm it on Territories."],
   ["What-if", "Ask the chat (Ask / What-if button) something like \"What if APP-004 had a 700 sq ft space?\". It re-runs the engine on a copy and shows before and after; nothing changes unless you apply it."],
+  ["New information (chat)", "Tell the chat a fact, e.g. \"APP-012 has now found a ground-floor space\" or \"APP-013 can invest 30 lakh\". It updates that applicant, re-runs every decision, shows before and after (and anyone else affected), states anything it had to assume, and offers Undo. Logged in Activity."],
 ];
 
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
