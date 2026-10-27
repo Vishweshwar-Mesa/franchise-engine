@@ -20,7 +20,7 @@ export default function UploadPage() {
       <PageHeader
         eyebrow="Start here"
         title="Bring in the applications"
-        sub="Upload the applications Excel file, or try the case sample. Until you do, the app shows demo data."
+        sub="Upload the applications Excel file. Until you do, the app shows demo data. Need the format? Download the template below."
       />
       <UploadPanel onReport={setReport} />
       {shown && <ValidationReportView report={shown} />}

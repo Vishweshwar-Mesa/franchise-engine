@@ -1,13 +1,10 @@
 "use client";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { parseWorkbook } from "@/lib/parse";
 import type { ValidationReport } from "@/lib/types";
 import { useWorkspace } from "@/store/workspace";
 
-/** Upload box plus one-click sample files. Parsing happens in the browser. */
+/** Upload box plus the blank template to fill in. Parsing happens in the browser. */
 export function UploadPanel({ onReport }: { onReport: (r: ValidationReport) => void }) {
-  const [busy, setBusy] = useState(false);
   const hasData = useWorkspace((s) => !!s.dataset);
 
   function load(buf: ArrayBuffer, name: string) {
@@ -21,16 +18,6 @@ export function UploadPanel({ onReport }: { onReport: (r: ValidationReport) => v
     }
     onReport(d.report);
     if (!d.report.fatal) useWorkspace.getState().loadDataset(d);
-  }
-
-  async function loadSample(path: string, name: string) {
-    setBusy(true);
-    try {
-      const res = await fetch(path);
-      load(await res.arrayBuffer(), name);
-    } finally {
-      setBusy(false);
-    }
   }
 
   return (
@@ -49,12 +36,12 @@ export function UploadPanel({ onReport }: { onReport: (r: ValidationReport) => v
         />
       </label>
       <div className="flex flex-wrap gap-2">
-        <Button className="h-10 rounded-full px-5" disabled={busy} onClick={() => loadSample("/samples/template.xlsx", "template.xlsx (case sample)")}>Load sample data</Button>
+        <a href="/samples/template.xlsx" download="Franchise_applications_template.xlsx" className="h-10 rounded-full border px-5 text-sm leading-10 font-semibold transition hover:bg-muted">Download the Excel template</a>
       </div>
       <p className="text-xs text-muted-foreground">
         Required columns in the Applications sheet: Application ID, Applicant name, City, State, Pin code, Investment capacity (₹ lakh),
         Retail experience (years), Space available. Columns are found by name, so order does not matter. Applicants link to territories by pin code.
-        The sample is the case&apos;s template (one example row).
+        The template has the same sheets and headers; its grey example row is skipped when you fill in real rows below it.
       </p>
     </div>
   );

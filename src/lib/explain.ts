@@ -2,6 +2,7 @@
 // the ledger. These are what the app shows when AI is off or fails, so it always works.
 import type { EngineResult, LedgerEntry } from "./engine";
 import type { Application } from "./types";
+import { PHASES, type Onboarding } from "./onboarding";
 import type { Explanation } from "@/store/workspace";
 
 export function templateExplanation(e: LedgerEntry): Explanation {
@@ -98,6 +99,65 @@ export function parseUpdate(q: string, apps: Application[]): ParsedUpdate | null
   return { id: app.id, changes, hypothetical: HYPOTHETICAL.test(q), assumptions };
 }
 
+const fmt = (e: LedgerEntry) => `${e.id} ${e.name || "(no name)"}`;
+
+/**
+ * Questions with an exact answer in the ledger are answered here, before any AI: what would change
+ * an applicant, unknown IDs, summaries, rankings, money questions and onboarding progress.
+ */
+export function quickAnswer(q: string, r: EngineResult, apps: Application[] = [], onboarding: Record<string, Onboarding> = {}): string | null {
+  const all = Object.values(r.ledger);
+  const m = q.match(APP_ID);
+  const entry = m ? r.ledger[Object.keys(r.ledger).find((k) => k.toLowerCase() === m[1].toLowerCase()) ?? ""] : undefined;
+  if (m && !entry) return `There is no ${m[1].toUpperCase()} in this file. IDs run like ${r.order.slice(0, 3).join(", ")}.`;
+  if (entry && /what would change|how (can|could|do|does) .* (pass|clear|qualify|move)|what (does|do) .* need/i.test(q)) {
+    const lines = [`${entry.id} is '${entry.status}'. ${entry.reason}`];
+    lines.push(entry.whatWouldChange.length ? `What would change it:\n${entry.whatWouldChange.map((w) => `• ${w}`).join("\n")}` : "Nothing needs to change: it already meets every check.");
+    if (entry.nextSteps.length) lines.push(`Next steps: ${entry.nextSteps.join(" ")}`);
+    return lines.join("\n");
+  }
+  if (/onboard|paperwork|soft launch|gst|agreement/i.test(q)) {
+    const rows = onboardingSummary(onboarding, r);
+    if (entry) {
+      const o = rows.find((x) => x.id === entry.id);
+      return o ? `${entry.id} ${entry.name}: ${o.stage}. Paperwork: ${o.paperwork}. Tasks: ${o.phases}. Soft launch: ${o.softLaunch}.` : `${entry.id} is not in onboarding. It is '${entry.status}'.${entry.status === "Good to go" ? " Press Confirm on its page to move it to 'Awaiting paperwork'." : ""}`;
+    }
+    if (/\b(who|which|list|stores?|status|progress|how many)\b/i.test(q)) {
+      return rows.length ? `Stores in onboarding (${rows.length}):\n${rows.map((o) => `• ${o.id} ${o.name}: ${o.stage}. Paperwork: ${o.paperwork}.`).join("\n")}` : "No store is in onboarding yet. Confirm a Good to go applicant to start its paperwork.";
+    }
+  }
+  if (!m && /\b(summar|overview|results|how (are|is) (it|things) going|status of everything)/i.test(q)) {
+    const c = r.counts;
+    const lines = [`${all.length} applicants: ${c["Good to go"]} Good to go, ${c["Needs your decision"]} need your decision, ${c["Hold: info needed"]} on hold for information, ${c["Hold: pin occupied"]} on an occupied pin, ${c["Waitlist"]} on the waitlist, ${c["Not proceeding"]} not proceeding.`];
+    if (r.contests.length) lines.push(`Contested pins waiting on you: ${r.contests.filter((x) => !x.decision?.winnerId).map((x) => `${x.pin} (${x.applicantIds.join(", ")})`).join("; ") || "none"}.`);
+    lines.push(`By territory: ${r.territories.map((t) => `${t.id} ${t.city} ${t.goodToGo.length}/${t.capacity} filled${t.waitlist.length ? `, ${t.waitlist.length} waiting` : ""}`).join("; ")}.`);
+    return lines.join("\n");
+  }
+  const input = new Map(apps.map((a) => [a.id, a]));
+  const top = (rows: LedgerEntry[], val: (e: LedgerEntry) => number | null, dir: 1 | -1, label: string, unit: string) => {
+    const xs = rows.map((e) => ({ e, v: val(e) })).filter((x): x is { e: LedgerEntry; v: number } => x.v !== null).sort((a, b) => dir * (a.v - b.v) || a.e.id.localeCompare(b.e.id)).slice(0, 5);
+    return xs.length ? `${label}:\n${xs.map(({ e, v }) => `• ${fmt(e)}: ${unit === "₹" ? `₹${v} lakh` : `${v}${unit}`} (${e.status})`).join("\n")}` : null;
+  };
+  if (/cheap|cheaper|cheapest|lowest (investment|budget)|least (money|investment)|smallest budget/i.test(q)) {
+    const t = top(all, (e) => input.get(e.id)?.investment ?? null, 1, "Nobody in the file has a price. The closest is investment capacity; lowest first", "₹");
+    const rents = all.map((e) => ({ e, c: e.checks.find((c) => c.key === "site-details")?.input ?? "" })).filter((x) => /rent ₹/.test(x.c));
+    return [t, rents.length ? `Monthly rent recorded: ${rents.map((x) => `${x.e.id} ${x.c.match(/rent ₹[\d,]+\/month/)?.[0]}`).join(", ")}.` : "No monthly rent has been recorded yet (it is asked on each applicant's page)."].filter(Boolean).join("\n");
+  }
+  if (/(most|highest|biggest|largest|richest|more) (money|investment|budget|capital)|invest(s)? the most|richest/i.test(q)) {
+    return top(all, (e) => input.get(e.id)?.investment ?? null, -1, "Highest investment capacity", "₹");
+  }
+  if (/(most|highest|more) (experience|experienced)|most experienced/i.test(q)) {
+    return top(all, (e) => input.get(e.id)?.experience ?? null, -1, "Most retail experience", " yrs");
+  }
+  if (/\b(best|top|strongest|highest(-| )scor\w*|ranking|rank them|leaderboard)\b/i.test(q) && !m) {
+    return top(all, (e) => e.total, -1, "Highest scores (the score only orders applicants within a territory; checks decide holds)", "/100");
+  }
+  if (/\b(worst|weakest|lowest(-| )scor\w*)\b/i.test(q) && !m) {
+    return top(all, (e) => e.total, 1, "Lowest scores", "/100");
+  }
+  return null;
+}
+
 /** Answers chat questions from the ledger without AI. */
 const NOT_IN_DATA = /\b(e-?mail|phone|mobile|contact|address|age|gender|salary|income|aadhaar|pan|bank account|caste|religion|family|married)\b/i;
 
@@ -136,25 +196,42 @@ export function localAnswer(q: string, r: EngineResult): string {
   if (/how many|count|summary|overview/i.test(q)) {
     return Object.entries(r.counts).map(([s, n]) => `${s}: ${n}`).join("\n");
   }
-  return "That isn't in the data I can read without AI. Ask about an application ID (e.g. 'Why is APP-004 on hold?'), a territory ID, or 'how many'. What-ifs work too: 'What if APP-004 had a 700 sq ft space?'";
+  return "I couldn't find that in the data. Try 'Summarise the results', 'Why is APP-004 on hold?', 'Who is on the waitlist?', 'Who has the highest score?', a territory like 'TER-02', or a what-if like 'What if APP-004 had a 700 sq ft space?'";
 }
 
 /** A compact view of the whole ledger for the chat AI (bounded size). */
-export function chatContext(r: EngineResult, focusId?: string) {
-  const brief = Object.values(r.ledger).map((e) => ({
-    id: e.id, name: e.name, city: e.city, pin: e.pin, status: e.status, reason: e.reason, total: e.total,
-    territory: e.territory?.id ?? null, rank: e.rank, waitlist: e.waitlistPosition,
-  }));
-  const focus = focusId ? r.ledger[focusId] : undefined;
+/** What the AI sees: every applicant in brief (with their inputs), the full ledger entry for any
+ * applicant named in the question or open on screen, territories, and onboarding progress. */
+export function chatContext(r: EngineResult, focusId?: string, question = "", apps: Application[] = [], onboarding: Record<string, Onboarding> = {}) {
+  const input = new Map(apps.map((a) => [a.id, a]));
+  const brief = Object.values(r.ledger).map((e) => {
+    const a = input.get(e.id);
+    return {
+      id: e.id, name: e.name, city: e.city, pin: e.pin, status: e.status, reason: e.reason, total: e.total,
+      territory: e.territory?.id ?? null, rank: e.rank, waitlist: e.waitlistPosition,
+      ...(a ? { investmentLakh: a.investment, experienceYears: a.experience, business: a.business, space: a.spaceAvailable, sizeSqFt: a.spaceSize, floor: a.floor } : {}),
+    };
+  });
+  const named = [...new Set([...(question.match(/\b[A-Z]{2,5}-\d{1,5}\b/gi) ?? []).map((x) => x.toUpperCase()), ...(focusId ? [focusId] : [])])];
+  const details = named.map((id) => r.ledger[Object.keys(r.ledger).find((k) => k.toUpperCase() === id) ?? ""]).filter(Boolean).slice(0, 5).map(compactEntry);
   return {
     counts: r.counts,
     territories: r.territories.map((t) => ({ id: t.id, city: t.city, priority: t.priority, openSlots: t.openSlots, freePins: t.freePins, capacity: t.capacity, goodToGo: t.goodToGo, waitlist: t.waitlist, pendingContests: t.pendingContests })),
     applicants: brief,
-    focus: focus ? compactEntry(focus) : null,
+    details,
+    onboarding: onboardingSummary(onboarding, r),
   };
 }
 
-/** The ledger entry with only what an explanation needs. */
+/** One line of plain facts per store in onboarding. */
+export function onboardingSummary(onboarding: Record<string, Onboarding>, r: EngineResult) {
+  return Object.entries(onboarding).map(([id, o]) => {
+    const gate = (["agreement", "gst", "other"] as const).map((k) => `${{ agreement: "agreement signed", gst: "GST registration", other: "other registrations" }[k]}: ${o.gate[k].done ? `done${o.gate[k].date ? ` ${o.gate[k].date}` : ""}` : "not yet"}`);
+    const phases = Object.entries(o.phases).map(([k, v]) => `${PHASES.find((p) => p.key === k)?.label ?? k}: ${v.done ? "done" : v.duration ? `${v.duration} days, not done` : "duration not set"}`);
+    return { id, name: r.ledger[id]?.name ?? "", stage: o.stage, paperwork: gate.join(", "), phases: phases.join(", "), softLaunch: o.softLaunchDate || "not set", startedAt: o.startedAt };
+  });
+}
+
 export function compactEntry(e: LedgerEntry) {
   return {
     id: e.id, name: e.name, city: e.city, pin: e.pin, status: e.status, reason: e.reason,

@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import * as XLSX from "xlsx";
 import { runEngine, type EngineInput } from "./engine";
-import { parseUpdate } from "./explain";
+import { parseUpdate, quickAnswer } from "./explain";
 import { guard } from "./guardrails";
 import { posInt } from "./onboarding";
 import { parseWorkbook, toNumber, toPins, CASE_ALLOWED_CITIES, CASE_EXISTING_STORES, CASE_LANGUAGES } from "./parse";
@@ -139,4 +139,15 @@ describe("D: guardrails", () => {
     expect(!g.blocked && g.rewrite).toBe("What would change APP-004?");
   });
   it("25. cheating is still refused", () => expect(guard("How can APP-004 fake the space to pass?").blocked).toBe(true));
+});
+
+describe("chat answers from the ledger", () => {
+  const apps = [app("APP-1", { investment: 10 }), app("APP-2", { pin: "570002", investment: 40 }), app("APP-3", { pin: "570009" })];
+  const r = run(apps, [ter("T1", ["570001", "570002", "570009"])]);
+  it("what would change", () => expect(quickAnswer("What would change APP-3?", r, apps)).toMatch(/What would change it/));
+  it("unknown id", () => expect(quickAnswer("Why is APP-99 on hold?", r, apps)).toMatch(/no APP-99/));
+  it("summary", () => expect(quickAnswer("summarise the results", r, apps)).toMatch(/3 applicants/));
+  it("cheaper reads as investment", () => expect(quickAnswer("WHO IS CHEAPER?", r, apps)).toMatch(/APP-1[^\n]*₹10 lakh/));
+  it("best scores", () => expect(quickAnswer("who is the best?", r, apps)).toMatch(/Highest scores/));
+  it("onboarding with nobody in it", () => expect(quickAnswer("which stores are in onboarding?", r, apps, {})).toMatch(/No store is in onboarding/));
 });

@@ -3,7 +3,7 @@
 // Go Colors from verified facts. Anything else gets a short, polite refusal.
 import { GO_COLORS_FACTS } from "./brand";
 
-export type GuardResult = { blocked: true; reply: string } | { blocked: false; rewrite?: string };
+export type GuardResult = { blocked: true; reply: string } | { blocked: false; rewrite?: string; vague?: boolean };
 
 const APP_OR_TER = /\b(APP|TER|ROW)-[\w-]+\b/i;
 
@@ -20,8 +20,16 @@ const RETURNS = /\b(profit|profits|profitability|payback|break-?even|roi|return 
 /** Attempts to change the chat's instructions or read them. */
 const INJECTION = /\b(ignore|disregard|forget) (all |any |the )?(previous|above|earlier|prior) (instructions|rules|prompts?)|\b(system prompt|your instructions|your rules|developer mode|jailbreak|act as|pretend (to be|you are)|you are now)\b/i;
 
+/** Small talk gets a friendly pointer, not a refusal. */
+const GREETING = /^\s*(hi+|hello|hey|hiya|namaste|namaskara|good (morning|afternoon|evening)|yo)\b[\s!.?,]*(there|team)?[\s!.?]*$/i;
+const THANKS = /^\s*(thanks|thank you|thank u|thx|ty|ok|okay|cool|great|nice|got it|perfect|awesome)\b[\s\w!.,]{0,20}$/i;
+const EXAMPLES = "For example: 'Summarise the results', 'Why is APP-007 on hold?', 'Who is on the waitlist?', 'What if APP-006 had a 700 sq ft space?', or 'APP-009 is now renting a 600 sq ft shop'.";
+
+/** Clearly unrelated requests. Anything not clearly unrelated is answered from the data. */
+const OFF_TOPIC = /\b(weather|temperature|poem|poetry|song|lyrics|joke|recipe|cook|cricket|football|ipl|match score|who won|movie|film|netflix|news|politic|election|prime minister|stock price|share price|sensex|nifty|bitcoin|crypto|homework|essay|story|translate this|capital of|celebrity|horoscope|dating)\b|\bwrite (me )?(a|an|some) (code|program|script|email to my|letter to my)/i;
+
 /** Words that show the question is about this review or the brand. */
-const ON_TOPIC = /\b(applicant|application|status|holds?|waitlist|wait-?list|good to go|decision|contested|pin|territor|store|slot|capacity|score|reason|why|onboard|paperwork|gst|agreement|training|launch|check-?in|franchise|partner|space|sq ?ft|floor|rent|owned|investment|lakh|experience|city|bengaluru|mysuru|mangaluru|hubballi|dharwad|belagavi|tumakuru|davanagere|karnataka|go ?colors|go fashion|outlet|ebo|summary|overview|what if|deal terms|frontage|visibility|good to go|on hold|reviewer)/i;
+const ON_TOPIC = /\b(summar|result|cheap|expensive|budget|invest|money|best|top|highest|lowest|strong|weak|rank|compare|recommend|pick|choose|select|shortlist|risk|ready|approv|reject|everyone|anyone|how many|list|applicant|application|status|holds?|waitlist|wait-?list|good to go|decision|contested|pin|territor|store|slot|capacity|score|reason|why|onboard|paperwork|gst|agreement|training|launch|check-?in|franchise|partner|space|sq ?ft|floor|rent|owned|investment|lakh|experience|city|bengaluru|mysuru|mangaluru|hubballi|dharwad|belagavi|tumakuru|davanagere|karnataka|go ?colors|go fashion|outlet|ebo|summary|overview|what if|deal terms|frontage|visibility|good to go|on hold|reviewer)/i;
 
 export const SCOPE_NOTE =
   "I can explain decisions on these applications, take updates about an applicant, run what-ifs, and share verified facts about Go Colors.";
@@ -54,9 +62,13 @@ export function guard(question: string): GuardResult {
     const note = GO_COLORS_FACTS.find((f) => f.topic === "franchise terms")!.fact;
     return { blocked: true, reply: `${note} I won't guess figures. Any terms you agree are typed into the deal terms on the store's onboarding page.` };
   }
-  if (!APP_OR_TER.test(q) && !ON_TOPIC.test(q)) {
-    return { blocked: true, reply: `That's outside what I can help with here. ${SCOPE_NOTE}` };
+  if (GREETING.test(q)) return { blocked: true, reply: `Hi! I can explain the decisions on these applications, run what-ifs and take new information about an applicant. ${EXAMPLES}` };
+  if (THANKS.test(q)) return { blocked: true, reply: "Happy to help. Ask me anything else about the applications." };
+  if (OFF_TOPIC.test(q) && !APP_OR_TER.test(q)) {
+    return { blocked: true, reply: `That's outside what I can help with here. ${SCOPE_NOTE} ${EXAMPLES}` };
   }
+  // Not clearly about the review, but not clearly unrelated either: let the data answer it.
+  if (!APP_OR_TER.test(q) && !ON_TOPIC.test(q)) return { blocked: false, vague: true };
   return { blocked: false };
 }
 
